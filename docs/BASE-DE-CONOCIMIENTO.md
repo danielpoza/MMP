@@ -210,10 +210,20 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
   4. Después, Abrir (E) dice *"Debería mirar esa manzana misteriosa."*
      (`DIALOGO_PUERTA_MANZANA`). `tiendasVistas` y `ancianoLlaveHablado` se
      guardan/cargan en la partida.
-  - **PENDIENTE:** que la **manzana misteriosa** (se compra GRATIS en una tienda,
-    `misteriosa:true`) sirva para **abrir de verdad** la puerta del calabozo.
-- La **bóveda** real (da el mapa del tesoro y completa la misión "boveda").
-- **Enemigos y combate** (probablemente en otra isla).
+- ✅ **La manzana misteriosa y tumbar la puerta (hecho):** comer la "Manzana
+  misteriosa" (mochila, tecla P) llama a `_efectoManzana`: **+100 de vida**,
+  **Fuerza nivel 5 durante 30 s** (`player.fuerzaT`/`fuerzaNivel`, cuenta atrás en
+  `player.update`, insignia en `_dibujarFuerzaHUD`, aura dorada en `player.draw`) y
+  **maldición** (`player.maldito=true`, todavía sin efecto). Con Fuerza andas más
+  rápido (×1.6 en `player.update`) y, junto a la puerta, **Abrir (E)** pasa a
+  **Tumbar (E)**: `_tumbarPuerta` pone `game.puertaAbierta=true` y
+  `islaComercio.puerta.abierta=true`, y la puerta se dibuja **abierta hacia dentro**
+  (asset `puerta_abierta.png` / `_puertaAbiertaReserva`). Se guarda en la partida.
+  - **PENDIENTE (combate):** "golpear más fuerte" con la Fuerza, y la **maldición**:
+    aparecen **monstruos** cuando el jugador está sobre un píxel negro (#000000).
+    Necesita un sistema de enemigos + combate.
+- La **bóveda** real detrás de la puerta (da el mapa del tesoro y completa "boveda").
+- **Enemigos y combate** (la maldición de la manzana y/o en otra isla).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,
   `puerta.png`, `calabozo.png`.

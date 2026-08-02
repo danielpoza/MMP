@@ -38,6 +38,7 @@ window.addEventListener("load", () => {
   Assets.load("puesto_minerales", "assets/puesto_minerales.png", { chroma: true });
   Assets.load("fumador",          "assets/fumador.png",          { chroma: true });
   Assets.load("puerta",           "assets/puerta.png",           { chroma: true }); // puerta escondida del calabozo
+  Assets.load("puerta_abierta",   "assets/puerta_abierta.png",   { chroma: true }); // la misma puerta, tumbada/abierta hacia dentro
   Assets.load("calabozo",         "assets/calabozo.png");                           // vista del calabozo por las rejillas (fondo lleno)
   Assets.load("int_fruta",     "assets/int_fruta.png");       // interiores de las tiendas (fondo lleno)
   Assets.load("int_verdura",   "assets/int_verdura.png");

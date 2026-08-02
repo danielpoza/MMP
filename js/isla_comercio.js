@@ -60,7 +60,7 @@ class IslaComercio {
     this.puestos.push({ tipo: "minerales", asset: "puesto_minerales", ...P(21, 18), w: 2 * TILE, h: 2 * TILE });
 
     // Puerta escondida en la pared derecha, entre el puesto de pollo y el de minerales
-    this.puerta = { x: 23 * TILE, y: 13 * TILE, w: TILE, h: 2 * TILE };
+    this.puerta = { x: 23 * TILE, y: 13 * TILE, w: TILE, h: 2 * TILE, abierta: false };
 
     // El fumador, quieto en el callejón junto a la entrada
     this.fumador = { x: 11 * TILE, y: 33 * TILE, ancho: 26, alto: 34 };
@@ -189,6 +189,16 @@ class IslaComercio {
   _dibujarPuerta(ctx, x, y) {
     const w = this.puerta.w, h = this.puerta.h;
 
+    // ---- Puerta YA TUMBADA (abierta hacia dentro) ----
+    if (this.puerta.abierta) {
+      if (Assets.listo("puerta_abierta")) {
+        ctx.drawImage(Assets.el("puerta_abierta"), Math.round(x), Math.round(y), w, h);
+      } else {
+        this._puertaAbiertaReserva(ctx, x, y, w, h);
+      }
+      return;
+    }
+
     // Si existe el PNG, lo usamos tal cual (relleno el hueco de la puerta)
     if (Assets.listo("puerta")) {
       ctx.drawImage(Assets.el("puerta"), Math.round(x), Math.round(y), w, h);
@@ -260,6 +270,39 @@ class IslaComercio {
     ctx.fillStyle = "#3a3e45";
     ctx.beginPath(); ctx.arc(x + w - 11, y + h * 0.62, 3.5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#20242a"; ctx.fillRect(x + w - 13, y + h * 0.62, 4, 8);
+  }
+
+  // Dibujo de reserva de la puerta TUMBADA/abierta hacia dentro
+  _puertaAbiertaReserva(ctx, x, y, w, h) {
+    // 1) Marco plateado (igual que la puerta cerrada)
+    ctx.fillStyle = "#b9bec7"; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "#8f95a0"; ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    // 2) Hueco oscuro del calabozo al fondo
+    const ix = x + 6, iy = y + 6, iw = w - 12, ih = h - 12;
+    ctx.fillStyle = "#050608"; ctx.fillRect(ix, iy, iw, ih);
+    // un poco de luz fría al fondo
+    const g = ctx.createLinearGradient(ix, iy, ix, iy + ih);
+    g.addColorStop(0, "rgba(40,50,64,.5)"); g.addColorStop(1, "rgba(5,6,8,0)");
+    ctx.fillStyle = g; ctx.fillRect(ix, iy, iw, ih);
+    // 3) La hoja de la puerta, abierta hacia dentro (parece que entra en perspectiva)
+    ctx.fillStyle = "#3a2716";
+    ctx.beginPath();
+    ctx.moveTo(ix, iy);                       // bisagra arriba
+    ctx.lineTo(ix + iw * 0.55, iy + ih * 0.16); // se aleja hacia el fondo
+    ctx.lineTo(ix + iw * 0.55, iy + ih * 0.84);
+    ctx.lineTo(ix, iy + ih);                  // bisagra abajo
+    ctx.closePath(); ctx.fill();
+    // tablones de la hoja
+    ctx.strokeStyle = "rgba(120,84,52,.5)"; ctx.lineWidth = 1;
+    for (let i = 1; i < 3; i++) {
+      const f = i / 3;
+      ctx.beginPath();
+      ctx.moveTo(ix + iw * 0.55 * f, iy + ih * 0.16 * f);
+      ctx.lineTo(ix + iw * 0.55 * f, iy + ih - ih * 0.16 * f);
+      ctx.stroke();
+    }
+    // 4) Brillo del borde del marco
+    ctx.fillStyle = "#cdd2da"; ctx.fillRect(x + 1, y + 1, w - 2, 2); ctx.fillRect(x + 1, y + 1, 2, h - 2);
   }
 
   _dibujarFumador(ctx, x, y) {

@@ -30,13 +30,27 @@ class Player {
     this.inventario = {};
     // Comida/consumibles comprados (nombre -> cantidad); se usan desde la mochila
     this.comida = {};
+
+    // Efecto de la manzana misteriosa
+    this.fuerzaT = 0;       // segundos que queda de "Fuerza" (0 = sin fuerza)
+    this.fuerzaNivel = 0;   // nivel de fuerza mientras dura (5 con la manzana)
+    this.maldito = false;   // maldición de la manzana (monstruos, se hará más adelante)
   }
+
+  // ¿Tiene ahora mismo el efecto de fuerza activo?
+  get tieneFuerza() { return this.fuerzaT > 0; }
 
   // Centro de la base (los "pies"), que es lo que usamos para colisiones
   get pieX() { return this.x + this.ancho / 2; }
   get pieY() { return this.y + this.alto; }
 
   update(dt, world) {
+    // 0) La fuerza se va agotando con el tiempo
+    if (this.fuerzaT > 0) {
+      this.fuerzaT = Math.max(0, this.fuerzaT - dt);
+      if (this.fuerzaT === 0) this.fuerzaNivel = 0;   // se acabó
+    }
+
     // 1) Leer dirección deseada
     let mx = 0, my = 0;
     if (Input.left)  mx -= 1;
@@ -57,8 +71,10 @@ class Player {
 
     // 2) Mover, comprobando colisiones por separado en X y en Y
     //    (así puede "deslizarse" a lo largo de una pared)
-    const dx = mx * this.velocidad * dt;
-    const dy = my * this.velocidad * dt;
+    //    Con la Fuerza de la manzana andamos más rápido.
+    const vel = this.velocidad * (this.tieneFuerza ? 1.6 : 1);
+    const dx = mx * vel * dt;
+    const dy = my * vel * dt;
 
     if (world.esCaminable(this.pieX + dx, this.pieY)) this.x += dx;
     if (world.esCaminable(this.pieX, this.pieY + dy)) this.y += dy;
@@ -78,6 +94,19 @@ class Player {
     ctx.beginPath();
     ctx.ellipse(x + w / 2, y + h, w * 0.5, w * 0.22, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    // Aura de FUERZA (destellos dorados alrededor mientras dura la manzana)
+    if (this.tieneFuerza) {
+      const t = this.paso + x * 0.01;
+      ctx.save();
+      ctx.globalAlpha = 0.55 + Math.sin(t * 6) * 0.25;
+      const g = ctx.createRadialGradient(x + w / 2, y + h / 2, 4, x + w / 2, y + h / 2, w);
+      g.addColorStop(0, "rgba(255,225,120,.55)");
+      g.addColorStop(1, "rgba(255,190,60,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(x + w / 2, y + h / 2, w * 0.95, h * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
 
     // Si tenemos la hoja de sprites, la usamos (y salimos)
     if (Assets.listo("caballero")) { this._dibujarSprite(ctx, x, y, w, h); return; }

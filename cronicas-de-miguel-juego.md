@@ -128,10 +128,15 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
   abre**. Al entrar, el anciano te habla (diálogo de 4 partes) y te dice que
   **mires la manzana misteriosa**. Después, Abrir dice *"Debería mirar esa manzana
   misteriosa."*
-  - **Falta:** que la **manzana misteriosa** (gratis en una tienda) sirva para
-    **abrir de verdad** la puerta del calabozo.
-- La **bóveda** de verdad (que da el mapa del tesoro y completa la misión).
-- **Enemigos y combate** (probablemente en otra isla).
+- ✅ **La manzana misteriosa (hecha):** al comerla (mochila, tecla P) te da
+  **+100 de vida** y **Fuerza nivel 5 durante 30 segundos** (sale una insignia con
+  cuenta atrás y Seok brilla con un aura dorada) y te echa una **maldición**. Con la
+  Fuerza **andas más rápido** y, junto a la puerta del calabozo, puedes **Tumbarla
+  (E)**: se abre hacia dentro (*"¡PUM! Tumbas la puerta de una patada."*).
+  - **Falta (paso siguiente):** los **monstruos** de la maldición (aparecen sobre
+    píxeles negros) y el **combate** (golpear más fuerte con la Fuerza).
+- La **bóveda** de verdad detrás de la puerta (da el mapa del tesoro y completa la misión).
+- **Enemigos y combate.**
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
   `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
   (mientras tanto usan dibujo de reserva).

@@ -276,6 +276,7 @@ dibujan por código (no necesitan imagen). Estos tres sí:
 |---|---|---|---|---|
 | A17 | `puerta.png` | Objeto | 48×96 | puerta escondida del calabozo (pared derecha de la plaza) |
 | A18 | `calabozo.png` | Fondo | 960×540 | vista del calabozo al mirar por las rejillas (tecla F) |
+| A19 | `puerta_abierta.png` | Objeto | 48×96 | la misma puerta pero tumbada / abierta hacia dentro |
 
 ### A17 · Puerta escondida del calabozo — `puerta.png`
 > Pixel art moderno y nítido, sin difuminado, sin texto. Una **puerta medieval
@@ -324,3 +325,20 @@ dibujan por código (no necesitan imagen). Estos tres sí:
 >
 > 💡 Ya está dibujado por código (dibujo de reserva). Cuando guardes
 > `calabozo.png` en `assets/`, el juego usará tu imagen automáticamente.
+
+### A19 · Puerta tumbada / abierta hacia dentro — `puerta_abierta.png`
+> Pixel art moderno y nítido, sin difuminado, sin texto. La **MISMA puerta**
+> medieval que `puerta.png` (marco metálico plateado con remaches y madera oscura
+> de pino), pero ahora **abierta/tumbada hacia dentro**: la hoja de madera está
+> abatida hacia el interior en perspectiva y por el hueco se ve **oscuridad total**
+> (el calabozo negro al fondo). Se mantiene el **marco plateado** fijo en la pared.
+> Formato vertical alto (1:2, 48×96). Fondo magenta liso #FF00FF, sin sombra.
+> *(EN: Modern crisp pixel art, no text. The SAME medieval door as puerta.png
+> (silver metal frame with rivets and dark pine wood), but now open/broken inward:
+> the wooden leaf is swung inward in perspective and through the opening there is
+> total darkness (the black dungeon beyond). The silver frame stays fixed in the
+> wall. Tall portrait format (1:2, 48×96). Flat magenta #FF00FF background, no
+> shadow.)*
+>
+> 💡 Ya está dibujada por código (dibujo de reserva). Cuando guardes
+> `puerta_abierta.png` en `assets/`, el juego la usará al tumbar la puerta.

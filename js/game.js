@@ -193,6 +193,7 @@ class Game {
     this.mirandoCalabozo = false; // ¿está mirando el calabozo por las rejillas?
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
     this.ancianoLlaveHablado = false; // ¿ya ha hablado con el anciano sobre la llave?
+    this.puertaAbierta = false; // ¿se ha tumbado ya la puerta del calabozo?
     this.tiendaComercio = null; // tipo de tienda abierta (fruta/verdura/pollo/minerales)
     this.ventaSel = {};       // minerales seleccionados para vender
     this._comBotones = [];    // botones de la tienda del comercio
@@ -286,6 +287,7 @@ class Game {
     this.fumadorHablado = false;
     this.tiendasVistas = {};
     this.ancianoLlaveHablado = false;
+    this.puertaAbierta = false;
     this.reloj = 0;
     this.estado = "jugando";
     document.getElementById("hint")?.classList.remove("oculto");
@@ -302,11 +304,12 @@ class Game {
         x: p.x, y: p.y, dir: p.dir,
         reales: p.reales, vida: p.vida, vidaMax: p.vidaMax,
         picos: p.picos, picoEquipado: p.picoEquipado, picoDurabilidad: p.picoDurabilidad,
-        inventario: p.inventario,
+        inventario: p.inventario, comida: p.comida, maldito: p.maldito,
       },
       misiones: JSON.parse(JSON.stringify(this.misiones)),
       tiendasVistas: { ...this.tiendasVistas },
       ancianoLlaveHablado: this.ancianoLlaveHablado,
+      puertaAbierta: this.puertaAbierta,
     });
   }
 
@@ -319,9 +322,12 @@ class Game {
     p.reales = s.reales || 0; p.vida = s.vida ?? 100; p.vidaMax = s.vidaMax || 100;
     p.picos = s.picos || {}; p.picoEquipado = s.picoEquipado || null; p.picoDurabilidad = s.picoDurabilidad || 0;
     p.inventario = s.inventario || {};
+    p.comida = s.comida || {};
+    p.maldito = !!s.maldito;
     this.misiones = d.misiones || [];
     this.tiendasVistas = d.tiendasVistas || {};
     this.ancianoLlaveHablado = !!d.ancianoLlaveHablado;
+    this.puertaAbierta = !!d.puertaAbierta;
     this.reloj = d.reloj || 0;
     this.cam.seguir(p, this.world.pixelWidth, this.world.pixelHeight);
     this.estado = "jugando";
@@ -381,6 +387,7 @@ class Game {
   _viajarAComercio() {
     this._mapaPos = { x: this.player.x, y: this.player.y, dir: this.player.dir };
     if (!this.islaComercio) this.islaComercio = new IslaComercio();
+    this.islaComercio.puerta.abierta = this.puertaAbierta;   // ¿ya estaba tumbada?
     this.player.x = this.islaComercio.inicio.x;
     this.player.y = this.islaComercio.inicio.y;
     this.player.dir = "arriba";
@@ -413,6 +420,13 @@ class Game {
     this.tiendasVistas[tipo] = true;   // apuntamos que ya hemos mirado esta tienda
     this.estado = "tienda_comercio";
   }
+  // Tumbar la puerta del calabozo (solo con el efecto de Fuerza de la manzana)
+  _tumbarPuerta() {
+    this.puertaAbierta = true;
+    if (this.islaComercio) this.islaComercio.puerta.abierta = true;   // cambia el dibujo a "abierta"
+    this.mensaje = "¡PUM! Tumbas la puerta de una patada.";
+    this.mensajeT = 2.8;
+  }
   // Elige qué dice Seok al intentar abrir la puerta, según lo que ha averiguado
   _guionPuerta() {
     if (!this._todasTiendasVistas()) return DIALOGO_PUERTA_TIENDAS;   // aún le faltan tiendas
@@ -436,13 +450,23 @@ class Game {
     this.player.comida[nombre]--;
     if (this.player.comida[nombre] <= 0) delete this.player.comida[nombre];
     const c = CONSUMIBLES[nombre] || {};
-    if (c.misteriosa) { this.invMsg = this._efectoMisterioso(); this.invMsgT = 2.6; return; }
+    if (c.misteriosa) { this.invMsg = this._efectoManzana(); this.invMsgT = 3.2; return; }
     const antes = this.player.vida;
     this.player.vida = Math.max(0, Math.min(this.player.vidaMax, this.player.vida + (c.vida || 0)));
     const dif = this.player.vida - antes;
     const verbo = nombre === "Puro" ? "Fumas un puro" : "Comes " + nombre;
     this.invMsg = verbo + (dif >= 0 ? " (+" + dif + " vida)" : " (" + dif + " vida)");
     this.invMsgT = 2.6;
+  }
+  // La manzana misteriosa: cura del todo, da Fuerza nivel 5 (30 s) y te maldice
+  _efectoManzana() {
+    const p = this.player;
+    const antes = p.vida;
+    p.vida = Math.min(p.vidaMax, p.vida + 100);   // +100 de vida (hasta el máximo)
+    p.fuerzaT = 30;                                // dura 30 segundos
+    p.fuerzaNivel = 5;                             // Fuerza nivel 5
+    p.maldito = true;                              // maldición (monstruos: más adelante)
+    return "¡FUERZA nivel 5! (+" + (p.vida - antes) + " vida, 30 s). Corres más y podrías tumbar puertas... pero notas una maldición.";
   }
   _efectoMisterioso() {
     const r = Math.floor(Math.random() * 4);
@@ -645,7 +669,12 @@ class Game {
         if (this.puestoComCerca && Input.pressed["e"]) { this._entrarTiendaComercio(this.puestoComCerca.tipo); break; }
         if (this.fumadorCerca && Input.pressed["e"]) { this._entrarTiendaComercio("puros"); break; }
         // Puerta escondida: E intenta abrir (cerrada con llave), F mira por las rejillas
-        if (this.puertaCerca && Input.pressed["e"]) { this.dialogo = { guion: this._guionPuerta(), i: 0, alTerminar: "nada" }; break; }
+        if (this.puertaCerca && Input.pressed["e"]) {
+          if (this.puertaAbierta) { /* ya está tumbada: entrar a la bóveda será el siguiente paso */ }
+          else if (this.player.tieneFuerza) { this._tumbarPuerta(); }   // ¡con fuerza la tiras abajo!
+          else { this.dialogo = { guion: this._guionPuerta(), i: 0, alTerminar: "nada" }; }
+          break;
+        }
         if (this.puertaCerca && Input.pressed["f"]) { this.mirandoCalabozo = true; break; }
         if (Input.pressed["escape"]) this._volverDeComercio();   // Esc -> volver
         break;
@@ -758,6 +787,9 @@ class Game {
     this._scrollRect = { x: px0, y: py0, w: pw, h: ph };
     this._iconoPergamino(ctx, px0, py0, pw, ph, this.misiones.length);
 
+    // ---- Indicador de FUERZA (mientras dure la manzana) ----
+    if (p.tieneFuerza) this._dibujarFuerzaHUD(ctx, 70, 52);
+
     // ---- Ayuda (en el mapa: Esc va al menú; en el interior lo indica la escena) ----
     if (this.estado === "jugando") {
       ctx.textAlign = "right";
@@ -766,6 +798,31 @@ class Game {
       ctx.fillText("Esc: menú", this.ancho - 12, by + 14);
       ctx.textAlign = "left";
     }
+  }
+
+  // Insignia de "Fuerza nivel N" con cuenta atrás (30 s de la manzana)
+  _dibujarFuerzaHUD(ctx, x, y) {
+    const p = this.player, w = 168, h = 30, dur = 30;
+    ctx.save();
+    // Fondo dorado oscuro
+    ctx.fillStyle = "rgba(60,42,12,.9)"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#f6d367"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    // Rayo (símbolo de fuerza) dibujado a mano
+    ctx.fillStyle = "#ffe27a";
+    ctx.beginPath();
+    ctx.moveTo(x + 14, y + 6); ctx.lineTo(x + 9, y + 17); ctx.lineTo(x + 13, y + 17);
+    ctx.lineTo(x + 10, y + 25); ctx.lineTo(x + 19, y + 14); ctx.lineTo(x + 14, y + 14);
+    ctx.closePath(); ctx.fill();
+    // Texto
+    ctx.fillStyle = "#ffe27a"; ctx.font = "bold 14px Georgia, serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText("Fuerza " + p.fuerzaNivel, x + 24, y + 11);
+    // Barra de cuenta atrás
+    const fr = Math.max(0, Math.min(1, p.fuerzaT / dur));
+    ctx.fillStyle = "#3a2a0e"; ctx.fillRect(x + 24, y + 18, w - 34, 6);
+    ctx.fillStyle = "#f6d367"; ctx.fillRect(x + 24, y + 18, (w - 34) * fr, 6);
+    ctx.fillStyle = "#fff2c8"; ctx.font = "bold 11px Georgia, serif"; ctx.textAlign = "right";
+    ctx.fillText(Math.ceil(p.fuerzaT) + "s", x + w - 8, y + 10);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
   // Parte texto largo en varias líneas que quepan en maxW
@@ -1136,8 +1193,12 @@ class Game {
       ctx.fillText(txt, cx, y + h / 2 + 1);
     };
     ctx.save();
-    pill(yBase - h * 2 - 4, "Abrir (E)");   // arriba
-    pill(yBase - h, "Mirar (F)");            // debajo
+    // El botón de arriba cambia: si tienes fuerza, "Tumbar (E)"; si ya está
+    // abierta no sale; si no, "Abrir (E)". El de "Mirar (F)" sale siempre.
+    if (!this.puertaAbierta) {
+      pill(yBase - h * 2 - 4, this.player.tieneFuerza ? "Tumbar (E)" : "Abrir (E)");
+    }
+    pill(yBase - h, "Mirar (F)");
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 

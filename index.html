@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crónicas de Miguel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- El juego se dibuja entero aquí dentro -->
+  <div id="game-frame">
+    <canvas id="game" width="960" height="540"></canvas>
+    <!-- Ayuda de teclas, se oculta al empezar a jugar -->
+    <div id="hint">Mover: Flechas o W A S D &nbsp;·&nbsp; Menú: Esc</div>
+  </div>
+
+  <!-- Cargamos los módulos del juego en orden -->
+  <script src="js/assets.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/isla_minerales.js"></script>
+  <script src="js/isla_comercio.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/interior.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/guardado.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

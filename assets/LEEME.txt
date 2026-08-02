@@ -1,0 +1,71 @@
+================================================================
+  CARPETA DE IMAGENES DEL JUEGO  -  Cronicas de Miguel
+================================================================
+
+Aqui van los PNG que genereis con la IA. Usad EXACTAMENTE estos
+nombres de archivo (en minusculas, sin acentos y sin espacios),
+si no, el juego no los encontrara.
+
+La guia completa con el prompt de cada uno esta en:
+    docs/inventario-sprites.md
+
+----------------------------------------------------------------
+  NOMBRE DE ARCHIVO        TAMAÑO FINAL   QUE ES
+----------------------------------------------------------------
+  tiles.png                240 x 48       Suelo: hierba, camino,
+                                          agua, arena y puente
+                                          (5 casillas de 48x48)
+
+  tiles_minerales.png      336 x 48       Suelo isla minerales (7 casillas):
+                                          piedra, agua, arena, hierro, oro,
+                                          amatista, diamante (fondo lleno)
+
+  caballero.png            144 x 192      Heroe con espada:
+                                          hoja de 4 filas x 3
+                                          columnas (celdas 48x48)
+
+  casa_roja.png            96 x 112       Casa tejado rojo
+  casa_azul.png            96 x 112       Casa tejado azul
+  casa_verde.png           96 x 112       Casa tejado verde
+  casa_amarilla.png        96 x 112       Casa tejado amarillo
+  casa_morada.png          96 x 112       Casa tejado morado
+
+  molino_torre.png         96 x 160       Torre del molino (sin aspas)
+  molino_aspas.png         96 x 96        Aspas sueltas (para girarlas)
+
+  pozo.png                 48 x 64        Pozo de piedra
+  arbol.png                64 x 96        Arbol frondoso
+  arbusto.png              48 x 48        Arbusto
+
+  portada.png              960 x 540      Fondo de la pantalla de titulo
+
+  moneda.png               48 x 48        Moneda de oro (vale 20 reales)
+  aldeano.png              144 x 192      Aldeano andante: hoja 4 filas x
+                                          3 columnas (igual que caballero)
+  minero.png               144 x 192      Minero (isla minerales): hoja 4
+                                          filas x 3 columnas, fondo magenta
+  carro.png                96 x 112       Carro con mercancias y vendedor
+  cartel.png               48 x 64        Cartel de madera del mapa (en la
+                                          arena junto a la casa roja)
+
+  interior_casa.png        960 x 540      Escena 1a persona: anciano en la
+                                          cama a la luz de las velas (fondo
+                                          lleno, SIN magenta)
+
+  tienda_exterior.png      96 x 112       Puesto de picos (isla minerales),
+                                          fondo magenta
+  tienda_interior.png      960 x 540      Interior de la tienda de picos
+                                          (fondo lleno, SIN magenta)
+----------------------------------------------------------------
+
+CONSEJOS RAPIDOS (mas detalle en docs/inventario-sprites.md):
+  - Pedid el FONDO en color magenta liso #FF00FF y luego se quita
+    (excepto tiles.png y portada.png, que llevan fondo lleno).
+  - Generad grande y REDUCID con "vecino mas cercano" para que
+    quede pixelado y nitido.
+  - Las 5 casas son el mismo dibujo cambiando solo el color del
+    tejado: haced una y pedid las variantes.
+
+Cuando tengais aunque sea 2 o 3 archivos aqui, avisad a Claude
+y los conecta al juego (Requisito 2).
+================================================================

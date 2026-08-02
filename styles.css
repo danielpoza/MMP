@@ -1,0 +1,52 @@
+/* ---- Estilo general de la página ---- */
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #0b0b10;            /* fondo oscuro tipo "arcade" */
+  color: #fff;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  overflow: hidden;              /* nada de barras de scroll */
+}
+
+/* Centramos el marco del juego en la pantalla */
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-frame {
+  position: relative;
+  box-shadow: 0 0 0 4px #2a2a3a, 0 20px 60px rgba(0,0,0,.7);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* El canvas es el "televisor" donde se ve todo el juego.
+   image-rendering: pixelated -> pixel art nítido, sin difuminar. */
+#game {
+  display: block;
+  width: 960px;
+  height: 540px;
+  max-width: 100vw;
+  max-height: 100vh;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #1b2b1b;
+  cursor: default;
+}
+
+/* Pista de teclas en la esquina */
+#hint {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #d7e6c9;
+  background: rgba(0,0,0,.45);
+  border-radius: 4px;
+  pointer-events: none;
+  transition: opacity .4s ease;
+}
+#hint.oculto { opacity: 0; }

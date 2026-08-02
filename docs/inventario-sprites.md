@@ -267,3 +267,36 @@ dibujan por código (no necesitan imagen). Estos tres sí:
 > barriles), y junto a él, de pie, un MERCADER medieval con túnica y delantal.
 > Madera cálida (#7a4a24), ruedas de radios. Formato un poco más alto que ancho.
 > Fondo magenta liso #FF00FF, sin sombra en el suelo (la pone el juego).
+
+---
+
+## 9. La isla del comercio: la puerta escondida
+
+| # | Archivo (`assets/…`) | Tipo | Tamaño final | Contenido |
+|---|---|---|---|---|
+| A17 | `puerta.png` | Objeto | 48×96 | puerta escondida del calabozo (pared derecha de la plaza) |
+
+### A17 · Puerta escondida del calabozo — `puerta.png`
+> Pixel art moderno y nítido, sin difuminado, sin texto. Una **puerta medieval
+> alta y estrecha** (formato vertical, más alta que ancha, proporción 1:2) vista
+> **de frente**, como si estuviera **empotrada en una pared** (se ve de lado, en
+> el lateral de un edificio). **Que se NOTE, nada camuflada.** Tiene un **marco
+> metálico plateado** de acero con remaches alrededor de todo el borde; el cuerpo
+> de la puerta es de **madera oscura de pino** (tablones verticales con vetas y
+> algún nudo, color #4a3221). En la parte de arriba, un **ventanuco con rejas de
+> metal** (barrotes verticales de hierro) por el que se ve **oscuridad total**
+> (un calabozo negro y siniestro). Dos **bandas de refuerzo de hierro**
+> horizontales con remaches y un **tirador de hierro**. Fondo magenta liso
+> #FF00FF, sin sombra en el suelo (la pone el juego).
+> *(EN: Modern crisp pixel art, no text. A tall narrow medieval door (portrait,
+> ~1:2), seen from the front, embedded in a wall (side of a building). Make it
+> clearly VISIBLE, not camouflaged. A silver steel frame with rivets around the
+> whole border; the door body is dark pine wood (vertical planks with grain and a
+> knot, #4a3221). Near the top, a small barred window (vertical iron bars) showing
+> total darkness (a black, sinister dungeon). Two horizontal iron reinforcement
+> bands with rivets and an iron handle. Flat magenta #FF00FF background, no ground
+> shadow.)*
+>
+> 💡 Ya está dibujada por código (dibujo de reserva), así que el juego la muestra
+> aunque falte este PNG. Cuando guardes `puerta.png` en `assets/`, el juego usará
+> tu imagen automáticamente.

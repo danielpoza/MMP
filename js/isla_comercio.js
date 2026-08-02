@@ -188,14 +188,78 @@ class IslaComercio {
 
   _dibujarPuerta(ctx, x, y) {
     const w = this.puerta.w, h = this.puerta.h;
-    // Casi igual que la pared, con un contorno tenue (por eso está "escondida")
-    if (!Assets.listo("tiles_comercio")) {
-      ctx.fillStyle = "#eef0f3"; ctx.fillRect(x, y, w, h);
+
+    // Si existe el PNG, lo usamos tal cual (relleno el hueco de la puerta)
+    if (Assets.listo("puerta")) {
+      ctx.drawImage(Assets.el("puerta"), Math.round(x), Math.round(y), w, h);
+      return;
     }
-    ctx.strokeStyle = "rgba(120,120,130,.5)"; ctx.lineWidth = 2;
-    ctx.strokeRect(x + 4, y + 4, w - 8, h - 8);
-    ctx.fillStyle = "rgba(90,90,100,.5)";
-    ctx.beginPath(); ctx.arc(x + w - 12, y + h / 2, 2.5, 0, Math.PI * 2); ctx.fill();   // pomo tenue
+
+    // ---- DIBUJO DE RESERVA (por si falta el PNG) ----
+    // La puerta se NOTA: marco plateado, madera oscura de pino y rejillas de metal.
+
+    // 1) Marco plateado (borde metálico) alrededor de toda la puerta
+    ctx.fillStyle = "#b9bec7";                       // acero claro
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "#8f95a0";                       // sombra del marco (da relieve)
+    ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    ctx.fillStyle = "#cdd2da";                       // brillo del borde
+    ctx.fillRect(x + 1, y + 1, w - 2, 2);
+    ctx.fillRect(x + 1, y + 1, 2, h - 2);
+
+    // 2) Madera oscura de pino (tablones verticales) dentro del marco
+    const mx = x + 6, my = y + 6, mw = w - 12, mh = h - 12;   // hueco interior de madera
+    ctx.fillStyle = "#4a3221";                       // pino oscuro base
+    ctx.fillRect(mx, my, mw, mh);
+    const tabl = 3;                                  // 3 tablones verticales
+    const tw = mw / tabl;
+    for (let i = 0; i < tabl; i++) {
+      const tx = mx + i * tw;
+      // veta del tablón (líneas suaves más claras)
+      ctx.strokeStyle = "rgba(120,84,52,.55)"; ctx.lineWidth = 1;
+      for (let v = 0; v < 3; v++) {
+        const vx = tx + tw * (0.3 + v * 0.22);
+        ctx.beginPath(); ctx.moveTo(vx, my + 2); ctx.lineTo(vx, my + mh - 2); ctx.stroke();
+      }
+      // junta oscura entre tablones
+      if (i > 0) { ctx.strokeStyle = "#2e2013"; ctx.beginPath(); ctx.moveTo(tx, my); ctx.lineTo(tx, my + mh); ctx.stroke(); }
+    }
+    // un par de nudos del pino
+    ctx.fillStyle = "#3a2716";
+    ctx.beginPath(); ctx.ellipse(mx + tw * 0.5, my + mh * 0.68, 3, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(mx + tw * 2.4, my + mh * 0.30, 2.5, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+
+    // 3) Ventanuco enrejado en la parte de arriba: se ve el calabozo OSCURO detrás
+    const rw = mw - 8, rh = mh * 0.34;
+    const rx = mx + 4, ry = my + 5;
+    ctx.fillStyle = "#050608";                       // negrura del calabozo
+    ctx.fillRect(rx, ry, rw, rh);
+    // barrotes verticales de metal
+    ctx.strokeStyle = "#c2c7cf"; ctx.lineWidth = 2;
+    const barras = 4;
+    for (let i = 1; i <= barras; i++) {
+      const bx = rx + (rw * i) / (barras + 1);
+      ctx.beginPath(); ctx.moveTo(bx, ry + 1); ctx.lineTo(bx, ry + rh - 1); ctx.stroke();
+    }
+    // barrote horizontal + marco del ventanuco
+    ctx.beginPath(); ctx.moveTo(rx, ry + rh / 2); ctx.lineTo(rx + rw, ry + rh / 2); ctx.stroke();
+    ctx.strokeStyle = "#7c828c"; ctx.lineWidth = 2; ctx.strokeRect(rx, ry, rw, rh);
+
+    // 4) Refuerzos de hierro (dos bandas horizontales) y remaches
+    ctx.fillStyle = "#6b7079";
+    const banda = (by) => {
+      ctx.fillRect(mx, by, mw, 4);
+      ctx.fillStyle = "#3a3e45";
+      for (let i = 0; i < 4; i++) ctx.fillRect(mx + 3 + i * (mw / 4), by + 1, 2, 2);   // remaches
+      ctx.fillStyle = "#6b7079";
+    };
+    banda(my + mh * 0.6);
+    banda(my + mh * 0.82);
+
+    // 5) Tirador de hierro
+    ctx.fillStyle = "#3a3e45";
+    ctx.beginPath(); ctx.arc(x + w - 11, y + h * 0.62, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#20242a"; ctx.fillRect(x + w - 13, y + h * 0.62, 4, 8);
   }
 
   _dibujarFumador(ctx, x, y) {

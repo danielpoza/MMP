@@ -56,6 +56,12 @@ La guia completa con el prompt de cada uno esta en:
                                           fondo magenta
   tienda_interior.png      960 x 540      Interior de la tienda de picos
                                           (fondo lleno, SIN magenta)
+
+  puerta.png               48 x 96        Puerta escondida del calabozo
+                                          (isla del comercio): marco
+                                          plateado, madera oscura de pino
+                                          y rejillas de metal. Fondo
+                                          magenta #FF00FF
 ----------------------------------------------------------------
 
 CONSEJOS RAPIDOS (mas detalle en docs/inventario-sprites.md):

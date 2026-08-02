@@ -95,10 +95,41 @@ const DIALOGO_FUMADOR = [
   ],
 ];
 
-// Lo que dice Seok al intentar abrir la puerta escondida del calabozo (cerrada con llave)
-const DIALOGO_PUERTA_CERRADA = [
+// Lo que dice Seok al intentar abrir la puerta escondida del calabozo.
+// El texto va cambiando según lo que ha averiguado (ver _guionPuerta).
+const DIALOGO_PUERTA_TIENDAS = [
   [
-    { quien: "Seok", texto: "Está cerrada, buscaré la llave." },
+    { quien: "Seok", texto: "Está cerrada, miraré en las tiendas por si alguno tiene la llave." },
+  ],
+];
+const DIALOGO_PUERTA_ANCIANO = [
+  [
+    { quien: "Seok", texto: "Debería preguntarle al anciano." },
+  ],
+];
+const DIALOGO_PUERTA_MANZANA = [
+  [
+    { quien: "Seok", texto: "Debería mirar esa manzana misteriosa." },
+  ],
+];
+
+// Conversación con el anciano sobre la llave (tras mirar en todas las tiendas)
+const DIALOGO_ANCIANO_LLAVE = [
+  [
+    { quien: "Anciano", texto: "¿Ya tienes el mapa? Qué rápido." },
+    { quien: "Seok", texto: "Necesito tu ayuda. He encontrado un calabozo y estoy seguro de que más allá estará la bóveda, pero no he encontrado la llave. Miré por muchas tiendas y encontré cosas muy extrañas." },
+  ],
+  [
+    { quien: "Anciano", texto: "¿Qué clase de cosas?" },
+    { quien: "Seok", texto: "Había uno que vendía puros, otro que vendía una manzana misteriosa GRATIS, y otro que vendía la carne por 15 reales y casi no daba energía." },
+  ],
+  [
+    { quien: "Anciano", texto: "Qué interesante. ¿Cómo era la manzana esa?" },
+    { quien: "Seok", texto: "El tipo parecía muy apresurado por venderla." },
+  ],
+  [
+    { quien: "Anciano", texto: "No creo que haya una llave como tal, pero deberías mirar esa manzana." },
+    { quien: "Seok", texto: "De acuerdo." },
   ],
 ];
 
@@ -160,6 +191,8 @@ class Game {
     this.puestoComCerca = null; // puesto del comercio cercano (o null)
     this.puertaCerca = false; // ¿el jugador está junto a la puerta escondida?
     this.mirandoCalabozo = false; // ¿está mirando el calabozo por las rejillas?
+    this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
+    this.ancianoLlaveHablado = false; // ¿ya ha hablado con el anciano sobre la llave?
     this.tiendaComercio = null; // tipo de tienda abierta (fruta/verdura/pollo/minerales)
     this.ventaSel = {};       // minerales seleccionados para vender
     this._comBotones = [];    // botones de la tienda del comercio
@@ -194,7 +227,19 @@ class Game {
   _misionAnciano() { return this.misiones.find((m) => m.id === "hierro") || null; }
   // La casa se bloquea si hay una misión del anciano (hierro o bóveda) sin terminar
   _ancianoBloqueado() {
+    // Excepción: si ya has mirado en todas las tiendas, el anciano te recibe
+    // para hablar de la llave (aunque la misión de la bóveda siga a medias).
+    if (this._puedeHablarLlave()) return false;
     return this.misiones.some((m) => (m.id === "hierro" || m.id === "boveda") && !m.completada);
+  }
+  // ¿Están ya visitadas las 5 tiendas del comercio (incluida la del fumador)?
+  _todasTiendasVistas() {
+    return ["fruta", "verdura", "pollo", "minerales", "puros"].every((t) => this.tiendasVistas[t]);
+  }
+  // ¿Es el momento de ir a hablar con el anciano sobre la llave?
+  _puedeHablarLlave() {
+    const boveda = this.misiones.find((m) => m.id === "boveda");
+    return !!boveda && !boveda.completada && this._todasTiendasVistas() && !this.ancianoLlaveHablado;
   }
   _asignarMisionBoveda() {
     if (this.misiones.find((m) => m.id === "boveda")) return;
@@ -239,6 +284,8 @@ class Game {
     this.inventarioAbierto = false;
     this.mapaAbierto = false;
     this.fumadorHablado = false;
+    this.tiendasVistas = {};
+    this.ancianoLlaveHablado = false;
     this.reloj = 0;
     this.estado = "jugando";
     document.getElementById("hint")?.classList.remove("oculto");
@@ -258,6 +305,8 @@ class Game {
         inventario: p.inventario,
       },
       misiones: JSON.parse(JSON.stringify(this.misiones)),
+      tiendasVistas: { ...this.tiendasVistas },
+      ancianoLlaveHablado: this.ancianoLlaveHablado,
     });
   }
 
@@ -271,6 +320,8 @@ class Game {
     p.picos = s.picos || {}; p.picoEquipado = s.picoEquipado || null; p.picoDurabilidad = s.picoDurabilidad || 0;
     p.inventario = s.inventario || {};
     this.misiones = d.misiones || [];
+    this.tiendasVistas = d.tiendasVistas || {};
+    this.ancianoLlaveHablado = !!d.ancianoLlaveHablado;
     this.reloj = d.reloj || 0;
     this.cam.seguir(p, this.world.pixelWidth, this.world.pixelHeight);
     this.estado = "jugando";
@@ -295,6 +346,9 @@ class Game {
     } else if (!boveda) {
       // Hierro cumplido y aún no ha oído lo del mapa: segundo diálogo
       this.dialogo = { guion: DIALOGO_ANCIANO_2, i: 0, alTerminar: "fin2" };
+    } else if (this._puedeHablarLlave()) {
+      // Has mirado en todas las tiendas: conversación sobre la llave y la manzana
+      this.dialogo = { guion: DIALOGO_ANCIANO_LLAVE, i: 0, alTerminar: "llaveHablado" };
     } else {
       // Misión de la bóveda a medias: te echa
       this.dialogo = { guion: DIALOGO_EXPULSION, i: 0, alTerminar: "expulsar" };
@@ -356,7 +410,14 @@ class Game {
   _entrarTiendaComercio(tipo) {
     this.tiendaComercio = tipo;
     this.ventaSel = {};
+    this.tiendasVistas[tipo] = true;   // apuntamos que ya hemos mirado esta tienda
     this.estado = "tienda_comercio";
+  }
+  // Elige qué dice Seok al intentar abrir la puerta, según lo que ha averiguado
+  _guionPuerta() {
+    if (!this._todasTiendasVistas()) return DIALOGO_PUERTA_TIENDAS;   // aún le faltan tiendas
+    if (!this.ancianoLlaveHablado)   return DIALOGO_PUERTA_ANCIANO;   // ya toca ir al anciano
+    return DIALOGO_PUERTA_MANZANA;                                    // el anciano le habló de la manzana
   }
   _comAviso(txt) { this.comMsg = txt; this.comMsgT = 2.4; }
 
@@ -457,6 +518,9 @@ class Game {
     } else if (accion === "puros") {
       this.fumadorHablado = true;
       this._entrarTiendaComercio("puros");   // el fumador te "vende" puros
+    } else if (accion === "llaveHablado") {
+      this.ancianoLlaveHablado = true;       // ya sabe que debe mirar la manzana
+      this._salirCasa();
     }
   }
 
@@ -581,7 +645,7 @@ class Game {
         if (this.puestoComCerca && Input.pressed["e"]) { this._entrarTiendaComercio(this.puestoComCerca.tipo); break; }
         if (this.fumadorCerca && Input.pressed["e"]) { this._entrarTiendaComercio("puros"); break; }
         // Puerta escondida: E intenta abrir (cerrada con llave), F mira por las rejillas
-        if (this.puertaCerca && Input.pressed["e"]) { this.dialogo = { guion: DIALOGO_PUERTA_CERRADA, i: 0, alTerminar: "nada" }; break; }
+        if (this.puertaCerca && Input.pressed["e"]) { this.dialogo = { guion: this._guionPuerta(), i: 0, alTerminar: "nada" }; break; }
         if (this.puertaCerca && Input.pressed["f"]) { this.mirandoCalabozo = true; break; }
         if (Input.pressed["escape"]) this._volverDeComercio();   // Esc -> volver
         break;

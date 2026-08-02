@@ -119,10 +119,17 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
 
 ## Lo que está PENDIENTE (ideas para seguir)
 - ✅ **Puerta escondida (hecha):** se ve bien (marco plateado, madera de pino y
-  rejillas). Al acercarte: **Abrir (E)** → *"Está cerrada, buscaré la llave."*;
-  **Mirar (F)** → ves el **calabozo oscuro y siniestro** (cadenas, esqueleto,
-  cama de piedra). Falta que la imagen `calabozo.png` la generes con la IA.
-- La **llave** de la puerta (dónde se consigue y cómo abre el calabozo).
+  rejillas). **Mirar (F)** → ves el **calabozo oscuro y siniestro** (cadenas,
+  esqueleto, cama de piedra). Falta que la imagen `calabozo.png` la generes con la IA.
+- ✅ **La "llave" (en curso):** no es una llave normal, es un misterio por pasos.
+  **Abrir (E)** va cambiando: primero *"Está cerrada, miraré en las tiendas por si
+  alguno tiene la llave."*; cuando **miras en las 5 tiendas** (incluida la del
+  fumador) pasa a *"Debería preguntarle al anciano."* y **la casa del anciano se
+  abre**. Al entrar, el anciano te habla (diálogo de 4 partes) y te dice que
+  **mires la manzana misteriosa**. Después, Abrir dice *"Debería mirar esa manzana
+  misteriosa."*
+  - **Falta:** que la **manzana misteriosa** (gratis en una tienda) sirva para
+    **abrir de verdad** la puerta del calabozo.
 - La **bóveda** de verdad (que da el mapa del tesoro y completa la misión).
 - **Enemigos y combate** (probablemente en otra isla).
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,

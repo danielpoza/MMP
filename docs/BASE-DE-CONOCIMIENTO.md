@@ -190,12 +190,28 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
 
 ## 10. PENDIENTE (próximos pasos)
 - ✅ **Puerta escondida (hecho):** al acercarse aparecen dos botones, **Abrir (E)**
-  y **Mirar (F)**. Abrir muestra el diálogo *"Está cerrada, buscaré la llave."*
-  (`DIALOGO_PUERTA_CERRADA`). Mirar abre la vista del **calabozo** a pantalla
-  completa (`game.mirandoCalabozo`, `_dibujarCalabozo`/`_calabozoReserva`,
-  asset `calabozo.png`), con rejillas por delante, cadenas, un esqueleto al fondo
-  y una cama de piedra. Se cierra con **Esc** o **F**.
-- La **llave** de la puerta (dónde se consigue y cómo abre el calabozo).
+  y **Mirar (F)**. Mirar abre la vista del **calabozo** a pantalla completa
+  (`game.mirandoCalabozo`, `_dibujarCalabozo`/`_calabozoReserva`, asset
+  `calabozo.png`), con rejillas por delante, cadenas, un esqueleto al fondo y una
+  cama de piedra. Se cierra con **Esc** o **F**.
+- ✅ **La "llave" (en curso):** no es una llave física, es una cadena de pistas.
+  El texto de **Abrir (E)** cambia según el progreso (`_guionPuerta`):
+  1. Antes de mirar tiendas → *"Está cerrada, miraré en las tiendas por si alguno
+     tiene la llave."* (`DIALOGO_PUERTA_TIENDAS`).
+  2. Tras visitar **las 5 tiendas** del comercio (fruta/verdura/pollo/minerales/
+     puros; se registran en `game.tiendasVistas` desde `_entrarTiendaComercio`,
+     comprobadas con `_todasTiendasVistas`) → *"Debería preguntarle al anciano."*
+     (`DIALOGO_PUERTA_ANCIANO`). En ese momento la casa del anciano se **abre**
+     aunque la misión "boveda" siga a medias (`_puedeHablarLlave` hace que
+     `_ancianoBloqueado` devuelva false).
+  3. Al entrar en la casa → **`DIALOGO_ANCIANO_LLAVE`** (4 partes; `alTerminar:
+     "llaveHablado"` pone `game.ancianoLlaveHablado=true` y sale de la casa). El
+     anciano sugiere mirar la **manzana misteriosa**.
+  4. Después, Abrir (E) dice *"Debería mirar esa manzana misteriosa."*
+     (`DIALOGO_PUERTA_MANZANA`). `tiendasVistas` y `ancianoLlaveHablado` se
+     guardan/cargan en la partida.
+  - **PENDIENTE:** que la **manzana misteriosa** (se compra GRATIS en una tienda,
+    `misteriosa:true`) sirva para **abrir de verdad** la puerta del calabozo.
 - La **bóveda** real (da el mapa del tesoro y completa la misión "boveda").
 - **Enemigos y combate** (probablemente en otra isla).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/

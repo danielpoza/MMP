@@ -275,6 +275,7 @@ dibujan por código (no necesitan imagen). Estos tres sí:
 | # | Archivo (`assets/…`) | Tipo | Tamaño final | Contenido |
 |---|---|---|---|---|
 | A17 | `puerta.png` | Objeto | 48×96 | puerta escondida del calabozo (pared derecha de la plaza) |
+| A18 | `calabozo.png` | Fondo | 960×540 | vista del calabozo al mirar por las rejillas (tecla F) |
 
 ### A17 · Puerta escondida del calabozo — `puerta.png`
 > Pixel art moderno y nítido, sin difuminado, sin texto. Una **puerta medieval
@@ -300,3 +301,26 @@ dibujan por código (no necesitan imagen). Estos tres sí:
 > 💡 Ya está dibujada por código (dibujo de reserva), así que el juego la muestra
 > aunque falte este PNG. Cuando guardes `puerta.png` en `assets/`, el juego usará
 > tu imagen automáticamente.
+
+### A18 · Vista del calabozo (por las rejillas) — `calabozo.png`
+> Ilustración apaisada (16:9, 960×540) de pixel art moderno y oscuro, sin texto.
+> Vista en **primera persona mirando por las rejillas** de una puerta hacia el
+> interior de un **calabozo medieval a oscuras**. **Delante, en primer plano,
+> unos barrotes de hierro verticales** (las rejillas) que cruzan toda la imagen y
+> dejan ver poco (la escena se ve entrecortada entre los barrotes). Del **techo
+> cuelgan cadenas oxidadas con grilletes**. **Al fondo del todo, casi tragado por
+> la oscuridad, un esqueleto** del que solo se ve una parte (el cráneo y las
+> costillas) porque el resto queda en negro. Pegada a la pared de la izquierda,
+> una **cama/losa de piedra sujeta a la pared con cadenas**. Ambiente lúgubre y
+> siniestro, luz fría muy tenue, mucho negro. **Fondo lleno (SIN magenta).**
+> *(EN: Wide 16:9 dark modern pixel-art illustration, no text. First-person view
+> looking THROUGH the iron bars of a door into a dark medieval dungeon. In the
+> foreground, vertical iron bars crossing the whole image, so the scene is only
+> partly visible between them. Rusty chains with shackles hang from the ceiling.
+> At the very back, almost swallowed by darkness, a skeleton with only part of it
+> visible (skull and ribs), the rest in black. Against the left wall, a stone bed/
+> slab held to the wall by chains. Gloomy, sinister mood, faint cold light, lots
+> of black. Full background, NO magenta.)*
+>
+> 💡 Ya está dibujado por código (dibujo de reserva). Cuando guardes
+> `calabozo.png` en `assets/`, el juego usará tu imagen automáticamente.

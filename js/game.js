@@ -95,6 +95,13 @@ const DIALOGO_FUMADOR = [
   ],
 ];
 
+// Lo que dice Seok al intentar abrir la puerta escondida del calabozo (cerrada con llave)
+const DIALOGO_PUERTA_CERRADA = [
+  [
+    { quien: "Seok", texto: "Está cerrada, buscaré la llave." },
+  ],
+];
+
 // Lo que dice el anciano si vuelves a la casa sin haber terminado la misión
 const DIALOGO_EXPULSION = [
   [
@@ -151,6 +158,8 @@ class Game {
     this.islaComercio = null;  // escenario de la isla del comercio
     this._mapaIslas = [];     // zonas clicables de las islas en el mapa
     this.puestoComCerca = null; // puesto del comercio cercano (o null)
+    this.puertaCerca = false; // ¿el jugador está junto a la puerta escondida?
+    this.mirandoCalabozo = false; // ¿está mirando el calabozo por las rejillas?
     this.tiendaComercio = null; // tipo de tienda abierta (fruta/verdura/pollo/minerales)
     this.ventaSel = {};       // minerales seleccionados para vender
     this._comBotones = [];    // botones de la tienda del comercio
@@ -551,6 +560,11 @@ class Game {
       case "isla_comercio": {
         this.islaComercio.update(dt);
         if (this.mensajeT > 0) this.mensajeT -= dt;
+        // Estamos mirando el calabozo por las rejillas: Esc o F cierran esa vista
+        if (this.mirandoCalabozo) {
+          if (Input.pressed["escape"] || Input.pressed["f"]) this.mirandoCalabozo = false;
+          break;
+        }
         // Diálogo (p. ej. el del fumador): Enter avanza, no te mueves
         if (this.dialogo) {
           if (Input.pressed["enter"] || Input.pressed[" "]) {
@@ -563,8 +577,12 @@ class Game {
         this.cam.seguir(this.player, this.islaComercio.pixelWidth, this.islaComercio.pixelHeight);
         this.puestoComCerca = this._puestoComercioCerca();
         this.fumadorCerca = this._cercaFumador();
+        this.puertaCerca = this.islaComercio.cercaDePuerta(this.player);
         if (this.puestoComCerca && Input.pressed["e"]) { this._entrarTiendaComercio(this.puestoComCerca.tipo); break; }
         if (this.fumadorCerca && Input.pressed["e"]) { this._entrarTiendaComercio("puros"); break; }
+        // Puerta escondida: E intenta abrir (cerrada con llave), F mira por las rejillas
+        if (this.puertaCerca && Input.pressed["e"]) { this.dialogo = { guion: DIALOGO_PUERTA_CERRADA, i: 0, alTerminar: "nada" }; break; }
+        if (this.puertaCerca && Input.pressed["f"]) { this.mirandoCalabozo = true; break; }
         if (Input.pressed["escape"]) this._volverDeComercio();   // Esc -> volver
         break;
       }
@@ -623,6 +641,7 @@ class Game {
       this.islaComercio.drawObjects(ctx, this.cam, this.player);
       if (!this.dialogo && this.puestoComCerca) this._hintPuestoComercio(ctx, this.puestoComCerca);
       if (!this.dialogo && this.fumadorCerca && this.fumadorHablado) this._hintFumador(ctx);
+      if (!this.dialogo && this.puertaCerca && !this.mirandoCalabozo) this._hintPuerta(ctx);
       this._hud(ctx);
       ctx.fillStyle = "rgba(230,220,200,.85)"; ctx.font = "14px Georgia, serif"; ctx.textAlign = "center";
       ctx.fillText("Esc: volver a la isla del anciano", this.ancho / 2, this.alto - 14);
@@ -630,6 +649,7 @@ class Game {
       if (this.mensajeT > 0) this._toast(ctx, this.mensaje);
       if (this.dialogo) this._dibujarDialogo(ctx);
       if (this.panelMisiones) this._dibujarPanelMisiones(ctx);
+      if (this.mirandoCalabozo) this._dibujarCalabozo(ctx);   // vista por las rejillas (encima de todo)
     } else if (this.estado === "tienda_comercio") {
       this._dibujarTiendaComercio(ctx);
     }
@@ -1034,6 +1054,126 @@ class Game {
     ctx.fillStyle = "#5b3b20"; ctx.font = "bold 17px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("comprar (E)", cx, y + h / 2 + 1);
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Aviso junto a la puerta escondida: dos botones apilados "Abrir (E)" y "Mirar (F)"
+  _hintPuerta(ctx) {
+    const d = this.islaComercio.puerta;
+    const cx = Math.round(d.x + d.w / 2 - this.cam.x);
+    const bob = Math.sin(this.islaComercio.time * 3) * 2;
+    const w = 108, h = 28;
+    const x = cx - w / 2;
+    const yBase = Math.round(d.y - this.cam.y - 8) + bob;   // justo encima de la puerta
+    // Dibuja un botón de pergamino con su texto
+    const pill = (y, txt) => {
+      ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+      ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+      ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(txt, cx, y + h / 2 + 1);
+    };
+    ctx.save();
+    pill(yBase - h * 2 - 4, "Abrir (E)");   // arriba
+    pill(yBase - h, "Mirar (F)");            // debajo
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Vista del calabozo por las rejillas (pantalla completa). Si falta el PNG, se dibuja por código.
+  _dibujarCalabozo(ctx) {
+    const W = this.ancho, H = this.alto;
+    if (Assets.listo("calabozo")) {
+      ctx.drawImage(Assets.el("calabozo"), 0, 0, W, H);
+    } else {
+      this._calabozoReserva(ctx, W, H);
+    }
+    // Pie con la ayuda para cerrar
+    ctx.fillStyle = "rgba(235,225,205,.9)"; ctx.font = "italic 15px Georgia, serif"; ctx.textAlign = "center";
+    ctx.fillText("Miras por las rejillas...   ·   Esc o F para apartarte", W / 2, H - 18);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Dibujo de reserva del calabozo: oscuro, con cadenas, un esqueleto al fondo,
+  // una cama de piedra sujeta por cadenas y las rejillas por delante.
+  _calabozoReserva(ctx, W, H) {
+    // Fondo muy oscuro con un poco de luz fría al fondo
+    ctx.fillStyle = "#07080a"; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W / 2, H * 0.42, 40, W / 2, H * 0.42, W * 0.6);
+    g.addColorStop(0, "rgba(40,48,60,.55)"); g.addColorStop(1, "rgba(5,6,8,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    // Suelo de piedra al fondo (una franja algo más clara)
+    ctx.fillStyle = "#14161b"; ctx.fillRect(0, H * 0.62, W, H * 0.38);
+    ctx.strokeStyle = "rgba(70,78,92,.18)"; ctx.lineWidth = 1;
+    for (let y = H * 0.66; y < H; y += 26) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    // Cadenas colgando del techo
+    const cadena = (cx, largo) => {
+      ctx.strokeStyle = "rgba(150,155,165,.55)"; ctx.lineWidth = 3;
+      for (let y = 0; y < largo; y += 10) {
+        ctx.beginPath(); ctx.ellipse(cx, y, 3.2, 5, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+      // grillete al final
+      ctx.strokeStyle = "rgba(170,175,185,.6)"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, largo + 6, 7, 0, Math.PI * 2); ctx.stroke();
+    };
+    cadena(W * 0.30, H * 0.30);
+    cadena(W * 0.42, H * 0.22);
+
+    // Esqueleto al fondo, medio en penumbra (solo se ve una parte)
+    const ex = W * 0.66, ey = H * 0.40;
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = "#c9c6ba";                       // hueso pálido
+    // cráneo
+    ctx.beginPath(); ctx.arc(ex, ey, 15, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#0b0c0e";                        // cuencas
+    ctx.beginPath(); ctx.arc(ex - 5, ey - 2, 3.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(ex + 5, ey - 2, 3.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(ex - 2, ey + 4, 4, 6);              // nariz
+    // caja torácica (costillas)
+    ctx.strokeStyle = "#b7b4a8"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(ex, ey + 15); ctx.lineTo(ex, ey + 55); ctx.stroke();   // columna
+    for (let i = 0; i < 4; i++) {
+      const ry = ey + 22 + i * 9;
+      ctx.beginPath(); ctx.moveTo(ex, ry); ctx.quadraticCurveTo(ex - 16, ry + 4, ex - 14, ry + 10); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex, ry); ctx.quadraticCurveTo(ex + 16, ry + 4, ex + 14, ry + 10); ctx.stroke();
+    }
+    ctx.restore();
+    // Oscuridad que se lo va comiendo hacia abajo (solo se ve la parte de arriba)
+    const sk = ctx.createLinearGradient(0, ey + 30, 0, ey + 90);
+    sk.addColorStop(0, "rgba(7,8,10,0)"); sk.addColorStop(1, "rgba(7,8,10,1)");
+    ctx.fillStyle = sk; ctx.fillRect(ex - 40, ey + 30, 80, 70);
+
+    // Cama de piedra pegada a la pared izquierda, sujeta por cadenas
+    const bx = W * 0.10, by = H * 0.50, bw = W * 0.20, bh = 26;
+    ctx.fillStyle = "#2b2f37"; ctx.fillRect(bx, by, bw, bh);              // losa
+    ctx.fillStyle = "#3a3f49"; ctx.fillRect(bx, by, bw, 6);              // canto iluminado
+    ctx.strokeStyle = "#1a1d22"; ctx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) { const lx = bx + (bw * i) / 4; ctx.beginPath(); ctx.moveTo(lx, by); ctx.lineTo(lx, by + bh); ctx.stroke(); }
+    // cadenas que la sujetan a la pared (arriba)
+    ctx.strokeStyle = "rgba(150,155,165,.5)"; ctx.lineWidth = 3;
+    for (const lx of [bx + 8, bx + bw - 8]) {
+      for (let y = by; y > by - 42; y -= 9) { ctx.beginPath(); ctx.ellipse(lx, y, 2.6, 4, 0, 0, Math.PI * 2); ctx.stroke(); }
+    }
+
+    // Viñeta oscura en los bordes
+    const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.75);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.85)");
+    ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+
+    // REJILLAS por delante (estás mirando a través de ellas): barrotes verticales + horizontales
+    ctx.fillStyle = "rgba(8,9,11,.85)";
+    const nb = 7;
+    for (let i = 1; i <= nb; i++) {
+      const bx2 = (W * i) / (nb + 1) - 6;
+      ctx.fillRect(bx2, 0, 12, H);
+      ctx.fillStyle = "rgba(90,96,106,.35)"; ctx.fillRect(bx2 + 2, 0, 2, H);   // brillo del barrote
+      ctx.fillStyle = "rgba(8,9,11,.85)";
+    }
+    for (const hy of [H * 0.28, H * 0.66]) {
+      ctx.fillRect(0, hy - 6, W, 12);
+      ctx.fillStyle = "rgba(90,96,106,.35)"; ctx.fillRect(0, hy - 4, W, 2);
+      ctx.fillStyle = "rgba(8,9,11,.85)";
+    }
   }
 
   // Pantalla de una tienda del comercio (comida o venta de minerales)

@@ -76,7 +76,7 @@ Documentos hermanos:
 | `interior.js` | Interior de la casa roja (`Interior`, escena del anciano). |
 | `player.js` | El caballero Seok (`Player`): movimiento, dibujo, stats, inventarios. |
 | `camera.js` | `Camera` que sigue al jugador. |
-| `input.js` | `Input`: teclado. `Input.pressed[...]` para pulsaciones de una vez. Acciones registradas: enter, escape, arrowup, arrowdown, espacio, "e", "p". |
+| `input.js` | `Input`: teclado. `Input.pressed[...]` para pulsaciones de una vez. Acciones registradas: enter, escape, arrowup, arrowdown, espacio, "e", "f", "p". |
 | `assets.js` | `Assets`: carga PNG y quita el magenta (chroma-key). |
 | `guardado.js` | `Guardado`: guardar/cargar en localStorage. |
 | `ui.js` | `TitleScreen` (título + menú) y `ByeScreen`. |
@@ -176,7 +176,8 @@ inventario, comida) + misiones + reloj; `_cargarPartida` recrea el mundo y aplic
 ## 8. Controles
 Mover: flechas o WASD · Interactuar (entrar/comprar): **E** · Picar mena: **clic
 izquierdo** · Mochila: **P** · Diario de misiones: clic en el pergamino ·
-Menú/volver: **Esc** · Avanzar diálogo: **Enter**.
+Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escondida:
+**E** = abrir (está cerrada), **F** = mirar por las rejillas (cierra con Esc o F).
 
 ## 9. La historia y guiones ya escritos
 - **1er diálogo** (anciano, 5 partes): pregunta quién eres; Seok se presenta;
@@ -188,13 +189,18 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter**.
 - **Fumador** (3 partes): "¡Eh, tú!"… te acaba colando la tienda de puros.
 
 ## 10. PENDIENTE (próximos pasos)
-- **Puerta escondida**: cerrada **con llave**; tendrá **rejillas** por las que se
-  ve, pero NO la bóveda: se verá un **calabozo oscuro y siniestro**.
+- ✅ **Puerta escondida (hecho):** al acercarse aparecen dos botones, **Abrir (E)**
+  y **Mirar (F)**. Abrir muestra el diálogo *"Está cerrada, buscaré la llave."*
+  (`DIALOGO_PUERTA_CERRADA`). Mirar abre la vista del **calabozo** a pantalla
+  completa (`game.mirandoCalabozo`, `_dibujarCalabozo`/`_calabozoReserva`,
+  asset `calabozo.png`), con rejillas por delante, cadenas, un esqueleto al fondo
+  y una cama de piedra. Se cierra con **Esc** o **F**.
+- La **llave** de la puerta (dónde se consigue y cómo abre el calabozo).
 - La **bóveda** real (da el mapa del tesoro y completa la misión "boveda").
-- La **llave** de la puerta.
 - **Enemigos y combate** (probablemente en otra isla).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
-  amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`.
+  amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,
+  `puerta.png`, `calabozo.png`.
 
 ## 11. Para continuar en otro ordenador
 1. Instalar **Node.js**.

@@ -98,7 +98,12 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
 ### Isla del comercio (`isla_comercio.js`)
 - Entras por un **callejón** (con el **fumador**) que sube a una **plaza** con 4
   puestos: **fruta y verdura** a la izquierda; **pollo y minerales** a la derecha.
-- **Puerta escondida** en la pared derecha (entre pollo y minerales).
+- **Puerta escondida** en la pared derecha (entre pollo y minerales): se ve bien,
+  con marco plateado, madera de pino y rejillas de metal. Al acercarte aparecen
+  dos botones: **Abrir (E)** y **Mirar (F)**.
+  - **Abrir (E):** está cerrada con llave → *"Está cerrada, buscaré la llave."*
+  - **Mirar (F):** te asomas por las rejillas y ves el **calabozo** (oscuro, con
+    cadenas, un esqueleto al fondo y una cama de piedra). Se cierra con Esc o F.
 - **El fumador** te habla al entrar y te "vende" **puros** (5r, −10 de vida).
 - **Tiendas**: comprar comida (va a la mochila) y **vender minerales** (hierro 5r,
   oro 7r, amatista 15r, diamante 21r).
@@ -113,13 +118,16 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
 ---
 
 ## Lo que está PENDIENTE (ideas para seguir)
-- **Puerta escondida**: estará **cerrada con llave**; tendrá **rejillas** por las
-  que se ve, pero NO la bóveda: se verá un **calabozo oscuro y siniestro**.
+- ✅ **Puerta escondida (hecha):** se ve bien (marco plateado, madera de pino y
+  rejillas). Al acercarte: **Abrir (E)** → *"Está cerrada, buscaré la llave."*;
+  **Mirar (F)** → ves el **calabozo oscuro y siniestro** (cadenas, esqueleto,
+  cama de piedra). Falta que la imagen `calabozo.png` la generes con la IA.
+- La **llave** de la puerta (dónde se consigue y cómo abre el calabozo).
 - La **bóveda** de verdad (que da el mapa del tesoro y completa la misión).
-- La **llave** de la puerta.
 - **Enemigos y combate** (probablemente en otra isla).
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
-  `int_fruta/verdura/pollo/minerales.png` (mientras tanto usan dibujo de reserva).
+  `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
+  (mientras tanto usan dibujo de reserva).
 
 ---
 

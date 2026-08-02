@@ -31,8 +31,8 @@ const Input = {
     if (k === "arrowleft"  || k === "a") this.left = valor;
     if (k === "arrowright" || k === "d") this.right = valor;
 
-    // Acciones (Enter, Escape, flechas para menús, E interactuar, P inventario)
-    const acciones = ["enter", "escape", "arrowup", "arrowdown", " ", "e", "p"];
+    // Acciones (Enter, Escape, flechas para menús, E interactuar, F mirar, P inventario)
+    const acciones = ["enter", "escape", "arrowup", "arrowdown", " ", "e", "f", "p"];
     if (acciones.includes(k)) {
       // "pressed" solo en el instante de pulsar, no mientras se mantiene
       if (valor && !this._down[k]) this.pressed[k] = true;

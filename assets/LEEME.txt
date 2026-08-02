@@ -62,6 +62,12 @@ La guia completa con el prompt de cada uno esta en:
                                           plateado, madera oscura de pino
                                           y rejillas de metal. Fondo
                                           magenta #FF00FF
+
+  calabozo.png             960 x 540      Vista del calabozo al mirar por
+                                          las rejillas (tecla F): oscuro,
+                                          cadenas, esqueleto al fondo y
+                                          cama de piedra. Fondo lleno,
+                                          SIN magenta
 ----------------------------------------------------------------
 
 CONSEJOS RAPIDOS (mas detalle en docs/inventario-sprites.md):

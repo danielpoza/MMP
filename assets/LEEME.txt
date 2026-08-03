@@ -73,6 +73,11 @@ La guia completa con el prompt de cada uno esta en:
                                           abierta hacia dentro (hueco
                                           oscuro al fondo). Fondo magenta
                                           #FF00FF
+
+  prision.png              2752 x 1536    Mapa completo de la PRISION visto
+                                          desde arriba (calabozo, pasillo,
+                                          celda, jardin, comedor, celda con
+                                          llave y boveda). Fondo lleno, 16:9
 ----------------------------------------------------------------
   ENEMIGOS - ESQUELETOS (maldicion de la manzana). Fondo magenta.
   Ojos verde claro cuando estan "encendidos". Ver prompts en

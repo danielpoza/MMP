@@ -146,7 +146,13 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
   - **Falta:** los esqueletos con **arma** (maza/espada/arco + flechas) en puntos
     concretos, qué pasa cuando **tu vida llega a 0**, y los dibujos (PNG) de los
     esqueletos.
-- La **bóveda** de verdad dentro del calabozo (da el mapa del tesoro y completa la misión).
+- ✅ **La prisión — el mapa (hecho):** al entrar por la puerta tumbada, ahora se ve
+  la **prisión entera** (dibujo `prision.png`): calabozo de entrada, pasillo, celda,
+  jardín, comedor, celda-regalo y la bóveda al fondo. Se puede **caminar** por todas
+  las salas (paredes puestas a mano; se afinarán). Se sale por la puerta tumbada.
+  - **Falta:** la verja del pasillo y romper la pared agrietada con la manzana para
+    ir al jardín; el arbusto con la llave y la celda-regalo; repartir los esqueletos;
+    y la **bóveda** con el mapa del tesoro (fin de la misión).
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
   `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
   (mientras tanto usan dibujo de reserva).

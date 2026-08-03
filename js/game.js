@@ -418,7 +418,7 @@ class Game {
     this.player.y = this.calabozo.inicio.y;
     this.player.dir = "arriba";
     this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
-    this.mensaje = "El calabozo..."; this.mensajeT = 2.2;
+    this.mensaje = "La prisión..."; this.mensajeT = 2.2;
     this.estado = "calabozo";
   }
   // Salir del calabozo: volver a la plaza, junto a la puerta
@@ -833,9 +833,11 @@ class Game {
       if (this.player.atacandoT > 0) this._dibujarTajo(ctx);      // el espadazo
       if (this.salidaCerca) this._hintSalidaCalabozo(ctx);
       this._hud(ctx);
-      // Contador de esqueletos
-      ctx.fillStyle = "rgba(230,220,200,.9)"; ctx.font = "bold 14px Georgia, serif"; ctx.textAlign = "right";
-      ctx.fillText("Esqueletos: " + this.calabozo.enemigosVivos(), this.ancho - 14, 64);
+      // Contador de esqueletos (si hay)
+      if (this.calabozo.enemigos.length) {
+        ctx.fillStyle = "rgba(230,220,200,.9)"; ctx.font = "bold 14px Georgia, serif"; ctx.textAlign = "right";
+        ctx.fillText("Esqueletos: " + this.calabozo.enemigosVivos(), this.ancho - 14, 64);
+      }
       ctx.fillStyle = "rgba(230,220,200,.85)"; ctx.font = "14px Georgia, serif"; ctx.textAlign = "center";
       ctx.fillText("Atacar: Espacio o clic derecho   ·   Ve hasta la puerta para salir", this.ancho / 2, this.alto - 14);
       ctx.textAlign = "left";

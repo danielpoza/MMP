@@ -74,7 +74,7 @@ Documentos hermanos:
 | `isla_minerales.js` | Isla de los minerales (`IslaMinerales`). |
 | `isla_comercio.js` | Isla del comercio (`IslaComercio`). |
 | `interior.js` | Interior de la casa roja (`Interior`, escena del anciano). |
-| `calabozo.js` | Sala del calabozo (`Calabozo`) tras tumbar la puerta: suelo negro, antorchas, esqueletos. |
+| `calabozo.js` | La PRISIÓN (`Calabozo`) tras tumbar la puerta: usa el mapa `prision.png` como suelo y ZONAS caminables (rectángulos en coords de imagen, `esScala` 0.6) para las colisiones. |
 | `enemigo.js` | Esqueletos (`Esqueleto`): dormido/despierto/muerto, persigue y ataca; barra de vida. |
 | `player.js` | El caballero Seok (`Player`): movimiento, dibujo, stats, inventarios. |
 | `camera.js` | `Camera` que sigue al jugador. |
@@ -273,7 +273,18 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     espada se subió como `esqueleto_espadea_ataque.png`, con typo); el **arquero** +
     **flecha** (`flecha.png`, alcance 10 tiles, daño 25/20/15); la **muerte del
     jugador** (vida a 0 no hace nada aún); y al fondo la **bóveda** con el mapa.
-- La **bóveda** real dentro del calabozo (da el mapa del tesoro y completa "boveda").
+- ✅ **La prisión — mapa y paredes (Trozo 1, hecho):** el estado `calabozo` ahora
+  usa la imagen `prision.png` (mapa dibujado, 2752×1536, escala 0.6) como suelo y un
+  array `zonas` (rectángulos caminables en coords de imagen) para las colisiones
+  (`Calabozo.esCaminable`). Recorrido: calabozo (entrada) → pasillo → celda vacía →
+  jardín → comedor → pasillo de la bóveda → bóveda (+ celda-regalo). Se entra por el
+  calabozo y se sale por la puerta tumbada (`salida`, Salir E). Las zonas son un
+  primer pase (se pueden afinar para que peguen mejor a las paredes).
+  - **PENDIENTE (siguientes trozos):** Trozo 2 = la verja (rejas) que corta el
+    pasillo + la pared agrietada que se rompe con la manzana → agujero al jardín;
+    Trozo 3 = arbusto con la llave + celda-regalo; Trozo 4 = repartir esqueletos y
+    la bóveda (mapa del tesoro que completa "boveda"). Dudas pendientes del usuario:
+    contenido del regalo, dónde van los esqueletos, y qué hay en la bóveda.
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,

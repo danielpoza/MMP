@@ -135,8 +135,12 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
   (E)**: se abre hacia dentro (*"¡PUM! Tumbas la puerta de una patada."*).
   - **Falta (paso siguiente):** los **monstruos** de la maldición (aparecen sobre
     píxeles negros) y el **combate** (golpear más fuerte con la Fuerza).
-- La **bóveda** de verdad detrás de la puerta (da el mapa del tesoro y completa la misión).
-- **Enemigos y combate.**
+- ✅ **El calabozo (hecho):** con la puerta tumbada, junto a ella sale **Entrar (E)**
+  y pasas a una **sala oscura con suelo negro**, paredes de piedra y antorchas. Te
+  mueves por ella y sales con **Esc** o **Salir (E)**. (Aún vacía: los esqueletos van
+  ahora.)
+- La **bóveda** de verdad dentro del calabozo (da el mapa del tesoro y completa la misión).
+- **Enemigos y combate** (los esqueletos de la maldición).
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
   `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
   (mientras tanto usan dibujo de reserva).

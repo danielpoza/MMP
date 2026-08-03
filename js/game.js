@@ -187,10 +187,12 @@ class Game {
     this.cartelCerca = false; // ¿el jugador está junto al cartel?
     this.islaMinerales = null; // escenario de la isla de los minerales (se crea al viajar)
     this.islaComercio = null;  // escenario de la isla del comercio
+    this.calabozo = null;      // sala del calabozo (tras tumbar la puerta)
     this._mapaIslas = [];     // zonas clicables de las islas en el mapa
     this.puestoComCerca = null; // puesto del comercio cercano (o null)
     this.puertaCerca = false; // ¿el jugador está junto a la puerta escondida?
     this.mirandoCalabozo = false; // ¿está mirando el calabozo por las rejillas?
+    this.salidaCerca = false; // ¿el jugador está junto a la salida del calabozo?
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
     this.ancianoLlaveHablado = false; // ¿ya ha hablado con el anciano sobre la llave?
     this.puertaAbierta = false; // ¿se ha tumbado ya la puerta del calabozo?
@@ -280,6 +282,7 @@ class Game {
     this.misiones = [];
     this.islaMinerales = null;
     this.islaComercio = null;
+    this.calabozo = null;
     this.dialogo = null;
     this.panelMisiones = false;
     this.inventarioAbierto = false;
@@ -403,6 +406,28 @@ class Game {
     this.player.y = this._mapaPos.y;
     this.player.dir = this._mapaPos.dir;
     this.estado = "jugando";
+  }
+
+  // Entrar al calabozo por la puerta tumbada
+  _entrarCalabozo() {
+    this._comercioPos = { x: this.player.x, y: this.player.y, dir: this.player.dir };
+    if (!this.calabozo) this.calabozo = new Calabozo();
+    this.player.x = this.calabozo.inicio.x;
+    this.player.y = this.calabozo.inicio.y;
+    this.player.dir = "arriba";
+    this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
+    this.mensaje = "El calabozo..."; this.mensajeT = 2.2;
+    this.estado = "calabozo";
+  }
+  // Salir del calabozo: volver a la plaza, junto a la puerta
+  _salirCalabozo() {
+    if (this._comercioPos) {
+      this.player.x = this._comercioPos.x;
+      this.player.y = this._comercioPos.y;
+      this.player.dir = "izq";
+    }
+    this.cam.seguir(this.player, this.islaComercio.pixelWidth, this.islaComercio.pixelHeight);
+    this.estado = "isla_comercio";
   }
 
   // ---- Tiendas del comercio (comprar comida / vender minerales) ----
@@ -670,7 +695,7 @@ class Game {
         if (this.fumadorCerca && Input.pressed["e"]) { this._entrarTiendaComercio("puros"); break; }
         // Puerta escondida: E intenta abrir (cerrada con llave), F mira por las rejillas
         if (this.puertaCerca && Input.pressed["e"]) {
-          if (this.puertaAbierta) { /* ya está tumbada: entrar a la bóveda será el siguiente paso */ }
+          if (this.puertaAbierta) { this._entrarCalabozo(); }           // ya tumbada: se entra al calabozo
           else if (this.player.tieneFuerza) { this._tumbarPuerta(); }   // ¡con fuerza la tiras abajo!
           else { this.dialogo = { guion: this._guionPuerta(), i: 0, alTerminar: "nada" }; }
           break;
@@ -682,6 +707,16 @@ class Game {
       case "tienda_comercio": {
         if (this.comMsgT > 0) this.comMsgT -= dt;
         if (Input.pressed["escape"]) this.estado = "isla_comercio";
+        break;
+      }
+      case "calabozo": {
+        this.calabozo.update(dt);
+        if (this.mensajeT > 0) this.mensajeT -= dt;
+        this.player.update(dt, this.calabozo);
+        this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
+        this.salidaCerca = this.calabozo.cercaDeSalida(this.player);
+        // Salir por el hueco de abajo (E) o con Esc
+        if ((this.salidaCerca && Input.pressed["e"]) || Input.pressed["escape"]) this._salirCalabozo();
         break;
       }
       case "salir": {
@@ -745,6 +780,15 @@ class Game {
       if (this.mirandoCalabozo) this._dibujarCalabozo(ctx);   // vista por las rejillas (encima de todo)
     } else if (this.estado === "tienda_comercio") {
       this._dibujarTiendaComercio(ctx);
+    } else if (this.estado === "calabozo") {
+      this.calabozo.drawGround(ctx, this.cam);
+      this.calabozo.drawObjects(ctx, this.cam, this.player);
+      if (this.salidaCerca) this._hintSalidaCalabozo(ctx);
+      this._hud(ctx);
+      ctx.fillStyle = "rgba(230,220,200,.85)"; ctx.font = "14px Georgia, serif"; ctx.textAlign = "center";
+      ctx.fillText("Esc: salir del calabozo", this.ancho / 2, this.alto - 14);
+      ctx.textAlign = "left";
+      if (this.mensajeT > 0) this._toast(ctx, this.mensaje);
     }
     if (this.inventarioAbierto) this._dibujarInventario(ctx);   // mochila (P), encima de todo
   }
@@ -1193,12 +1237,28 @@ class Game {
       ctx.fillText(txt, cx, y + h / 2 + 1);
     };
     ctx.save();
-    // El botón de arriba cambia: si tienes fuerza, "Tumbar (E)"; si ya está
-    // abierta no sale; si no, "Abrir (E)". El de "Mirar (F)" sale siempre.
-    if (!this.puertaAbierta) {
+    if (this.puertaAbierta) {
+      // Puerta tumbada: se puede entrar al calabozo
+      pill(yBase - h, "Entrar (E)");
+    } else {
+      // Cerrada: "Tumbar (E)" si tienes fuerza, si no "Abrir (E)"; y "Mirar (F)"
       pill(yBase - h * 2 - 4, this.player.tieneFuerza ? "Tumbar (E)" : "Abrir (E)");
+      pill(yBase - h, "Mirar (F)");
     }
-    pill(yBase - h, "Mirar (F)");
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Aviso "Salir (E)" junto al hueco de salida del calabozo
+  _hintSalidaCalabozo(ctx) {
+    const s = this.calabozo.salida;
+    const cx = Math.round((s.c + 0.5) * TILE - this.cam.x);
+    const yy = Math.round(s.f * TILE - this.cam.y) - 8;
+    const w = 96, h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Salir (E)", cx, y + h / 2 + 1);
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 

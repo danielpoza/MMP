@@ -74,6 +74,7 @@ Documentos hermanos:
 | `isla_minerales.js` | Isla de los minerales (`IslaMinerales`). |
 | `isla_comercio.js` | Isla del comercio (`IslaComercio`). |
 | `interior.js` | Interior de la casa roja (`Interior`, escena del anciano). |
+| `calabozo.js` | Sala del calabozo (`Calabozo`) tras tumbar la puerta: suelo negro, antorchas. |
 | `player.js` | El caballero Seok (`Player`): movimiento, dibujo, stats, inventarios. |
 | `camera.js` | `Camera` que sigue al jugador. |
 | `input.js` | `Input`: teclado. `Input.pressed[...]` para pulsaciones de una vez. Acciones registradas: enter, escape, arrowup, arrowdown, espacio, "e", "f", "p". |
@@ -87,7 +88,7 @@ isla_comercio, player, interior, ui, guardado, game, main.
 ## 5. Estados del juego (`game.estado`)
 `titulo` · `jugando` (isla del anciano) · `interior` (casa roja) ·
 `isla_minerales` · `tienda` (picos) · `isla_comercio` · `tienda_comercio`
-(fruta/verdura/pollo/minerales/puros) · `salir`.
+(fruta/verdura/pollo/minerales/puros) · `calabozo` (sala tras la puerta) · `salir`.
 
 Un "mundo" (World / IslaMinerales / IslaComercio / Interior) expone: `esCaminable(px,py)`,
 `pixelWidth`, `pixelHeight`, `time`, `drawGround(ctx,cam)`, `drawObjects(ctx,cam,player)`
@@ -233,14 +234,23 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
       hace daño según la distancia: **cerca 25 · media 20 · lejos 15**; la
       **flecha** usa hitbox completa y **vive como mucho 10 bloques (tiles)** en el
       aire, luego desaparece.
-    - **Por decidir (asumo valores por defecto salvo que se cambien):** atacar con
-      **barra espaciadora** (espadazo hacia donde mira Seok); daño de espada **25**
-      (mata en 2 golpes) y **50 con Fuerza** (1 golpe); esqueletos **un poco más
-      lentos** que el jugador.
+    - **Atacar:** con **barra espaciadora Y con clic derecho** (las dos valen);
+      espadazo hacia donde mira Seok. (Asumidos, ajustables: daño de espada **25**,
+      mata en 2 golpes, y **50 con Fuerza** = 1 golpe; esqueletos **un poco más
+      lentos** que el jugador.)
     - Construir por trozos: aparecer → despertar → perseguir → espadazo + daño →
       arquero + flecha.
-- La **bóveda** real detrás de la puerta (da el mapa del tesoro y completa "boveda").
-- **Enemigos y combate** (la maldición de la manzana y/o en otra isla).
+- ✅ **El calabozo (sala, hecho):** al tener la puerta tumbada, junto a ella sale
+  **Entrar (E)** y se pasa al estado **`calabozo`** (`js/calabozo.js`, clase
+  `Calabozo`: 22×15 casillas, **suelo negro**, paredes de piedra oscura, antorchas
+  con luz cálida y un hueco de salida abajo). `_entrarCalabozo`/`_salirCalabozo`
+  guardan/restauran la posición en la plaza (`_comercioPos`). Se sale con **Esc** o
+  con **Salir (E)** junto al hueco. Cargado en `index.html` antes de `player.js`.
+  - **PENDIENTE:** meter aquí los **esqueletos** (el de manos, dormido sobre el suelo
+    negro, que despierta; los demás en puntos concretos) + el **combate** (espacio o
+    clic derecho) con los números ya acordados. Y al fondo, la **bóveda** con el mapa.
+- La **bóveda** real dentro del calabozo (da el mapa del tesoro y completa "boveda").
+- **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,
   `puerta.png`, `calabozo.png`.

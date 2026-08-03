@@ -219,9 +219,18 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
   **Tumbar (E)**: `_tumbarPuerta` pone `game.puertaAbierta=true` y
   `islaComercio.puerta.abierta=true`, y la puerta se dibuja **abierta hacia dentro**
   (asset `puerta_abierta.png` / `_puertaAbiertaReserva`). Se guarda en la partida.
-  - **PENDIENTE (combate):** "golpear más fuerte" con la Fuerza, y la **maldición**:
-    aparecen **monstruos** cuando el jugador está sobre un píxel negro (#000000).
-    Necesita un sistema de enemigos + combate.
+  - **PENDIENTE (combate):** "golpear más fuerte" con la Fuerza, y la **maldición**.
+    Diseño acordado de los enemigos (prompts en `docs/inventario-sprites.md` §10):
+    - **Esqueleto de manos (cuerpo a cuerpo):** el ÚNICO que está "en el suelo".
+      Aparece **sentado y dormido** (ojos apagados) sobre los **píxeles negros
+      (#000000)**; al acercarse el jugador maldito, **despierta** (ojos verdes) y
+      persigue/ataca. Sprites: `esqueleto_manos(_sentado/_atacar).png`.
+    - **Los demás** (bola de pinchos `esqueleto_maza`, espada `esqueleto_espada`,
+      arco `esqueleto_arco` + `flecha.png`): NO están en el suelo; **aparecen en
+      puntos concretos** que definirá el usuario (encuentros colocados a mano).
+    - Falta decidir: tecla de ataque (propuesta: barra espaciadora), daño que hace
+      cada esqueleto y golpes que aguanta. Construir por trozos: aparecer → despertar
+      → perseguir → espadazo + daño.
 - La **bóveda** real detrás de la puerta (da el mapa del tesoro y completa "boveda").
 - **Enemigos y combate** (la maldición de la manzana y/o en otra isla).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/

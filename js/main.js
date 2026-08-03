@@ -57,6 +57,12 @@ window.addEventListener("load", () => {
     game.onClick(x, y);
   });
 
+  // Clic DERECHO: atacar (y evitamos el menú del navegador)
+  canvas.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    game.onAtaque();
+  });
+
   // Ocultar la pista de teclas tras unos segundos
   setTimeout(() => document.getElementById("hint")?.classList.add("oculto"), 6000);
 

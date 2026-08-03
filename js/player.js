@@ -35,6 +35,10 @@ class Player {
     this.fuerzaT = 0;       // segundos que queda de "Fuerza" (0 = sin fuerza)
     this.fuerzaNivel = 0;   // nivel de fuerza mientras dura (5 con la manzana)
     this.maldito = false;   // maldición de la manzana (monstruos, se hará más adelante)
+
+    // Combate
+    this.ataqueCD = 0;      // enfriamiento entre espadazos
+    this.atacandoT = 0;     // animación del tajo (>0 = está dando un espadazo)
   }
 
   // ¿Tiene ahora mismo el efecto de fuerza activo?
@@ -50,6 +54,9 @@ class Player {
       this.fuerzaT = Math.max(0, this.fuerzaT - dt);
       if (this.fuerzaT === 0) this.fuerzaNivel = 0;   // se acabó
     }
+    // Enfriamientos del combate
+    if (this.ataqueCD > 0) this.ataqueCD -= dt;
+    if (this.atacandoT > 0) this.atacandoT -= dt;
 
     // 1) Leer dirección deseada
     let mx = 0, my = 0;

@@ -74,7 +74,8 @@ Documentos hermanos:
 | `isla_minerales.js` | Isla de los minerales (`IslaMinerales`). |
 | `isla_comercio.js` | Isla del comercio (`IslaComercio`). |
 | `interior.js` | Interior de la casa roja (`Interior`, escena del anciano). |
-| `calabozo.js` | Sala del calabozo (`Calabozo`) tras tumbar la puerta: suelo negro, antorchas. |
+| `calabozo.js` | Sala del calabozo (`Calabozo`) tras tumbar la puerta: suelo negro, antorchas, esqueletos. |
+| `enemigo.js` | Esqueletos (`Esqueleto`): dormido/despierto/muerto, persigue y ataca; barra de vida. |
 | `player.js` | El caballero Seok (`Player`): movimiento, dibujo, stats, inventarios. |
 | `camera.js` | `Camera` que sigue al jugador. |
 | `input.js` | `Input`: teclado. `Input.pressed[...]` para pulsaciones de una vez. Acciones registradas: enter, escape, arrowup, arrowdown, espacio, "e", "f", "p". |
@@ -248,9 +249,19 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
   con luz cálida y un hueco de salida abajo). `_entrarCalabozo`/`_salirCalabozo`
   guardan/restauran la posición en la plaza (`_comercioPos`). Se sale con **Esc** o
   con **Salir (E)** junto al hueco. Cargado en `index.html` antes de `player.js`.
-  - **PENDIENTE:** meter aquí los **esqueletos** (el de manos, dormido sobre el suelo
-    negro, que despierta; los demás en puntos concretos) + el **combate** (espacio o
-    clic derecho) con los números ya acordados. Y al fondo, la **bóveda** con el mapa.
+  - ✅ **Esqueletos de manos + combate (hecho):** `js/enemigo.js` (clase `Esqueleto`).
+    3 esqueletos de manos **dormidos** (ojos apagados, sentados) en el suelo del
+    calabozo (`calabozo.enemigos`); al acercarse el jugador (radio 150) **despiertan**
+    (ojos verdes) y **persiguen** (más lentos, 110 vs 165). **50 de vida** con **barra
+    roja + número** encima. Si te tocan te quitan **15** (con enfriamiento) y hay un
+    **flash rojo** (`game.recibirDano`/`danoFlashT`). Atacas con **Espacio o clic
+    derecho** (`_atacar`, `onAtaque` desde `main.js` `contextmenu`): daño **25**, o
+    **50 con Fuerza** (1 golpe). Muertos = montón de huesos. `_dibujarTajo` pinta el
+    espadazo. Contador "Esqueletos: N" en el HUD del calabozo.
+  - **PENDIENTE:** los esqueletos con **arma** (maza/espada/arco) en **puntos
+    concretos** (falta decidir dónde), el **arquero** + **flecha** (alcance 10 tiles,
+    daño por distancia 25/20/15), la **muerte del jugador** (vida a 0 no hace nada
+    aún), enchufar los **PNG** de los esqueletos, y al fondo la **bóveda** con el mapa.
 - La **bóveda** real dentro del calabozo (da el mapa del tesoro y completa "boveda").
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/

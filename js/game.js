@@ -193,6 +193,8 @@ class Game {
     this.puertaCerca = false; // ¿el jugador está junto a la puerta escondida?
     this.mirandoCalabozo = false; // ¿está mirando el calabozo por las rejillas?
     this.salidaCerca = false; // ¿el jugador está junto a la salida del calabozo?
+    this.danoFlashT = 0;      // parpadeo rojo al recibir daño
+    this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
     this.ancianoLlaveHablado = false; // ¿ya ha hablado con el anciano sobre la llave?
     this.puertaAbierta = false; // ¿se ha tumbado ya la puerta del calabozo?
@@ -428,6 +430,28 @@ class Game {
     }
     this.cam.seguir(this.player, this.islaComercio.pixelWidth, this.islaComercio.pixelHeight);
     this.estado = "isla_comercio";
+  }
+
+  // Un esqueleto te ha golpeado: flash rojo en los bordes
+  recibirDano() { this.danoFlashT = 0.35; }
+
+  // Clic derecho = atacar (lo pide desde main.js)
+  onAtaque() { if (this.estado === "calabozo") this._ataquePedido = true; }
+
+  // Espadazo del jugador hacia donde mira (espacio o clic derecho)
+  _atacar() {
+    const p = this.player;
+    if (p.ataqueCD > 0) return;              // aún en enfriamiento
+    p.ataqueCD = 0.35;
+    p.atacandoT = 0.18;                       // animación del tajo
+    const dmg = p.tieneFuerza ? 50 : 25;      // con Fuerza mata de un golpe
+    const fx = p.dir === "izq" ? -1 : p.dir === "der" ? 1 : 0;
+    const fy = p.dir === "arriba" ? -1 : p.dir === "abajo" ? 1 : 0;
+    const ax = p.x + p.ancho / 2 + fx * 34, ay = p.y + p.alto / 2 + fy * 34;   // centro del tajo
+    for (const en of this.calabozo.enemigos) {
+      if (en.estado === "muerto") continue;
+      if (Math.hypot(en.centroX - ax, en.centroY - ay) < 40) en.recibirGolpe(dmg);
+    }
   }
 
   // ---- Tiendas del comercio (comprar comida / vender minerales) ----
@@ -713,9 +737,15 @@ class Game {
       case "calabozo": {
         this.calabozo.update(dt);
         if (this.mensajeT > 0) this.mensajeT -= dt;
+        if (this.danoFlashT > 0) this.danoFlashT -= dt;
         this.player.update(dt, this.calabozo);
+        // Mover/atacar a los esqueletos
+        for (const en of this.calabozo.enemigos) en.update(dt, this.player, this.calabozo, this);
         this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
         this.salidaCerca = this.calabozo.cercaDeSalida(this.player);
+        // Atacar con espacio o clic derecho
+        if (Input.pressed[" "] || this._ataquePedido) this._atacar();
+        this._ataquePedido = false;
         // Salir por el hueco de abajo (E) o con Esc
         if ((this.salidaCerca && Input.pressed["e"]) || Input.pressed["escape"]) this._salirCalabozo();
         break;
@@ -784,12 +814,17 @@ class Game {
     } else if (this.estado === "calabozo") {
       this.calabozo.drawGround(ctx, this.cam);
       this.calabozo.drawObjects(ctx, this.cam, this.player);
+      if (this.player.atacandoT > 0) this._dibujarTajo(ctx);      // el espadazo
       if (this.salidaCerca) this._hintSalidaCalabozo(ctx);
       this._hud(ctx);
+      // Contador de esqueletos
+      ctx.fillStyle = "rgba(230,220,200,.9)"; ctx.font = "bold 14px Georgia, serif"; ctx.textAlign = "right";
+      ctx.fillText("Esqueletos: " + this.calabozo.enemigosVivos(), this.ancho - 14, 64);
       ctx.fillStyle = "rgba(230,220,200,.85)"; ctx.font = "14px Georgia, serif"; ctx.textAlign = "center";
-      ctx.fillText("Esc: salir del calabozo", this.ancho / 2, this.alto - 14);
+      ctx.fillText("Atacar: Espacio o clic derecho   ·   Esc: salir del calabozo", this.ancho / 2, this.alto - 14);
       ctx.textAlign = "left";
       if (this.mensajeT > 0) this._toast(ctx, this.mensaje);
+      if (this.danoFlashT > 0) this._dibujarDanoFlash(ctx);      // parpadeo rojo al recibir daño
     }
     if (this.inventarioAbierto) this._dibujarInventario(ctx);   // mochila (P), encima de todo
   }
@@ -1261,6 +1296,29 @@ class Game {
     ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("Salir (E)", cx, y + h / 2 + 1);
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // El tajo de la espada (arco blanco delante del jugador cuando ataca)
+  _dibujarTajo(ctx) {
+    const p = this.player;
+    const cx = Math.round(p.x + p.ancho / 2 - this.cam.x);
+    const cy = Math.round(p.y + p.alto / 2 - this.cam.y);
+    const ang = p.dir === "izq" ? Math.PI : p.dir === "der" ? 0 : p.dir === "arriba" ? -Math.PI / 2 : Math.PI / 2;
+    ctx.save();
+    ctx.translate(cx, cy); ctx.rotate(ang);
+    ctx.strokeStyle = p.tieneFuerza ? "rgba(255,225,120,.9)" : "rgba(255,255,255,.85)";
+    ctx.lineWidth = 4; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(14, 0, 24, -0.9, 0.9); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Parpadeo rojo en los bordes cuando un esqueleto te golpea
+  _dibujarDanoFlash(ctx) {
+    const a = Math.min(0.5, this.danoFlashT);
+    const g = ctx.createRadialGradient(this.ancho / 2, this.alto / 2, this.alto * 0.35, this.ancho / 2, this.alto / 2, this.alto * 0.8);
+    g.addColorStop(0, "rgba(200,0,0,0)");
+    g.addColorStop(1, "rgba(200,0,0," + a + ")");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, this.ancho, this.alto);
   }
 
   // Vista del calabozo por las rejillas (pantalla completa). Si falta el PNG, se dibuja por código.

@@ -28,7 +28,14 @@ class Calabozo {
       { c: 1, f: 6 }, { c: this.cols - 2, f: 6 },
       { c: 6, f: this.filas - 2 }, { c: this.cols - 7, f: this.filas - 2 },
     ];
+
+    // Esqueletos de manos, sentados y dormidos por la sala (sobre el suelo negro)
+    const E = (c, f) => new Esqueleto(c * TILE + (TILE - 26) / 2, f * TILE, "manos");
+    this.enemigos = [ E(5, 4), E(16, 5), E(11, 8) ];
   }
+
+  // ¿Quedan esqueletos vivos?
+  enemigosVivos() { return this.enemigos.filter((e) => e.estado !== "muerto").length; }
 
   update(dt) { this.time += dt; }
 
@@ -94,6 +101,11 @@ class Calabozo {
       const x = a.c * TILE, y = a.f * TILE;
       if (!cull(x, y)) continue;
       lista.push({ baseY: y + TILE, dibujar: () => this._dibujarAntorcha(ctx, x - cam.x, y - cam.y) });
+    }
+
+    // Esqueletos
+    for (const en of this.enemigos) {
+      lista.push({ baseY: en.estado === "muerto" ? -1e9 : en.y + en.alto, dibujar: () => en.draw(ctx, cam) });
     }
 
     // Jugador

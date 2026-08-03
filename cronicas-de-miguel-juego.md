@@ -136,11 +136,17 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
   - **Falta (paso siguiente):** los **monstruos** de la maldición (aparecen sobre
     píxeles negros) y el **combate** (golpear más fuerte con la Fuerza).
 - ✅ **El calabozo (hecho):** con la puerta tumbada, junto a ella sale **Entrar (E)**
-  y pasas a una **sala oscura con suelo negro**, paredes de piedra y antorchas. Te
-  mueves por ella y sales con **Esc** o **Salir (E)**. (Aún vacía: los esqueletos van
-  ahora.)
+  y pasas a una **sala oscura con suelo negro**, paredes de piedra y antorchas. Sales
+  con **Esc** o **Salir (E)**.
+- ✅ **Esqueletos y combate (hecho):** hay **3 esqueletos de manos** sentados y
+  dormidos; al acercarte **despiertan** (ojos verdes) y te **persiguen**. Tienen
+  **50 de vida** con **barra roja y número** encima. Les pegas con **Espacio o clic
+  derecho** (25 de daño, o 50 con la Fuerza de la manzana = 1 golpe). Si te tocan te
+  quitan **15** (con un parpadeo rojo). Al morir quedan como un montón de huesos.
+  - **Falta:** los esqueletos con **arma** (maza/espada/arco + flechas) en puntos
+    concretos, qué pasa cuando **tu vida llega a 0**, y los dibujos (PNG) de los
+    esqueletos.
 - La **bóveda** de verdad dentro del calabozo (da el mapa del tesoro y completa la misión).
-- **Enemigos y combate** (los esqueletos de la maldición).
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
   `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
   (mientras tanto usan dibujo de reserva).

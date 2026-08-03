@@ -74,6 +74,25 @@ La guia completa con el prompt de cada uno esta en:
                                           oscuro al fondo). Fondo magenta
                                           #FF00FF
 ----------------------------------------------------------------
+  ENEMIGOS - ESQUELETOS (maldicion de la manzana). Fondo magenta.
+  Ojos verde claro cuando estan "encendidos". Ver prompts en
+  docs/inventario-sprites.md (seccion 10).
+----------------------------------------------------------------
+  esqueleto_manos.png          144 x 192  Esqueleto que ataca con las
+                                          manos: hoja andar 4x3
+  esqueleto_manos_sentado.png   96 x 192  El mismo, SENTADO: 4 direcciones
+                                          x 2 (ojos apagados / encendidos)
+  esqueleto_manos_atacar.png    96 x 192  El mismo, atacando: 4 dir x 2
+  esqueleto_maza.png           144 x 192  Esqueleto con bola de pinchos:
+                                          hoja andar 4x3
+  esqueleto_maza_atacar.png     96 x 192  El mismo, atacando: 4 dir x 2
+  esqueleto_espada.png         144 x 192  Esqueleto con espada: andar 4x3
+  esqueleto_espada_atacar.png   96 x 192  El mismo, atacando: 4 dir x 2
+  esqueleto_arco.png           144 x 192  Esqueleto con arco: andar 4x3
+  esqueleto_arco_atacar.png     96 x 192  El mismo, disparando: 4 dir x 2
+  flecha.png                    48 x 16   La flecha que dispara (apunta a
+                                          la derecha; el juego la gira)
+----------------------------------------------------------------
 
 CONSEJOS RAPIDOS (mas detalle en docs/inventario-sprites.md):
   - Pedid el FONDO en color magenta liso #FF00FF y luego se quita

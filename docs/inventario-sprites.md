@@ -342,3 +342,97 @@ dibujan por código (no necesitan imagen). Estos tres sí:
 >
 > 💡 Ya está dibujada por código (dibujo de reserva). Cuando guardes
 > `puerta_abierta.png` en `assets/`, el juego la usará al tumbar la puerta.
+
+---
+
+## 10. Enemigos: los esqueletos (maldición de la manzana)
+
+Monstruos que aparecen sobre los píxeles negros cuando estás maldito. Están
+**sentados y dormidos** (ojos apagados) hasta que te acercas: entonces **abren los
+ojos con un brillo verde claro** y atacan.
+
+**Estilo común (pegar al inicio de CADA prompt de esqueleto):**
+> Pixel art moderno y nítido (nearest-neighbor), sin difuminado, sin texto ni
+> marcas de agua, vista cenital (top-down). Un ESQUELETO medieval de huesos color
+> hueso (#e8e4d2 con sombras #b9b4a0), cuencas de los ojos oscuras y vacías; cuando
+> los ojos están "encendidos" brillan en **verde claro (#8ef58a)**. Mismo tamaño y
+> estilo que el caballero del juego. Fondo magenta liso #FF00FF, sin sombra bajo
+> los pies (la pone el juego).
+> *(EN: Modern crisp pixel art (nearest-neighbor), no blur, no text/watermark,
+> top-down. A medieval SKELETON, bone-white (#e8e4d2, shadows #b9b4a0), dark empty
+> eye sockets; when the eyes are "on" they glow light green (#8ef58a). Same size
+> and style as the game's knight. Flat magenta #FF00FF background, no ground
+> shadow.)*
+
+Formato de las HOJAS (celdas de 48×48, personaje centrado, el MISMO esqueleto en
+todas las celdas):
+- **Andar** = 4 filas (fila1 abajo, fila2 arriba, fila3 izquierda, fila4 derecha)
+  × 3 columnas (col1 quieto, col2 pie izquierdo, col3 pie derecho) → **144×192**.
+- **Atacar** = 4 filas (mismas direcciones) × 2 columnas (col1 preparar el golpe,
+  col2 golpe/estirado) → **96×192**.
+
+### E1 · Esqueleto de manos (base) — `esqueleto_manos.png` + variantes
+Ataca con sus propias manos huesudas (garras). Es el enemigo principal.
+- `esqueleto_manos.png` — **hoja de andar** (144×192), ojos **encendidos** (verde),
+  manos vacías con dedos como garras.
+  > [estilo común] Hoja de sprites de andar de un esqueleto SIN armas, con las
+  > manos huesudas por delante como garras, ojos encendidos en verde claro. 4 filas
+  > (abajo/arriba/izquierda/derecha) × 3 columnas (quieto, pie izquierdo, pie
+  > derecho). 144×192, celdas 48×48.
+- `esqueleto_manos_sentado.png` — **hoja SENTADO** (96×192), 4 filas (las 4
+  direcciones) × **2 columnas: col1 = ojos APAGADOS (dormido), col2 = ojos
+  ENCENDIDOS verde (despierto)**. El esqueleto está sentado en el suelo, encogido.
+  > [estilo común] Hoja de un esqueleto medieval SENTADO en el suelo, encogido y
+  > quieto. 4 filas por dirección (abajo/arriba/izquierda/derecha). 2 columnas:
+  > columna 1 con las cuencas oscuras y vacías (dormido), columna 2 con los ojos
+  > brillando en verde claro #8ef58a (despierto). 96×192, celdas 48×48.
+- `esqueleto_manos_atacar.png` — **hoja de atacar** (96×192), lanza un zarpazo con
+  las dos manos. Ojos verdes.
+  > [estilo común] Hoja de ataque de un esqueleto que golpea con las manos: 4 filas
+  > por dirección × 2 columnas (col1 encogido preparando, col2 lanzando un zarpazo
+  > con las dos manos/garras hacia delante). Ojos verdes. 96×192, celdas 48×48.
+
+### E2 · Esqueleto con bola de pinchos — `esqueleto_maza.png` + ataque
+Lleva una **bola de pinchos de hierro colgada de una cadena** (mangual / lucero
+del alba).
+- `esqueleto_maza.png` — andar (144×192), sujetando el mango con la bola de pinchos
+  colgando de una cadena corta. Ojos verdes.
+  > [estilo común] Hoja de andar de un esqueleto que sostiene un MANGUAL: un mango
+  > de madera con una cadena de hierro y una bola de pinchos metálica al final. 4×3,
+  > 144×192, ojos verdes.
+- `esqueleto_maza_atacar.png` — ataque (96×192), **girando/estampando la bola de
+  pinchos**. 4 filas × 2 columnas (preparar, golpe).
+  > [estilo común] Hoja de ataque del esqueleto con mangual: 4 filas × 2 columnas
+  > (col1 levantando la bola de pinchos, col2 estampándola hacia delante). 96×192.
+
+### E3 · Esqueleto con espada — `esqueleto_espada.png` + ataque
+- `esqueleto_espada.png` — andar (144×192), con una **espada oxidada** en la mano.
+  > [estilo común] Hoja de andar de un esqueleto con una ESPADA de acero oxidado.
+  > 4×3, 144×192, ojos verdes.
+- `esqueleto_espada_atacar.png` — ataque (96×192), un espadazo. 4 filas × 2
+  columnas (preparar, espadazo).
+  > [estilo común] Hoja de ataque del esqueleto con espada: 4 filas × 2 columnas
+  > (col1 levantando la espada, col2 espadazo hacia delante). 96×192.
+
+### E4 · Esqueleto con arco — `esqueleto_arco.png` + ataque + `flecha.png`
+Enemigo a distancia: dispara flechas.
+- `esqueleto_arco.png` — andar (144×192), con un **arco de madera**. Ojos verdes.
+  > [estilo común] Hoja de andar de un esqueleto que lleva un ARCO de madera. 4×3,
+  > 144×192, ojos verdes.
+- `esqueleto_arco_atacar.png` — ataque (96×192), **tensando y disparando** el arco.
+  4 filas × 2 columnas (tensar, soltar).
+  > [estilo común] Hoja de ataque del esqueleto arquero: 4 filas × 2 columnas (col1
+  > tensando el arco con una flecha, col2 justo al soltar). 96×192.
+- `flecha.png` — la **flecha** que dispara. Un cuadro pequeño y apaisado (~48×16)
+  con una flecha de madera con punta de hierro y plumas, **apuntando a la DERECHA**
+  (el juego la gira según la dirección). Fondo magenta liso #FF00FF.
+  > Pixel art nítido, sin texto. Una flecha de madera medieval con punta de hierro
+  > gris y plumas traseras, horizontal, apuntando a la derecha, centrada. Lienzo
+  > pequeño apaisado ~48×16. Fondo magenta liso #FF00FF, sin sombra.
+  > *(EN: Crisp pixel art, no text. A medieval wooden arrow with a gray iron tip and
+  > back feathers, horizontal, pointing right, centered. Small ~48×16 canvas. Flat
+  > magenta #FF00FF background, no shadow.)*
+
+> 💡 Cuando codifiquemos el combate, cada esqueleto tendrá su **dibujo de reserva**,
+> así el juego funcionará aunque falten estos PNG. No hace falta generarlos todos de
+> golpe: podéis empezar por el **esqueleto de manos** (el principal).

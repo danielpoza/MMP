@@ -228,9 +228,17 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     - **Los demás** (bola de pinchos `esqueleto_maza`, espada `esqueleto_espada`,
       arco `esqueleto_arco` + `flecha.png`): NO están en el suelo; **aparecen en
       puntos concretos** que definirá el usuario (encuentros colocados a mano).
-    - Falta decidir: tecla de ataque (propuesta: barra espaciadora), daño que hace
-      cada esqueleto y golpes que aguanta. Construir por trozos: aparecer → despertar
-      → perseguir → espadazo + daño.
+    - **Números acordados:** cada esqueleto tiene **50 de vida** (con **barra de
+      vida encima**). El de manos hace **15** de daño al tocarte. El **arquero**
+      hace daño según la distancia: **cerca 25 · media 20 · lejos 15**; la
+      **flecha** usa hitbox completa y **vive como mucho 10 bloques (tiles)** en el
+      aire, luego desaparece.
+    - **Por decidir (asumo valores por defecto salvo que se cambien):** atacar con
+      **barra espaciadora** (espadazo hacia donde mira Seok); daño de espada **25**
+      (mata en 2 golpes) y **50 con Fuerza** (1 golpe); esqueletos **un poco más
+      lentos** que el jugador.
+    - Construir por trozos: aparecer → despertar → perseguir → espadazo + daño →
+      arquero + flecha.
 - La **bóveda** real detrás de la puerta (da el mapa del tesoro y completa "boveda").
 - **Enemigos y combate** (la maldición de la manzana y/o en otra isla).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/

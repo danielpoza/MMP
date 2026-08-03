@@ -463,6 +463,7 @@ class Game {
   _comprarComida(tipo, i) {
     const p = PRODUCTOS_COMERCIO[tipo][i];
     if (!p) return;
+    if (p.misteriosa && this.puertaAbierta) { this._comAviso("Vendido: ya no queda"); return; }
     if (p.precio > 0 && this.player.reales < p.precio) { this._comAviso("No tienes suficientes reales"); return; }
     this.player.reales -= p.precio;
     this.player.comida[p.nombre] = (this.player.comida[p.nombre] || 0) + 1;
@@ -1424,16 +1425,17 @@ class Game {
     // Precio
     ctx.fillStyle = "#7a5a1a"; ctx.font = "bold 18px Georgia, serif";
     ctx.fillText(p.precio === 0 ? "Gratis" : p.precio + " reales", x + w / 2, y + 160);
-    // Botón comprar
+    // Botón comprar (la manzana misteriosa queda "VENDIDO" tras tumbar la puerta)
     const bw = w - 44, bh = 40, bx = x + 22, by = y + h - 56;
-    const puede = p.precio === 0 || this.player.reales >= p.precio;
-    ctx.fillStyle = puede ? "#f2c14e" : "#b9a68a";
+    const vendido = p.misteriosa && this.puertaAbierta;
+    const puede = !vendido && (p.precio === 0 || this.player.reales >= p.precio);
+    ctx.fillStyle = vendido ? "#9a8f7d" : puede ? "#f2c14e" : "#b9a68a";
     ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 9); ctx.fill();
     ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 9); ctx.stroke();
     ctx.fillStyle = "#5b3b20"; ctx.font = "bold 18px Georgia, serif";
-    ctx.fillText(puede ? "Comprar" : "Sin reales", bx + bw / 2, by + bh / 2 + 1);
+    ctx.fillText(vendido ? "VENDIDO" : puede ? "Comprar" : "Sin reales", bx + bw / 2, by + bh / 2 + 1);
     ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
-    this._comBotones.push({ accion: "comprar", i, x: bx, y: by, w: bw, h: bh });
+    if (!vendido) this._comBotones.push({ accion: "comprar", i, x: bx, y: by, w: bw, h: bh });
   }
 
   _botonMini(ctx, x, y, s, txt) {

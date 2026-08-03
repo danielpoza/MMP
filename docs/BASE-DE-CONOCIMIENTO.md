@@ -220,6 +220,8 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
   **Tumbar (E)**: `_tumbarPuerta` pone `game.puertaAbierta=true` y
   `islaComercio.puerta.abierta=true`, y la puerta se dibuja **abierta hacia dentro**
   (asset `puerta_abierta.png` / `_puertaAbiertaReserva`). Se guarda en la partida.
+  Tras tumbar la puerta (`puertaAbierta`), la **Manzana misteriosa** sale como
+  **"VENDIDO"** en la frutería y ya no se puede comprar (es única).
   - **PENDIENTE (combate):** "golpear más fuerte" con la Fuerza, y la **maldición**.
     Diseño acordado de los enemigos (prompts en `docs/inventario-sprites.md` §10):
     - **Esqueleto de manos (cuerpo a cuerpo):** el ÚNICO que está "en el suelo".

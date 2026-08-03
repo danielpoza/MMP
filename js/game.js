@@ -436,7 +436,16 @@ class Game {
   recibirDano() { this.danoFlashT = 0.35; }
 
   // Clic derecho = atacar (lo pide desde main.js)
-  onAtaque() { if (this.estado === "calabozo") this._ataquePedido = true; }
+  onAtaque() { this._ataquePedido = true; }
+
+  // Devuelve la escena actual (mundo/isla/calabozo) según el estado
+  _mundoActual() {
+    if (this.estado === "jugando") return this.world;
+    if (this.estado === "isla_minerales") return this.islaMinerales;
+    if (this.estado === "isla_comercio") return this.islaComercio;
+    if (this.estado === "calabozo") return this.calabozo;
+    return null;
+  }
 
   // Espadazo del jugador hacia donde mira (espacio o clic derecho)
   _atacar() {
@@ -448,7 +457,9 @@ class Game {
     const fx = p.dir === "izq" ? -1 : p.dir === "der" ? 1 : 0;
     const fy = p.dir === "arriba" ? -1 : p.dir === "abajo" ? 1 : 0;
     const ax = p.x + p.ancho / 2 + fx * 34, ay = p.y + p.alto / 2 + fy * 34;   // centro del tajo
-    for (const en of this.calabozo.enemigos) {
+    const mundo = this._mundoActual();
+    const enemigos = (mundo && mundo.enemigos) || [];
+    for (const en of enemigos) {
       if (en.estado === "muerto") continue;
       if (Math.hypot(en.centroX - ax, en.centroY - ay) < 40) en.recibirGolpe(dmg);
     }
@@ -620,6 +631,11 @@ class Game {
     if (Input.pressed["p"] && ["jugando", "isla_minerales", "isla_comercio", "interior"].includes(this.estado)) {
       this.inventarioAbierto = !this.inventarioAbierto;
     }
+    // Atacar (Espacio o clic derecho) en cualquier escena donde controlas a Seok
+    const puedeAtacar = ["jugando", "isla_minerales", "isla_comercio", "calabozo"].includes(this.estado)
+      && !this.dialogo && !this.inventarioAbierto && !this.mapaAbierto && !this.panelMisiones;
+    if (puedeAtacar && (Input.pressed[" "] || this._ataquePedido)) this._atacar();
+    this._ataquePedido = false;
     switch (this.estado) {
       case "titulo": {
         // Opciones según el contexto (hay partida en memoria / hay guardado)
@@ -743,11 +759,8 @@ class Game {
         for (const en of this.calabozo.enemigos) en.update(dt, this.player, this.calabozo, this);
         this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
         this.salidaCerca = this.calabozo.cercaDeSalida(this.player);
-        // Atacar con espacio o clic derecho
-        if (Input.pressed[" "] || this._ataquePedido) this._atacar();
-        this._ataquePedido = false;
-        // Salir por el hueco de abajo (E) o con Esc
-        if ((this.salidaCerca && Input.pressed["e"]) || Input.pressed["escape"]) this._salirCalabozo();
+        // Solo se sale llegando a la puerta (Salir E). No vale Esc.
+        if (this.salidaCerca && Input.pressed["e"]) this._salirCalabozo();
         break;
       }
       case "salir": {
@@ -768,6 +781,7 @@ class Game {
     } else if (this.estado === "jugando") {
       this.world.drawGround(ctx, this.cam);              // 1) el suelo
       this.world.drawObjects(ctx, this.cam, this.player); // 2) objetos + caballero, por profundidad
+      if (this.player.atacandoT > 0) this._dibujarTajo(ctx);       // espadazo
       if (this.casaCerca) this._botonEntrar(ctx, this.casaCerca);  // 3) botón "Entrar"/candado
       if (this.cartelCerca && !this.mapaAbierto) this._hintCartel(ctx); // aviso del cartel
       this._hud(ctx);
@@ -782,6 +796,7 @@ class Game {
     } else if (this.estado === "isla_minerales") {
       this.islaMinerales.drawGround(ctx, this.cam);
       this.islaMinerales.drawObjects(ctx, this.cam, this.player);
+      if (this.player.atacandoT > 0) this._dibujarTajo(ctx);       // espadazo
       if (this.puestoCerca) this._hintPuesto(ctx);       // aviso "comprar (E)"
       this._hud(ctx);
       this._dibujarPicoHUD(ctx);                          // pico equipado + durabilidad
@@ -798,6 +813,7 @@ class Game {
     } else if (this.estado === "isla_comercio") {
       this.islaComercio.drawGround(ctx, this.cam);
       this.islaComercio.drawObjects(ctx, this.cam, this.player);
+      if (this.player.atacandoT > 0) this._dibujarTajo(ctx);       // espadazo
       if (!this.dialogo && this.puestoComCerca) this._hintPuestoComercio(ctx, this.puestoComCerca);
       if (!this.dialogo && this.fumadorCerca && this.fumadorHablado) this._hintFumador(ctx);
       if (!this.dialogo && this.puertaCerca && !this.mirandoCalabozo) this._hintPuerta(ctx);
@@ -821,7 +837,7 @@ class Game {
       ctx.fillStyle = "rgba(230,220,200,.9)"; ctx.font = "bold 14px Georgia, serif"; ctx.textAlign = "right";
       ctx.fillText("Esqueletos: " + this.calabozo.enemigosVivos(), this.ancho - 14, 64);
       ctx.fillStyle = "rgba(230,220,200,.85)"; ctx.font = "14px Georgia, serif"; ctx.textAlign = "center";
-      ctx.fillText("Atacar: Espacio o clic derecho   ·   Esc: salir del calabozo", this.ancho / 2, this.alto - 14);
+      ctx.fillText("Atacar: Espacio o clic derecho   ·   Ve hasta la puerta para salir", this.ancho / 2, this.alto - 14);
       ctx.textAlign = "left";
       if (this.mensajeT > 0) this._toast(ctx, this.mensaje);
       if (this.danoFlashT > 0) this._dibujarDanoFlash(ctx);      // parpadeo rojo al recibir daño

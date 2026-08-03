@@ -257,7 +257,10 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     **flash rojo** (`game.recibirDano`/`danoFlashT`). Atacas con **Espacio o clic
     derecho** (`_atacar`, `onAtaque` desde `main.js` `contextmenu`): daño **25**, o
     **50 con Fuerza** (1 golpe). Muertos = montón de huesos. `_dibujarTajo` pinta el
-    espadazo. Contador "Esqueletos: N" en el HUD del calabozo.
+    espadazo. Contador "Esqueletos: N" en el HUD del calabozo. El ataque funciona en
+    **cualquier escena jugable** (jugando/isla_minerales/isla_comercio/calabozo);
+    `_atacar` golpea a los enemigos de `_mundoActual().enemigos`. Del **calabozo solo
+    se sale llegando a la puerta (Salir E)**, ya NO con Esc.
   - **PENDIENTE:** los esqueletos con **arma** (maza/espada/arco) en **puntos
     concretos** (falta decidir dónde), el **arquero** + **flecha** (alcance 10 tiles,
     daño por distancia 25/20/15), la **muerte del jugador** (vida a 0 no hace nada

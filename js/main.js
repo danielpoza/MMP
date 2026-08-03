@@ -40,6 +40,10 @@ window.addEventListener("load", () => {
   Assets.load("puerta",           "assets/puerta.png",           { chroma: true }); // puerta escondida del calabozo
   Assets.load("puerta_abierta",   "assets/puerta_abierta.png",   { chroma: true }); // la misma puerta, tumbada/abierta hacia dentro
   Assets.load("calabozo",         "assets/calabozo.png");                           // vista del calabozo por las rejillas (fondo lleno)
+  // Esqueletos del calabozo (fondo magenta)
+  Assets.load("esqueleto_manos",         "assets/esqueleto_manos.png",         { chroma: true });
+  Assets.load("esqueleto_manos_sentado", "assets/esqueleto_manos_sentado.png", { chroma: true });
+  Assets.load("esqueleto_manos_ataque",  "assets/esqueleto_manos_ataque.png",  { chroma: true });
   Assets.load("int_fruta",     "assets/int_fruta.png");       // interiores de las tiendas (fondo lleno)
   Assets.load("int_verdura",   "assets/int_verdura.png");
   Assets.load("int_pollo",     "assets/int_pollo.png");

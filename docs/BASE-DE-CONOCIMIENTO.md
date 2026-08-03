@@ -261,10 +261,18 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     **cualquier escena jugable** (jugando/isla_minerales/isla_comercio/calabozo);
     `_atacar` golpea a los enemigos de `_mundoActual().enemigos`. Del **calabozo solo
     se sale llegando a la puerta (Salir E)**, ya NO con Esc.
+  - ✅ **PNG del esqueleto de manos conectados:** `enemigo.js` usa las hojas si
+    existen (`_tieneSprites`/`_dibujarSprite`/`_sprite`, con dibujo de reserva de
+    respaldo). `esqueleto_manos_sentado.png` (2×4) para el dormido (frente, ojos
+    apagados = fila 0 col 0); `esqueleto_manos.png` (3×4 = 12 fotogramas, **de perfil
+    mirando a la derecha**, se voltea si va a la izquierda) para andar;
+    `esqueleto_manos_ataque.png` (2×4, fila 0 col 1 = zarpazo) al atacar. Se recorta
+    un ~5% de cada celda para evitar las líneas negras de la rejilla.
   - **PENDIENTE:** los esqueletos con **arma** (maza/espada/arco) en **puntos
-    concretos** (falta decidir dónde), el **arquero** + **flecha** (alcance 10 tiles,
-    daño por distancia 25/20/15), la **muerte del jugador** (vida a 0 no hace nada
-    aún), enchufar los **PNG** de los esqueletos, y al fondo la **bóveda** con el mapa.
+    concretos** (falta decidir dónde) y enchufar sus PNG (ojo: el de ataque de la
+    espada se subió como `esqueleto_espadea_ataque.png`, con typo); el **arquero** +
+    **flecha** (`flecha.png`, alcance 10 tiles, daño 25/20/15); la **muerte del
+    jugador** (vida a 0 no hace nada aún); y al fondo la **bóveda** con el mapa.
 - La **bóveda** real dentro del calabozo (da el mapa del tesoro y completa "boveda").
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/

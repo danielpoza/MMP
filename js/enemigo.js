@@ -90,6 +90,57 @@ class Esqueleto {
     ctx.fillStyle = "rgba(0,0,0,.28)";
     ctx.beginPath(); ctx.ellipse(cx, y + h, w * 0.5, w * 0.2, 0, 0, Math.PI * 2); ctx.fill();
 
+    // Cuerpo: con los PNG (dibujo real) o con el dibujo de reserva
+    if (this._tieneSprites()) this._dibujarSprite(ctx, cx, y + h);
+    else this._dibujarReservaCuerpo(ctx, x, y, w, h, cx);
+
+    // Barra de vida (roja, con número) cuando está despierto
+    if (this.estado === "despierto") {
+      const barY = this._tieneSprites() ? (y + h - this.SPRITE_H) : (y - 12);
+      this._barraVida(ctx, cx, barY);
+    }
+  }
+
+  get SPRITE_H() { return 60; }
+  _tieneSprites() { return Assets.listo("esqueleto_" + this.tipo); }
+
+  // Elige el fotograma adecuado según el estado (dormido / andando / atacando)
+  _dibujarSprite(ctx, cx, baseY) {
+    const t = this.tipo, H = this.SPRITE_H;
+    if (this.estado === "dormido") {
+      const s = "esqueleto_" + t + "_sentado";        // sentado de frente, ojos apagados
+      if (Assets.listo(s)) { this._sprite(ctx, s, 0, 2, 0, 4, cx, baseY, H, false); return; }
+    }
+    if (this.atacandoT > 0) {
+      const s = "esqueleto_" + t + "_ataque";          // zarpazo (fila 0, col 1); mira a la izq.
+      if (Assets.listo(s)) { this._sprite(ctx, s, 1, 2, 0, 4, cx, baseY, H, this.dir === "der"); return; }
+    }
+    // Andando: hoja de perfil (mira a la derecha), 3 col × 4 filas = 12 fotogramas
+    const idx = Math.floor(this.paso * 1.2) % 12;
+    this._sprite(ctx, "esqueleto_" + t, idx % 3, 3, Math.floor(idx / 3), 4, cx, baseY, H, this.dir === "izq");
+  }
+
+  // Recorta una celda (col,row) de una hoja y la dibuja centrada en cx con los pies en baseY
+  _sprite(ctx, nombre, col, ncols, row, nrows, cx, baseY, destH, flip) {
+    const el = Assets.el(nombre);
+    const cw = Assets.w(nombre) / ncols, ch = Assets.h(nombre) / nrows;
+    const insx = cw * 0.05, insy = ch * 0.04;         // recorte para evitar la rejilla negra
+    const sx = col * cw + insx, sy = row * ch + insy, sw = cw - insx * 2, sh = ch - insy * 2;
+    const destW = destH * (sw / sh);
+    const dx = Math.round(cx - destW / 2), dy = Math.round(baseY - destH);
+    ctx.save();
+    if (flip) { ctx.translate(dx + destW, dy); ctx.scale(-1, 1); ctx.drawImage(el, sx, sy, sw, sh, 0, 0, destW, destH); }
+    else ctx.drawImage(el, sx, sy, sw, sh, dx, dy, destW, destH);
+    if (this.hitFlash > 0) {                            // parpadeo al recibir un golpe
+      ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.55;
+      if (flip) ctx.drawImage(el, sx, sy, sw, sh, 0, 0, destW, destH);
+      else ctx.drawImage(el, sx, sy, sw, sh, dx, dy, destW, destH);
+    }
+    ctx.restore();
+  }
+
+  // ---- Dibujo de reserva del cuerpo (si faltan los PNG) ----
+  _dibujarReservaCuerpo(ctx, x, y, w, h, cx) {
     const sentado = this.estado === "dormido";
     const ojosVerdes = this.estado === "despierto";
     const bob = (!sentado && this.paso) ? Math.abs(Math.sin(this.paso)) * 2 : 0;
@@ -100,7 +151,6 @@ class Esqueleto {
     // Piernas / base
     ctx.strokeStyle = sombra; ctx.lineWidth = 3;
     if (sentado) {
-      // piernas cruzadas (sentado): dos trazos hacia los lados
       ctx.beginPath(); ctx.moveTo(cx, top + 26); ctx.lineTo(x + 3, top + 32); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx, top + 26); ctx.lineTo(x + w - 3, top + 32); ctx.stroke();
     } else {
@@ -119,7 +169,7 @@ class Esqueleto {
       ctx.beginPath(); ctx.moveTo(cx, ry); ctx.quadraticCurveTo(cx + 8, ry + 2, cx + 7, ry + 4); ctx.stroke();
     }
 
-    // Brazos / garras (estirados hacia delante si ataca o persigue)
+    // Brazos / garras
     ctx.strokeStyle = hueso; ctx.lineWidth = 3;
     const alcance = this.atacandoT > 0 ? 12 : (sentado ? 4 : 8);
     const fx = this.dir === "izq" ? -1 : this.dir === "der" ? 1 : 0;
@@ -130,23 +180,17 @@ class Esqueleto {
     // Cráneo
     ctx.fillStyle = hueso;
     ctx.beginPath(); ctx.arc(cx, top + 6, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = hueso; ctx.fillRect(cx - 4, top + 11, 8, 4);   // mandíbula
-    // Ojos
+    ctx.fillStyle = hueso; ctx.fillRect(cx - 4, top + 11, 8, 4);
     if (ojosVerdes) {
-      ctx.save();
-      ctx.shadowColor = "#8ef58a"; ctx.shadowBlur = 6;
-      ctx.fillStyle = "#8ef58a";
+      ctx.save(); ctx.shadowColor = "#8ef58a"; ctx.shadowBlur = 6; ctx.fillStyle = "#8ef58a";
       ctx.beginPath(); ctx.arc(cx - 3, top + 5, 1.9, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(cx + 3, top + 5, 1.9, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     } else {
-      ctx.fillStyle = "#20242a";   // apagados (dormido)
+      ctx.fillStyle = "#20242a";
       ctx.beginPath(); ctx.arc(cx - 3, top + 5, 1.8, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(cx + 3, top + 5, 1.8, 0, Math.PI * 2); ctx.fill();
     }
-
-    // Barra de vida (roja, con número) cuando está despierto
-    if (this.estado === "despierto") this._barraVida(ctx, cx, top - 8);
   }
 
   _barraVida(ctx, cx, y) {

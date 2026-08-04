@@ -39,6 +39,10 @@ class Calabozo {
     // Puerta de rejas de la celda vacía (coords de imagen): bloquea hasta abrirla (E)
     this.puertaCelda = { x: 1018, y: 495, w: 180, h: 205, abierta: false };
 
+    // Cofre camuflado en el pasillo, a la izquierda de la puerta de la celda.
+    // (x,y = base/pies en coords de imagen). Dentro hay una Manzana misteriosa.
+    this.cofre = { x: 895, y: 815, abierto: false };
+
     this.enemigos = [];   // los esqueletos se colocan en el Trozo 4
   }
 
@@ -75,6 +79,12 @@ class Calabozo {
     return Math.hypot(px - cx, py - cy) < 95;
   }
 
+  // ¿Está el jugador junto al cofre?
+  cercaDeCofre(player) {
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    return Math.hypot(px - this.cofre.x * this.escala, py - (this.cofre.y - 18) * this.escala) < 80;
+  }
+
   // ================= DIBUJO =================
   drawGround(ctx, cam) {
     if (Assets.listo("prision")) {
@@ -103,9 +113,49 @@ class Calabozo {
     for (const en of this.enemigos) {
       lista.push({ baseY: en.estado === "muerto" ? -1e9 : en.y + en.alto, dibujar: () => en.draw(ctx, cam) });
     }
+    lista.push({ baseY: this.cofre.y * this.escala, dibujar: () => this._dibujarCofre(ctx, cam) });
     lista.push({ baseY: player.y + player.alto, dibujar: () => player.draw(ctx, cam) });
     lista.sort((a, b) => a.baseY - b.baseY);
     for (const e of lista) e.dibujar();
+  }
+
+  _dibujarCofre(ctx, cam) {
+    const s = this.escala, c = this.cofre;
+    const cx = Math.round(c.x * s - cam.x), by = Math.round(c.y * s - cam.y);
+    // Sombra
+    ctx.fillStyle = "rgba(0,0,0,.30)";
+    ctx.beginPath(); ctx.ellipse(cx, by, 24, 8, 0, 0, Math.PI * 2); ctx.fill();
+    if (Assets.listo("cofre")) {
+      const el = Assets.el("cofre"), iw = Assets.w("cofre"), ih = Assets.h("cofre");
+      const dh = 44, dw = dh * (iw / ih);
+      ctx.drawImage(el, Math.round(cx - dw / 2), Math.round(by - dh), dw, dh);
+      if (c.abierto) { ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.fillRect(Math.round(cx - dw / 2 + 4), Math.round(by - dh + 4), dw - 8, 8); }
+      return;
+    }
+    this._cofreReserva(ctx, cx, by, c.abierto);
+  }
+
+  // Dibujo de reserva: cofre de madera oscura con refuerzos de hierro
+  _cofreReserva(ctx, cx, by, abierto) {
+    const w = 44, h = 34, x = cx - w / 2, y = by - h;
+    ctx.fillStyle = "#3a2716"; ctx.fillRect(x, y + 10, w, h - 10);            // cuerpo madera
+    ctx.fillStyle = "#2a1c10"; ctx.fillRect(x, y + h - 6, w, 6);              // base sombra
+    ctx.strokeStyle = "#6f4526"; ctx.lineWidth = 1;                          // vetas
+    for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(x, y + 10 + i * 7); ctx.lineTo(x + w, y + 10 + i * 7); ctx.stroke(); }
+    // Tapa
+    if (abierto) {
+      ctx.fillStyle = "#050608"; ctx.fillRect(x + 3, y + 6, w - 6, 8);        // interior oscuro
+      ctx.fillStyle = "#4a3221"; ctx.fillRect(x - 1, y - 6, w + 2, 8);        // tapa levantada
+    } else {
+      ctx.fillStyle = "#4a3221"; ctx.beginPath();
+      ctx.moveTo(x, y + 12); ctx.quadraticCurveTo(cx, y - 2, x + w, y + 12); ctx.lineTo(x + w, y + 12); ctx.lineTo(x, y + 12); ctx.fill();
+    }
+    // Refuerzos de hierro y candado
+    ctx.fillStyle = "#6b7079"; ctx.fillRect(x + 6, y + 8, 4, h - 8); ctx.fillRect(x + w - 10, y + 8, 4, h - 8);
+    ctx.fillStyle = "#caa24a"; ctx.fillRect(cx - 3, y + 14, 6, 7);            // candado dorado
+    // Telarañas (camuflaje)
+    ctx.strokeStyle = "rgba(230,230,230,.25)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, y + 8); ctx.lineTo(x + 8, y + 16); ctx.moveTo(x + 4, y + 6); ctx.lineTo(x + 8, y + 16); ctx.stroke();
   }
 
   enemigosVivos() { return this.enemigos.filter((e) => e.estado !== "muerto").length; }

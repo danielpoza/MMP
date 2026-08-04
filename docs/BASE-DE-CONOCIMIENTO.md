@@ -288,8 +288,13 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     cerrada bloquea el paso (`esCaminable`); al abrir, se **tapan las rejas** con un
     hueco oscuro (`_dibujarHuecoCelda`) y se puede pasar. (Hecho por código sobre la
     imagen, sin regenerar el mapa.)
-  - **PENDIENTE (siguientes trozos):** Trozo 2 = la verja (rejas) que corta el
-    pasillo + la pared agrietada que se rompe con la manzana → agujero al jardín;
+  - ✅ **Cofre del pasillo (hecho):** `Calabozo.cofre` (a la izquierda de la puerta de
+    la celda). Al acercarse sale **Abrir (E)** (`_hintCofre`); al abrirlo da una
+    **Manzana misteriosa** (`player.comida`) y se dibuja abierto. Asset `cofre.png`
+    (chroma) con dibujo de reserva (`_cofreReserva`).
+  - **PENDIENTE (Trozo 2, falta):** la **pared agrietada** de la celda que se rompe
+    con la **Fuerza** de la manzana → agujero al **jardín**, y conectar
+    jardín → comedor → bóveda. (Las **rejas** ya cortan el pasillo vía colisiones.)
     Trozo 3 = arbusto con la llave + celda-regalo; Trozo 4 = repartir esqueletos y
     la bóveda (mapa del tesoro que completa "boveda"). Dudas pendientes del usuario:
     contenido del regalo, dónde van los esqueletos, y qué hay en la bóveda.

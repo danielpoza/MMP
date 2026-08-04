@@ -78,6 +78,10 @@ La guia completa con el prompt de cada uno esta en:
                                           desde arriba (calabozo, pasillo,
                                           celda, jardin, comedor, celda con
                                           llave y boveda). Fondo lleno, 16:9
+
+  cofre.png                ~56 x 44       Cofre camuflado del pasillo (con la
+                                          manzana dentro). Fondo magenta
+                                          #FF00FF
 ----------------------------------------------------------------
   ENEMIGOS - ESQUELETOS (maldicion de la manzana). Fondo magenta.
   Ojos verde claro cuando estan "encendidos". Ver prompts en

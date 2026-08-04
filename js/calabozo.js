@@ -21,16 +21,15 @@ class Calabozo {
     // ZONAS por las que SE PUEDE caminar (en coords de la imagen). El resto = pared.
     // (Primer borrado; se afina comparando con el mapa.)
     this.zonas = [
-      { x: 150,  y: 516,  w: 396,  h: 800 },   // 0 calabozo (sala de entrada, izq)
-      { x: 500,  y: 637,  w: 960,  h: 373 },   // 1 pasillo (tramo izquierdo)
-      { x: 1038, y: 367,  w: 264,  h: 330 },   // 2 celda vacía (con pared agrietada)
-      { x: 1370, y: 129,  w: 416,  h: 555 },   // 3 jardín (al aire libre)
-      { x: 1300, y: 640,  w: 560,  h: 380 },   // 4 pasillo (tramo central)
-      { x: 1795, y: 430,  w: 305,  h: 505 },   // 5 comedor
-      { x: 1300, y: 1000, w: 270,  h: 355 },   // 6 pasillo inferior
-      { x: 1700, y: 900,  w: 300,  h: 455 },   // 7 celda con llave (regalo)
-      { x: 2000, y: 510,  w: 490,  h: 345 },   // 8 pasillo de la bóveda
-      { x: 2351, y: 143,  w: 340,  h: 420 },   // 9 bóveda
+      { x: 110,  y: 555,  w: 455,  h: 680 },   // 0 calabozo (sala de entrada)
+      { x: 520,  y: 560,  w: 790,  h: 490 },   // 1 pasillo (izquierda, antes de las rejas)
+      { x: 1010, y: 400,  w: 235,  h: 300 },   // 2 celda vacía (interior, con la puerta de rejas)
+      { x: 1405, y: 150,  w: 375,  h: 525 },   // 3 jardín (al aire libre)
+      { x: 1360, y: 700,  w: 460,  h: 350 },   // 4 pasillo (derecha, tras las rejas)
+      { x: 1795, y: 400,  w: 335,  h: 545 },   // 5 comedor
+      { x: 2010, y: 555,  w: 475,  h: 305 },   // 6 pasillo de la bóveda
+      { x: 2300, y: 150,  w: 400,  h: 435 },   // 7 bóveda
+      { x: 1775, y: 1000, w: 250,  h: 360 },   // 8 celda con llave (regalo)
     ];
 
     // Entrada (dentro del calabozo) y salida (la puerta tumbada, para volver a la plaza)

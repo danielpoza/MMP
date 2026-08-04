@@ -196,6 +196,7 @@ class Game {
     this.celdaCerca = false;  // ¿el jugador está junto a la puerta de la celda vacía?
     this.cofreCerca = false;  // ¿el jugador está junto al cofre del pasillo?
     this.paredCerca = false;  // ¿el jugador está junto a la pared agrietada?
+    this.arbustoCerca = null; // arbusto del jardín cercano (o null)
     this.danoFlashT = 0;      // parpadeo rojo al recibir daño
     this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
@@ -766,11 +767,21 @@ class Game {
         this.cofreCerca = !this.calabozo.cofre.abierto && this.calabozo.cercaDeCofre(this.player);
         this.paredCerca = !this.calabozo.paredAgrietada.rota && this.calabozo.cercaDePared(this.player);
         this.celdaCerca = !this.calabozo.puertaCelda.abierta && this.calabozo.cercaDeCelda(this.player);
+        this.arbustoCerca = this.calabozo.cercaDeArbusto(this.player);
         if (this.cofreCerca && Input.pressed["e"]) {
           this.calabozo.cofre.abierto = true;
           this.player.comida["Manzana misteriosa"] = (this.player.comida["Manzana misteriosa"] || 0) + 1;
           this.mensaje = "¡Una Manzana misteriosa! Úsala en la mochila (P)."; this.mensajeT = 3.4;
           this.cofreCerca = false;
+        } else if (this.arbustoCerca && Input.pressed["e"]) {
+          const a = this.arbustoCerca;
+          if (a.llave && !this.calabozo.llaveEncontrada) {
+            this.calabozo.llaveEncontrada = true;
+            this.player.tieneLlave = true;
+            this.mensaje = "¡Encuentras una llave escondida!"; this.mensajeT = 3;
+          } else {
+            this.mensaje = "Aquí no hay nada..."; this.mensajeT = 1.8;
+          }
         } else if (this.paredCerca && Input.pressed["e"]) {
           if (this.player.tieneFuerza) {
             this.calabozo.paredAgrietada.rota = true;
@@ -860,6 +871,7 @@ class Game {
       if (this.celdaCerca) this._hintCeldaVacia(ctx);
       if (this.cofreCerca) this._hintCofre(ctx);
       if (this.paredCerca && this.player.tieneFuerza) this._hintPared(ctx);
+      if (this.arbustoCerca) this._hintArbusto(ctx);
       this._hud(ctx);
       // Contador de esqueletos (si hay)
       if (this.calabozo.enemigos.length) {
@@ -1355,6 +1367,20 @@ class Game {
     ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
     ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("Abrir (E)", cx, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Aviso "Buscar (E)" sobre el arbusto cercano
+  _hintArbusto(ctx) {
+    const a = this.arbustoCerca, s = this.calabozo.escala;
+    const cx = Math.round(a.x * s - this.cam.x);
+    const yy = Math.round((a.y - 56) * s - this.cam.y) - 6;
+    const w = 100, h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Buscar (E)", cx, y + h / 2 + 1);
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 

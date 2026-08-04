@@ -47,6 +47,16 @@ class Calabozo {
     // hace un agujero de la celda al jardín. Al romperla, ese trozo se vuelve caminable.
     this.paredAgrietada = { x: 1180, y: 462, w: 240, h: 200, rota: false };
 
+    // Arbustos del jardín (arbusto.png por encima, tapando los pintados del mapa).
+    // (x,y = base/pies en coords de imagen). Uno esconde la LLAVE de la celda-regalo.
+    this.arbustos = [
+      { x: 1465, y: 420 },
+      { x: 1715, y: 450, llave: true },   // la llave está detrás de este
+      { x: 1445, y: 655 },
+      { x: 1715, y: 655 },
+    ];
+    this.llaveEncontrada = false;
+
     this.enemigos = [];   // los esqueletos se colocan en el Trozo 4
   }
 
@@ -90,6 +100,15 @@ class Calabozo {
   cercaDeCofre(player) {
     const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
     return Math.hypot(px - this.cofre.x * this.escala, py - (this.cofre.y - 18) * this.escala) < 80;
+  }
+
+  // ¿Junto a qué arbusto está el jugador? (devuelve el arbusto o null)
+  cercaDeArbusto(player) {
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    for (const a of this.arbustos) {
+      if (Math.hypot(px - a.x * this.escala, py - (a.y - 22) * this.escala) < 62) return a;
+    }
+    return null;
   }
 
   // ¿Está el jugador junto a la pared agrietada (por el lado de la celda)?
@@ -151,9 +170,32 @@ class Calabozo {
       lista.push({ baseY: en.estado === "muerto" ? -1e9 : en.y + en.alto, dibujar: () => en.draw(ctx, cam) });
     }
     lista.push({ baseY: this.cofre.y * this.escala, dibujar: () => this._dibujarCofre(ctx, cam) });
+    for (const a of this.arbustos) lista.push({ baseY: a.y * this.escala, dibujar: () => this._dibujarArbusto(ctx, cam, a) });
     lista.push({ baseY: player.y + player.alto, dibujar: () => player.draw(ctx, cam) });
     lista.sort((a, b) => a.baseY - b.baseY);
     for (const e of lista) e.dibujar();
+  }
+
+  // Tapa el arbusto pintado del mapa con césped y dibuja arbusto.png encima
+  _dibujarArbusto(ctx, cam, a) {
+    const s = this.escala;
+    const cx = Math.round(a.x * s - cam.x), by = Math.round(a.y * s - cam.y);
+    // Capa de césped (mismo tono que el jardín) para tapar el arbusto pintado
+    ctx.save();
+    const grass = ["#648a4d", "#5a7f45", "#6f9553"];
+    const blob = (dx, dy, rx, ry, i) => { ctx.fillStyle = grass[i]; ctx.beginPath(); ctx.ellipse(cx + dx, by - 22 + dy, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); };
+    blob(0, 0, 52, 40, 0); blob(-16, 6, 34, 26, 1); blob(18, -8, 30, 22, 2); blob(4, 14, 40, 22, 1);
+    ctx.restore();
+    // Sombra + arbusto.png (o reserva)
+    ctx.fillStyle = "rgba(0,0,0,.20)"; ctx.beginPath(); ctx.ellipse(cx, by, 24, 8, 0, 0, Math.PI * 2); ctx.fill();
+    if (Assets.listo("arbusto")) {
+      const el = Assets.el("arbusto"), iw = Assets.w("arbusto"), ih = Assets.h("arbusto");
+      const dh = 56, dw = dh * (iw / ih);
+      ctx.drawImage(el, Math.round(cx - dw / 2), Math.round(by - dh), dw, dh);
+    } else {
+      ctx.fillStyle = "#3f7a37"; ctx.beginPath(); ctx.ellipse(cx, by - 16, 22, 18, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#4a8a40"; ctx.beginPath(); ctx.ellipse(cx - 6, by - 22, 12, 10, 0, 0, Math.PI * 2); ctx.fill();
+    }
   }
 
   _dibujarCofre(ctx, cam) {

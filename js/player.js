@@ -39,6 +39,9 @@ class Player {
     // Combate
     this.ataqueCD = 0;      // enfriamiento entre espadazos
     this.atacandoT = 0;     // animación del tajo (>0 = está dando un espadazo)
+
+    // Llave de la celda-regalo (se encuentra en un arbusto del jardín)
+    this.tieneLlave = false;
   }
 
   // ¿Tiene ahora mismo el efecto de fuerza activo?

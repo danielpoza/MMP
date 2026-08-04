@@ -298,9 +298,17 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     agujero de escombros** (`_dibujarAgujeroPared`) y ese hueco se vuelve caminable
     (celda ↔ jardín en `esCaminable`). Sin Fuerza, avisa que necesita fuerza. Flujo
     completo del Trozo 2: cofre → Manzana → comer (P) → Fuerza → romper pared → jardín.
+  - ✅ **Arbustos del jardín + llave escondida (hecho):** `Calabozo.arbustos` (lista de
+    4 con x,y en coords de imagen; uno lleva `llave:true`). Se dibujan con
+    `_dibujarArbusto` (una capa de césped tapa el arbusto pintado del mapa y encima va
+    `arbusto.png`, con reserva por código). Al acercarse sale **Buscar (E)**
+    (`_hintArbusto`); buscar en el arbusto de la llave da `player.tieneLlave=true`
+    (*"¡Encuentras una llave escondida!"*) y en los demás *"Aquí no hay nada..."*.
+    `Calabozo.cercaDeArbusto` y `llaveEncontrada` controlan el estado.
   - **PENDIENTE:** conectar **jardín → comedor → bóveda** (cuando se construya la
     bóveda); afinar que romper/entrar exija estar dentro de la celda (colisión suelta).
-    Trozo 3 = arbusto con la llave + celda-regalo; Trozo 4 = repartir esqueletos y
+    Trozo 3 = celda-regalo (se abre con `player.tieneLlave`, dentro la espada / golpe
+    místico); Trozo 4 = repartir esqueletos y
     la bóveda (mapa del tesoro que completa "boveda"). Dudas pendientes del usuario:
     contenido del regalo, dónde van los esqueletos, y qué hay en la bóveda.
 - **Enemigos y combate** (la maldición de la manzana).

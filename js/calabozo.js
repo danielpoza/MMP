@@ -61,7 +61,17 @@ class Calabozo {
     // golpe místico. El cofre está cerrado con llave (la que se esconde en el jardín).
     this.cofreRegalo = { x: 1865, y: 1140, abierto: false };
 
-    this.enemigos = [];   // los esqueletos se colocan en el Trozo 4
+    // Esqueletos repartidos por las celdas (Trozo 4). Empiezan dormidos (sentados) y
+    // despiertan al acercarse. (ix,iy = pies del esqueleto en coords de imagen.)
+    const esq = (ix, iy, dir) => {
+      const e = new Esqueleto(Math.round(ix * this.escala - 13), Math.round(iy * this.escala - 34), "manos");
+      e.dir = dir;
+      return e;
+    };
+    this.enemigos = [
+      esq(470, 660, "izq"),    // calabozo de entrada (zona 0): sentado mirando a la izquierda
+      esq(1110, 470, "abajo"), // celda de rejas (zona 2): sentado de frente
+    ];
   }
 
   update(dt) { this.time += dt; }

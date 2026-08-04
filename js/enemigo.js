@@ -108,8 +108,14 @@ class Esqueleto {
   _dibujarSprite(ctx, cx, baseY) {
     const t = this.tipo, H = this.SPRITE_H;
     if (this.estado === "dormido") {
-      const s = "esqueleto_" + t + "_sentado";        // sentado de frente, ojos apagados
-      if (Assets.listo(s)) { this._sprite(ctx, s, 0, 2, 0, 4, cx, baseY, H, false); return; }
+      const s = "esqueleto_" + t + "_sentado";        // hoja 2col × 4fil, ojos apagados
+      if (Assets.listo(s)) {
+        // fila 0 = sentado de frente; fila 2 = sentado de perfil (mira a la izquierda)
+        const perfil = (this.dir === "izq" || this.dir === "der");
+        const flip = this.dir === "der";               // el perfil mira a la izq; se voltea si mira a la der
+        this._sprite(ctx, s, 0, 2, perfil ? 2 : 0, 4, cx, baseY, H, flip);
+        return;
+      }
     }
     if (this.atacandoT > 0) {
       const s = "esqueleto_" + t + "_ataque";          // zarpazo (fila 0, col 1); mira a la izq.

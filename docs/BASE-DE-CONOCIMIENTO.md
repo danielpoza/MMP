@@ -312,12 +312,17 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     `player.espadaMistica=true` (Espada del Golpe Místico); si no, avisa de que hay que
     buscar la llave en el jardín. Con la espada mística `_atacar` suma +20 de daño y el
     tajo (`_dibujarTajo`) se pinta morado.
-  - **PENDIENTE:** conectar **jardín → comedor → bóveda** (cuando se construya la
-    bóveda); afinar que romper/entrar exija estar dentro de la celda (colisión suelta).
-    Trozo 3 = celda-regalo (se abre con `player.tieneLlave`, dentro la espada / golpe
-    místico); Trozo 4 = repartir esqueletos y
-    la bóveda (mapa del tesoro que completa "boveda"). Dudas pendientes del usuario:
-    contenido del regalo, dónde van los esqueletos, y qué hay en la bóveda.
+  - ✅ **Esqueletos / Trozo 4 (hecho):** `Calabozo.enemigos` se rellena en el
+    constructor con dos `Esqueleto("manos")`: uno en el calabozo de entrada (zona 0)
+    con `dir="izq"` (sentado **de perfil mirando a la izquierda**) y otro en la celda de
+    rejas (zona 2) con `dir="abajo"` (sentado **de frente**). En `enemigo.js`,
+    `_dibujarSprite` elige en el estado dormido la fila 0 (frente) o la fila 2 (perfil,
+    mira a la izquierda; se voltea si `dir==="der"`) de `esqueleto_manos_sentado`.
+    Despiertan al acercarse (radio 150) y persiguen; combate ya existente.
+  - **PENDIENTE:** la **bóveda** (zona 7): entrar (E) → escena interior con
+    `boveda_ataque.png`, el **esqueleto gigante** (`esqueleto_gigante.png`), el mapa del
+    tesoro (cofre "Abrir E") y el agujero "Bajar (E)" bloqueado hasta derrotar al jefe.
+    Afinar también que romper/entrar la pared agrietada exija estar dentro de la celda.
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,

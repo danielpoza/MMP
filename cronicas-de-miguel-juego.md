@@ -156,8 +156,12 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
   - ✅ **Celda-regalo (hecho):** la celda del candado (abajo). Dentro hay un **cofre
     dorado cerrado con llave**; con la llave del jardín se abre y te da la **Espada del
     Golpe Místico** (tus ataques pegan más fuerte y el tajo se vuelve morado).
-  - **Falta:** repartir los **esqueletos** por las celdas y la **bóveda** con el
-    esqueleto gigante y el mapa del tesoro (fin de la misión).
+  - ✅ **Esqueletos repartidos (hecho):** uno **sentado mirando a la izquierda** en el
+    calabozo de entrada y otro **sentado de frente** en la celda de rejas (la
+    celda-regalo no tiene). Duermen hasta que te acercas; entonces despiertan y te
+    persiguen. Se les pega con Espacio o clic derecho.
+  - **Falta:** la **bóveda** con el esqueleto gigante y el mapa del tesoro (fin de la
+    misión); y los esqueletos con **arma** (maza/espada/arco) más adelante.
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
   `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
   (mientras tanto usan dibujo de reserva).

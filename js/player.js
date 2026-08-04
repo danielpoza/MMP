@@ -42,6 +42,8 @@ class Player {
 
     // Llave de la celda-regalo (se encuentra en un arbusto del jardín)
     this.tieneLlave = false;
+    // Espada del Golpe Místico (premio del cofre de la celda-regalo): ataques más fuertes
+    this.espadaMistica = false;
   }
 
   // ¿Tiene ahora mismo el efecto de fuerza activo?

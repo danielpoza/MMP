@@ -305,6 +305,13 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     (`_hintArbusto`); buscar en el arbusto de la llave da `player.tieneLlave=true`
     (*"¡Encuentras una llave escondida!"*) y en los demás *"Aquí no hay nada..."*.
     `Calabozo.cercaDeArbusto` y `llaveEncontrada` controlan el estado.
+  - ✅ **Celda-regalo / Trozo 3 (hecho):** la celda del candado (zona 8, abajo).
+    `Calabozo.cofreRegalo` (x,y en coords de imagen) es un **cofre dorado dibujado por
+    código** (`_dibujarCofreRegalo`, sin PNG). Al acercarse sale **Abrir (E)**
+    (`_hintCofreRegalo`); si `player.tieneLlave` se abre y pone
+    `player.espadaMistica=true` (Espada del Golpe Místico); si no, avisa de que hay que
+    buscar la llave en el jardín. Con la espada mística `_atacar` suma +20 de daño y el
+    tajo (`_dibujarTajo`) se pinta morado.
   - **PENDIENTE:** conectar **jardín → comedor → bóveda** (cuando se construya la
     bóveda); afinar que romper/entrar exija estar dentro de la celda (colisión suelta).
     Trozo 3 = celda-regalo (se abre con `player.tieneLlave`, dentro la espada / golpe

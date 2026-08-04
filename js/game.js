@@ -197,6 +197,7 @@ class Game {
     this.cofreCerca = false;  // ¿el jugador está junto al cofre del pasillo?
     this.paredCerca = false;  // ¿el jugador está junto a la pared agrietada?
     this.arbustoCerca = null; // arbusto del jardín cercano (o null)
+    this.cofreRegaloCerca = false; // ¿junto al cofre de la celda-regalo?
     this.danoFlashT = 0;      // parpadeo rojo al recibir daño
     this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
@@ -457,7 +458,8 @@ class Game {
     if (p.ataqueCD > 0) return;              // aún en enfriamiento
     p.ataqueCD = 0.35;
     p.atacandoT = 0.18;                       // animación del tajo
-    const dmg = p.tieneFuerza ? 50 : 25;      // con Fuerza mata de un golpe
+    let dmg = p.tieneFuerza ? 50 : 25;        // con Fuerza mata de un golpe
+    if (p.espadaMistica) dmg += 20;           // la Espada del Golpe Místico pega más fuerte
     const fx = p.dir === "izq" ? -1 : p.dir === "der" ? 1 : 0;
     const fy = p.dir === "arriba" ? -1 : p.dir === "abajo" ? 1 : 0;
     const ax = p.x + p.ancho / 2 + fx * 34, ay = p.y + p.alto / 2 + fy * 34;   // centro del tajo
@@ -768,6 +770,7 @@ class Game {
         this.paredCerca = !this.calabozo.paredAgrietada.rota && this.calabozo.cercaDePared(this.player);
         this.celdaCerca = !this.calabozo.puertaCelda.abierta && this.calabozo.cercaDeCelda(this.player);
         this.arbustoCerca = this.calabozo.cercaDeArbusto(this.player);
+        this.cofreRegaloCerca = !this.calabozo.cofreRegalo.abierto && this.calabozo.cercaDeCofreRegalo(this.player);
         if (this.cofreCerca && Input.pressed["e"]) {
           this.calabozo.cofre.abierto = true;
           this.player.comida["Manzana misteriosa"] = (this.player.comida["Manzana misteriosa"] || 0) + 1;
@@ -794,6 +797,15 @@ class Game {
           this.calabozo.puertaCelda.abierta = true;
           this.mensaje = "Abres la puerta de la celda."; this.mensajeT = 2.2;
           this.celdaCerca = false;
+        } else if (this.cofreRegaloCerca && Input.pressed["e"]) {
+          if (this.player.tieneLlave) {
+            this.calabozo.cofreRegalo.abierto = true;
+            this.player.espadaMistica = true;
+            this.mensaje = "¡La Espada del Golpe Místico! Tus ataques pegan más fuerte."; this.mensajeT = 3.6;
+            this.cofreRegaloCerca = false;
+          } else {
+            this.mensaje = "🔒 El cofre está cerrado con llave. Búscala en el jardín."; this.mensajeT = 3;
+          }
         } else if (this.salidaCerca && Input.pressed["e"]) {
           this._salirCalabozo();   // solo se sale llegando a la puerta tumbada. No vale Esc.
         }
@@ -872,6 +884,7 @@ class Game {
       if (this.cofreCerca) this._hintCofre(ctx);
       if (this.paredCerca && this.player.tieneFuerza) this._hintPared(ctx);
       if (this.arbustoCerca) this._hintArbusto(ctx);
+      if (this.cofreRegaloCerca) this._hintCofreRegalo(ctx);
       this._hud(ctx);
       // Contador de esqueletos (si hay)
       if (this.calabozo.enemigos.length) {
@@ -1412,6 +1425,20 @@ class Game {
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
+  // Aviso "Abrir (E)" sobre el cofre-regalo de la celda con llave
+  _hintCofreRegalo(ctx) {
+    const c = this.calabozo.cofreRegalo, s = this.calabozo.escala;
+    const cx = Math.round(c.x * s - this.cam.x);
+    const yy = Math.round((c.y - 42) * s - this.cam.y) - 6;
+    const w = 96, h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Abrir (E)", cx, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
   // El tajo de la espada (arco blanco delante del jugador cuando ataca)
   _dibujarTajo(ctx) {
     const p = this.player;
@@ -1420,7 +1447,7 @@ class Game {
     const ang = p.dir === "izq" ? Math.PI : p.dir === "der" ? 0 : p.dir === "arriba" ? -Math.PI / 2 : Math.PI / 2;
     ctx.save();
     ctx.translate(cx, cy); ctx.rotate(ang);
-    ctx.strokeStyle = p.tieneFuerza ? "rgba(255,225,120,.9)" : "rgba(255,255,255,.85)";
+    ctx.strokeStyle = p.tieneFuerza ? "rgba(255,225,120,.9)" : p.espadaMistica ? "rgba(180,120,255,.9)" : "rgba(255,255,255,.85)";
     ctx.lineWidth = 4; ctx.lineCap = "round";
     ctx.beginPath(); ctx.arc(14, 0, 24, -0.9, 0.9); ctx.stroke();
     ctx.restore();

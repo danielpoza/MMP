@@ -150,9 +150,14 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
   la **prisión entera** (dibujo `prision.png`): calabozo de entrada, pasillo, celda,
   jardín, comedor, celda-regalo y la bóveda al fondo. Se puede **caminar** por todas
   las salas (paredes puestas a mano; se afinarán). Se sale por la puerta tumbada.
-  - **Falta:** la verja del pasillo y romper la pared agrietada con la manzana para
-    ir al jardín; el arbusto con la llave y la celda-regalo; repartir los esqueletos;
-    y la **bóveda** con el mapa del tesoro (fin de la misión).
+  - ✅ **Jardín + llave (hecho):** se rompe la pared agrietada con la Fuerza de la
+    manzana y se llega al jardín; los arbustos usan `arbusto.png` y **detrás de uno
+    está escondida la llave** (aviso *Buscar (E)*).
+  - ✅ **Celda-regalo (hecho):** la celda del candado (abajo). Dentro hay un **cofre
+    dorado cerrado con llave**; con la llave del jardín se abre y te da la **Espada del
+    Golpe Místico** (tus ataques pegan más fuerte y el tajo se vuelve morado).
+  - **Falta:** repartir los **esqueletos** por las celdas y la **bóveda** con el
+    esqueleto gigante y el mapa del tesoro (fin de la misión).
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
   `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
   (mientras tanto usan dibujo de reserva).

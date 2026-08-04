@@ -57,6 +57,10 @@ class Calabozo {
     ];
     this.llaveEncontrada = false;
 
+    // Celda-regalo (zona 8, la del candado): dentro hay un cofre con la ESPADA del
+    // golpe místico. El cofre está cerrado con llave (la que se esconde en el jardín).
+    this.cofreRegalo = { x: 1865, y: 1140, abierto: false };
+
     this.enemigos = [];   // los esqueletos se colocan en el Trozo 4
   }
 
@@ -100,6 +104,13 @@ class Calabozo {
   cercaDeCofre(player) {
     const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
     return Math.hypot(px - this.cofre.x * this.escala, py - (this.cofre.y - 18) * this.escala) < 80;
+  }
+
+  // ¿Está el jugador junto al cofre-regalo de la celda con llave?
+  cercaDeCofreRegalo(player) {
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    const c = this.cofreRegalo;
+    return Math.hypot(px - c.x * this.escala, py - (c.y - 18) * this.escala) < 80;
   }
 
   // ¿Junto a qué arbusto está el jugador? (devuelve el arbusto o null)
@@ -170,6 +181,7 @@ class Calabozo {
       lista.push({ baseY: en.estado === "muerto" ? -1e9 : en.y + en.alto, dibujar: () => en.draw(ctx, cam) });
     }
     lista.push({ baseY: this.cofre.y * this.escala, dibujar: () => this._dibujarCofre(ctx, cam) });
+    lista.push({ baseY: this.cofreRegalo.y * this.escala, dibujar: () => this._dibujarCofreRegalo(ctx, cam) });
     for (const a of this.arbustos) lista.push({ baseY: a.y * this.escala, dibujar: () => this._dibujarArbusto(ctx, cam, a) });
     lista.push({ baseY: player.y + player.alto, dibujar: () => player.draw(ctx, cam) });
     lista.sort((a, b) => a.baseY - b.baseY);
@@ -196,6 +208,36 @@ class Calabozo {
       ctx.fillStyle = "#3f7a37"; ctx.beginPath(); ctx.ellipse(cx, by - 16, 22, 18, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#4a8a40"; ctx.beginPath(); ctx.ellipse(cx - 6, by - 22, 12, 10, 0, 0, Math.PI * 2); ctx.fill();
     }
+  }
+
+  // Cofre del tesoro de la celda-regalo (dorado). Dibujo por código (no necesita PNG).
+  _dibujarCofreRegalo(ctx, cam) {
+    const s = this.escala, c = this.cofreRegalo;
+    const cx = Math.round(c.x * s - cam.x), by = Math.round(c.y * s - cam.y);
+    ctx.save();
+    // Sombra
+    ctx.fillStyle = "rgba(0,0,0,.35)";
+    ctx.beginPath(); ctx.ellipse(cx, by, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+    const w = 46, h = 36, x = cx - w / 2, y = by - h;
+    // Base (madera oscura) y tapa (madera clara)
+    ctx.fillStyle = "#5e3f20"; ctx.fillRect(x, y + h * 0.42, w, h * 0.58);
+    ctx.fillStyle = "#7a5327"; ctx.fillRect(x, y, w, h * 0.5);
+    // Herrajes dorados (flejes + banda del cierre)
+    ctx.fillStyle = "#e9c24c";
+    ctx.fillRect(x, y + h * 0.40, w, 5);
+    ctx.fillRect(x + 5, y, 5, h);
+    ctx.fillRect(x + w - 10, y, 5, h);
+    ctx.fillRect(x + w / 2 - 3, y + h * 0.5, 6, 4);         // cerradura
+    if (c.abierto) {
+      ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.fillRect(x + 6, y + 6, w - 12, 8);       // hueco (ya vacío)
+      ctx.fillStyle = "rgba(255,240,180,.7)"; ctx.fillRect(x + 8, y + 7, w - 16, 3); // brillo
+    } else {
+      // Candado colgando del cierre
+      ctx.fillStyle = "#caa24a"; ctx.fillRect(cx - 4, y + h * 0.5 - 1, 8, 8);
+      ctx.strokeStyle = "#caa24a"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, y + h * 0.5 - 1, 3, Math.PI, 0); ctx.stroke();
+    }
+    ctx.restore();
   }
 
   _dibujarCofre(ctx, cam) {

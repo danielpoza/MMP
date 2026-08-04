@@ -188,6 +188,7 @@ class Game {
     this.islaMinerales = null; // escenario de la isla de los minerales (se crea al viajar)
     this.islaComercio = null;  // escenario de la isla del comercio
     this.calabozo = null;      // sala del calabozo (tras tumbar la puerta)
+    this.boveda = null;        // bóveda del tesoro (jefe final)
     this._mapaIslas = [];     // zonas clicables de las islas en el mapa
     this.puestoComCerca = null; // puesto del comercio cercano (o null)
     this.puertaCerca = false; // ¿el jugador está junto a la puerta escondida?
@@ -198,6 +199,11 @@ class Game {
     this.paredCerca = false;  // ¿el jugador está junto a la pared agrietada?
     this.arbustoCerca = null; // arbusto del jardín cercano (o null)
     this.cofreRegaloCerca = false; // ¿junto al cofre de la celda-regalo?
+    this.bovedaCerca = false; // ¿junto a la puerta de la bóveda (en la prisión)?
+    this.ataudCerca = false;  // ¿junto al ataúd de la bóveda?
+    this.cofreMapaCerca = false; // ¿junto al cofre del mapa (pedestal)?
+    this.agujeroCerca = false; // ¿junto al agujero de la bóveda?
+    this.salidaBovedaCerca = false; // ¿junto a la puerta de salida de la bóveda?
     this.danoFlashT = 0;      // parpadeo rojo al recibir daño
     this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
@@ -437,6 +443,25 @@ class Game {
     this.estado = "isla_comercio";
   }
 
+  // Entrar en la bóveda (desde la puerta de la zona 7 del calabozo)
+  _entrarBoveda() {
+    this._bovedaVuelta = { x: this.player.x, y: this.player.y };  // dónde volver en la prisión
+    if (!this.boveda) this.boveda = new Boveda();
+    this.player.x = this.boveda.inicio.x;
+    this.player.y = this.boveda.inicio.y;
+    this.player.dir = "abajo";
+    this.cam.seguir(this.player, this.boveda.pixelWidth, this.boveda.pixelHeight);
+    this.mensaje = "La bóveda del tesoro..."; this.mensajeT = 2.4;
+    this.estado = "boveda";
+  }
+  // Salir de la bóveda: volver a la prisión, junto a la puerta de la bóveda
+  _salirBoveda() {
+    if (this._bovedaVuelta) { this.player.x = this._bovedaVuelta.x; this.player.y = this._bovedaVuelta.y; }
+    this.player.dir = "abajo";
+    this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
+    this.estado = "calabozo";
+  }
+
   // Un esqueleto te ha golpeado: flash rojo en los bordes
   recibirDano() { this.danoFlashT = 0.35; }
 
@@ -449,6 +474,7 @@ class Game {
     if (this.estado === "isla_minerales") return this.islaMinerales;
     if (this.estado === "isla_comercio") return this.islaComercio;
     if (this.estado === "calabozo") return this.calabozo;
+    if (this.estado === "boveda") return this.boveda;
     return null;
   }
 
@@ -771,6 +797,7 @@ class Game {
         this.celdaCerca = !this.calabozo.puertaCelda.abierta && this.calabozo.cercaDeCelda(this.player);
         this.arbustoCerca = this.calabozo.cercaDeArbusto(this.player);
         this.cofreRegaloCerca = !this.calabozo.cofreRegalo.abierto && this.calabozo.cercaDeCofreRegalo(this.player);
+        this.bovedaCerca = this.calabozo.cercaDeBoveda(this.player);
         if (this.cofreCerca && Input.pressed["e"]) {
           this.calabozo.cofre.abierto = true;
           this.player.comida["Manzana misteriosa"] = (this.player.comida["Manzana misteriosa"] || 0) + 1;
@@ -806,8 +833,52 @@ class Game {
           } else {
             this.mensaje = "🔒 El cofre está cerrado con llave. Búscala en el jardín."; this.mensajeT = 3;
           }
+        } else if (this.bovedaCerca && Input.pressed["e"]) {
+          this._entrarBoveda();
         } else if (this.salidaCerca && Input.pressed["e"]) {
           this._salirCalabozo();   // solo se sale llegando a la puerta tumbada. No vale Esc.
+        }
+        break;
+      }
+      case "boveda": {
+        this.boveda.update(dt);
+        if (this.mensajeT > 0) this.mensajeT -= dt;
+        if (this.danoFlashT > 0) this.danoFlashT -= dt;
+        this.player.update(dt, this.boveda);
+        for (const en of this.boveda.enemigos) en.update(dt, this.player, this.boveda, this);
+        this.cam.seguir(this.player, this.boveda.pixelWidth, this.boveda.pixelHeight);
+        // Atacar (espacio o clic derecho)
+        const puedeAtacarB = this.player.ataqueCD <= 0;
+        if (puedeAtacarB && (Input.pressed[" "] || this._ataquePedido)) this._atacar();
+        this._ataquePedido = false;
+        // Cercanías
+        this.ataudCerca = !this.boveda.ataudAbierto && this.boveda.cercaDeAtaud(this.player);
+        this.cofreMapaCerca = this.boveda.cercaDeCofreMapa(this.player);
+        this.agujeroCerca = this.boveda.cercaDeAgujero(this.player);
+        this.salidaBovedaCerca = this.boveda.cercaDeSalida(this.player);
+        // Interacciones
+        if (this.ataudCerca && Input.pressed["e"]) {
+          this.boveda.despertarGigante();
+          this.mensaje = "¡Un ESQUELETO GIGANTE sale del ataúd!"; this.mensajeT = 3.2;
+          this.ataudCerca = false;
+        } else if (this.cofreMapaCerca && Input.pressed["e"]) {
+          if (!this.boveda.jefeDerrotado) {
+            this.mensaje = "Seok: Centrémonos en la misión..."; this.mensajeT = 2.6;
+          } else if (!this.boveda.mapaObtenido) {
+            this.boveda.mapaObtenido = true;
+            this.player.tieneMapaTesoro = true;
+            this.mensaje = "¡El MAPA DEL TESORO! La misión está casi lista."; this.mensajeT = 3.6;
+          } else {
+            this.mensaje = "Ya tienes el mapa del tesoro."; this.mensajeT = 1.8;
+          }
+        } else if (this.agujeroCerca && Input.pressed["e"]) {
+          if (!this.boveda.jefeDerrotado) {
+            this.mensaje = "El agujero está tapiado por la magia... derrota al gigante."; this.mensajeT = 3;
+          } else {
+            this.mensaje = "Bajas por el agujero... ¡Continuará! 🗺️"; this.mensajeT = 4;
+          }
+        } else if (this.salidaBovedaCerca && Input.pressed["e"]) {
+          this._salirBoveda();
         }
         break;
       }
@@ -885,6 +956,7 @@ class Game {
       if (this.paredCerca && this.player.tieneFuerza) this._hintPared(ctx);
       if (this.arbustoCerca) this._hintArbusto(ctx);
       if (this.cofreRegaloCerca) this._hintCofreRegalo(ctx);
+      if (this.bovedaCerca) this._hintBoveda(ctx);
       this._hud(ctx);
       // Contador de esqueletos (si hay)
       if (this.calabozo.enemigos.length) {
@@ -896,8 +968,67 @@ class Game {
       ctx.textAlign = "left";
       if (this.mensajeT > 0) this._toast(ctx, this.mensaje);
       if (this.danoFlashT > 0) this._dibujarDanoFlash(ctx);      // parpadeo rojo al recibir daño
+    } else if (this.estado === "boveda") {
+      this.boveda.drawGround(ctx, this.cam);
+      this.boveda.drawObjects(ctx, this.cam, this.player);
+      if (this.player.atacandoT > 0) this._dibujarTajo(ctx);      // el espadazo
+      if (this.ataudCerca) this._hintBov(ctx, this.boveda.ataud.x + this.boveda.ataud.w / 2, this.boveda.ataud.y, "Mirar (E)", 96);
+      if (this.cofreMapaCerca) this._hintBov(ctx, this.boveda.pedestal.x + this.boveda.pedestal.w / 2, this.boveda.pedestal.y, "Abrir (E)", 88);
+      if (this.agujeroCerca && this.boveda.jefeDerrotado) this._hintBov(ctx, this.boveda.agujero.x + this.boveda.agujero.w / 2, this.boveda.agujero.y, "Bajar (E)", 96);
+      if (this.salidaBovedaCerca) this._hintBov(ctx, this.boveda.puertaSalida.x + this.boveda.puertaSalida.w / 2, this.boveda.puertaSalida.y, "Volver (E)", 84);
+      this._hud(ctx);
+      // Barra de vida del jefe (si está vivo)
+      if (this.boveda.enemigos.length && !this.boveda.jefeDerrotado) this._barraJefe(ctx);
+      ctx.fillStyle = "rgba(230,220,200,.85)"; ctx.font = "14px Georgia, serif"; ctx.textAlign = "center";
+      ctx.fillText("Atacar: Espacio o clic derecho", this.ancho / 2, this.alto - 14);
+      ctx.textAlign = "left";
+      if (this.mensajeT > 0) this._toast(ctx, this.mensaje);
+      if (this.danoFlashT > 0) this._dibujarDanoFlash(ctx);
     }
     if (this.inventarioAbierto) this._dibujarInventario(ctx);   // mochila (P), encima de todo
+  }
+
+  // Aviso "(E)" genérico de la bóveda, colocado sobre un punto en coords de imagen
+  _hintBov(ctx, ix, iy, texto, w) {
+    const s = this.boveda.escala;
+    const cx = Math.round(ix * s - this.cam.x);
+    const yy = Math.round(iy * s - this.cam.y) - 10;
+    const h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(texto, cx, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Barra de vida grande del jefe, arriba del todo
+  _barraJefe(ctx) {
+    const jefe = this.boveda.enemigos[0]; if (!jefe) return;
+    const w = 420, h = 16, x = (this.ancho - w) / 2, y = 54;
+    const fr = Math.max(0, jefe.vida / jefe.vidaMax);
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.7)"; ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+    ctx.fillStyle = "#3a0d0d"; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "#e23b3b"; ctx.fillRect(x, y, w * fr, h);
+    ctx.fillStyle = "rgba(255,255,255,.22)"; ctx.fillRect(x, y, w * fr, h / 2);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 13px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Esqueleto Gigante", this.ancho / 2, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Aviso "Entrar (E)" sobre la puerta de la bóveda (en la prisión)
+  _hintBoveda(ctx) {
+    const b = this.calabozo.puertaBoveda, s = this.calabozo.escala;
+    const cx = Math.round((b.x + b.w / 2) * s - this.cam.x);
+    const yy = Math.round((b.y + b.h) * s - this.cam.y) - 40;
+    const w = 100, h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Entrar (E)", cx, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
   // Indicadores de arriba mientras se juega: vida y reales

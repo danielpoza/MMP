@@ -61,6 +61,9 @@ class Calabozo {
     // golpe místico. El cofre está cerrado con llave (la que se esconde en el jardín).
     this.cofreRegalo = { x: 1865, y: 1140, abierto: false };
 
+    // Puerta arqueada de la BÓVEDA (zona 7): al entrar se pasa a la escena de la bóveda.
+    this.puertaBoveda = { x: 2360, y: 250, w: 260, h: 380 };
+
     // Esqueletos repartidos por las celdas (Trozo 4). Empiezan dormidos (sentados) y
     // despiertan al acercarse. (ix,iy = pies del esqueleto en coords de imagen.)
     const esq = (ix, iy, dir) => {
@@ -121,6 +124,14 @@ class Calabozo {
     const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
     const c = this.cofreRegalo;
     return Math.hypot(px - c.x * this.escala, py - (c.y - 18) * this.escala) < 80;
+  }
+
+  // ¿Está el jugador junto a la puerta de la bóveda (zona 7)?
+  cercaDeBoveda(player) {
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    const b = this.puertaBoveda;
+    const cx = (b.x + b.w / 2) * this.escala, cy = (b.y + b.h) * this.escala;
+    return Math.hypot(px - cx, py - cy) < 95;
   }
 
   // ¿Junto a qué arbusto está el jugador? (devuelve el arbusto o null)

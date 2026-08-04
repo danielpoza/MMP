@@ -319,10 +319,22 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     `_dibujarSprite` elige en el estado dormido la fila 0 (frente) o la fila 2 (perfil,
     mira a la izquierda; se voltea si `dir==="der"`) de `esqueleto_manos_sentado`.
     Despiertan al acercarse (radio 150) y persiguen; combate ya existente.
-  - **PENDIENTE:** la **bóveda** (zona 7): entrar (E) → escena interior con
-    `boveda_ataque.png`, el **esqueleto gigante** (`esqueleto_gigante.png`), el mapa del
-    tesoro (cofre "Abrir E") y el agujero "Bajar (E)" bloqueado hasta derrotar al jefe.
-    Afinar también que romper/entrar la pared agrietada exija estar dentro de la celda.
+  - ✅ **La Bóveda (hecho):** `js/boveda.js` (clase `Boveda`), escena con imagen igual
+    que el calabozo (`escala 0.6`, `zonas` caminables + sólidos `mesa/ataud/pedestal/
+    agujero`). Dos fondos: `boveda.png` (ataúd cerrado) y `boveda_ataque.png` (ataúd
+    abierto). Se entra desde `Calabozo.puertaBoveda` (zona 7) con *Entrar (E)*
+    (`game._entrarBoveda`/`_salirBoveda`, estado `"boveda"`, `_mundoActual` lo incluye).
+    `cercaDeAtaud` → `despertarGigante()` pone `ataudAbierto=true` (cambia el fondo) y
+    añade un `EsqueletoGigante` (en `enemigo.js`: 300 vida, 22 daño, dibujo por código
+    escalado ×3, `_tieneSprites()=false` para NO usar el PNG con texto). `boveda.update`
+    marca `jefeDerrotado` cuando todos los enemigos están muertos. El cofre del mapa
+    (pedestal) da `player.tieneMapaTesoro` solo tras derrotar al jefe; el agujero
+    (*Bajar (E)*) igual → *"¡Continuará!"*. HUD del jefe: `game._barraJefe`; avisos:
+    `game._hintBov` / `_hintBoveda`.
+  - **PENDIENTE:** enchufar el sprite LIMPIO del gigante (`esqueleto_gigante.png` andar
+    3×4 y `esqueleto_gigante_ataque.png` 2×4, fondo magenta, sin texto) — hoy las PNG
+    del gigante llevan el rótulo "Part 1/2" y anotaciones a mano. Esqueletos con arma
+    (maza/espada/arco) y afinar la colisión de la pared agrietada.
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,

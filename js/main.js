@@ -41,6 +41,8 @@ window.addEventListener("load", () => {
   Assets.load("puerta_abierta",   "assets/puerta_abierta.png",   { chroma: true }); // la misma puerta, tumbada/abierta hacia dentro
   Assets.load("calabozo",         "assets/calabozo.png");                           // vista del calabozo por las rejillas (fondo lleno)
   Assets.load("prision",          "assets/prision.png");                            // mapa completo de la prisión (fondo lleno)
+  Assets.load("boveda",           "assets/boveda.png");                             // bóveda del tesoro (ataúd cerrado)
+  Assets.load("boveda_ataque",    "assets/boveda_ataque.png");                      // bóveda con el ataúd abierto (sale el gigante)
   Assets.load("cofre",            "assets/cofre.png",            { chroma: true }); // cofre camuflado del pasillo (con la manzana)
   // Esqueletos del calabozo (fondo magenta)
   Assets.load("esqueleto_manos",         "assets/esqueleto_manos.png",         { chroma: true });

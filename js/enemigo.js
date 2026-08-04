@@ -225,3 +225,86 @@ class Esqueleto {
     ctx.restore();
   }
 }
+
+/* =========================================================
+   EsqueletoGigante  —  el JEFE de la bóveda
+   ---------------------------------------------------------
+   Sale del ataúd. Es enorme, lento pero muy fuerte y con
+   mucha vida. Se dibuja por CÓDIGO (grande) mientras no haya
+   un sprite limpio (esqueleto_gigante.png lleva texto). Cuando
+   exista el PNG bueno, se enchufa aquí sin tocar nada más.
+   ========================================================= */
+class EsqueletoGigante extends Esqueleto {
+  constructor(x, y) {
+    super(x, y, "gigante");
+    this.ancho = 64; this.alto = 100;
+    this.vidaMax = 300; this.vida = 300;
+    this.dano = 22;              // pega fuerte
+    this.velocidad = 78;         // lento
+    this.radioGolpe = 62;
+    this.radioDespertar = 0;     // se genera ya despierto (sale del ataúd)
+    this.estado = "despierto";
+    this.escalaDibujo = 3.0;     // factor de tamaño del dibujo por código
+  }
+
+  // De momento NO usamos los PNG del gigante (llevan texto rotulado): dibujo por código.
+  _tieneSprites() { return false; }
+
+  draw(ctx, cam) {
+    const cx = Math.round(this.x + this.ancho / 2 - cam.x);
+    const baseY = Math.round(this.y + this.alto - cam.y);
+    if (this.estado === "muerto") { this._huesosGigante(ctx, cx, baseY); return; }
+    // Sombra grande
+    ctx.fillStyle = "rgba(0,0,0,.38)";
+    ctx.beginPath(); ctx.ellipse(cx, baseY, this.ancho * 0.62, this.ancho * 0.24, 0, 0, Math.PI * 2); ctx.fill();
+    // Cuerpo (esqueleto normal dibujado a lo grande). La barra de vida del jefe se
+    // pinta en el HUD (game._barraJefe), así que aquí NO ponemos la barrita pequeña.
+    ctx.save(); ctx.translate(cx, baseY); ctx.scale(this.escalaDibujo, this.escalaDibujo);
+    this._cuerpoGigante(ctx);
+    ctx.restore();
+  }
+
+  // Esqueleto con los pies en (0,0) y el cuerpo hacia arriba (se escala fuera)
+  _cuerpoGigante(ctx) {
+    const hueso = this.hitFlash > 0 ? "#ffffff" : "#e8e4d2";
+    const sombra = this.hitFlash > 0 ? "#ffd0d0" : "#a7a28d";
+    const top = -34;
+    const fx = this.dir === "izq" ? -1 : this.dir === "der" ? 1 : 0;
+    const fy = this.dir === "arriba" ? -1 : this.dir === "abajo" ? 0.5 : 0;
+    // Piernas
+    ctx.strokeStyle = sombra; ctx.lineWidth = 3;
+    const sep = Math.sin(this.paso) * 2;
+    ctx.beginPath(); ctx.moveTo(-3, top + 28); ctx.lineTo(-4 - sep, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(3, top + 28); ctx.lineTo(4 + sep, 0); ctx.stroke();
+    // Columna + costillas
+    ctx.strokeStyle = hueso; ctx.lineWidth = 3.2;
+    ctx.beginPath(); ctx.moveTo(0, top + 11); ctx.lineTo(0, top + 28); ctx.stroke();
+    ctx.lineWidth = 2.2;
+    for (let i = 0; i < 4; i++) {
+      const ry = top + 12 + i * 4.4;
+      ctx.beginPath(); ctx.moveTo(0, ry); ctx.quadraticCurveTo(-10, ry + 2, -9, ry + 5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, ry); ctx.quadraticCurveTo(10, ry + 2, 9, ry + 5); ctx.stroke();
+    }
+    // Brazos / garras (se estiran al atacar)
+    ctx.strokeStyle = hueso; ctx.lineWidth = 3.2;
+    const alcance = this.atacandoT > 0 ? 18 : 11;
+    ctx.beginPath(); ctx.moveTo(-7, top + 13); ctx.lineTo(-7 + fx * alcance, top + 15 + fy * alcance); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(7, top + 13); ctx.lineTo(7 + fx * alcance, top + 15 + fy * alcance); ctx.stroke();
+    // Cráneo grande + ojos verdes
+    ctx.fillStyle = hueso;
+    ctx.beginPath(); ctx.arc(0, top + 1, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(-6, top + 9, 12, 5);
+    ctx.save(); ctx.shadowColor = "#8ef58a"; ctx.shadowBlur = 8; ctx.fillStyle = "#8ef58a";
+    ctx.beginPath(); ctx.arc(-4, top, 2.6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, top, 2.6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  _huesosGigante(ctx, cx, baseY) {
+    ctx.save(); ctx.globalAlpha = 0.85; ctx.translate(cx, baseY); ctx.scale(this.escalaDibujo, this.escalaDibujo);
+    ctx.strokeStyle = "#cfcab4"; ctx.lineWidth = 2.5; ctx.fillStyle = "#cfcab4";
+    for (let i = 0; i < 5; i++) { const a = i * 1.3; ctx.beginPath(); ctx.moveTo(-13 + i * 6, -2 - Math.sin(a) * 3); ctx.lineTo(-3 + i * 6, -6 - Math.cos(a) * 3); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(-3, -5, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}

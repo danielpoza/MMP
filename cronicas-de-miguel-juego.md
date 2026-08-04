@@ -160,8 +160,17 @@ isla inicial) tiene el mapa de un tesoro, pero le pone pruebas:
     calabozo de entrada y otro **sentado de frente** en la celda de rejas (la
     celda-regalo no tiene). Duermen hasta que te acercas; entonces despiertan y te
     persiguen. Se les pega con Espacio o clic derecho.
-  - **Falta:** la **bóveda** con el esqueleto gigante y el mapa del tesoro (fin de la
-    misión); y los esqueletos con **arma** (maza/espada/arco) más adelante.
+  - ✅ **La Bóveda (hecho):** se entra por la puerta arqueada de la zona 7 (*Entrar
+    (E)*). Es una escena nueva con fondo `boveda.png`. Al **mirar el ataúd** (*Mirar
+    (E)*) sale el **Esqueleto Gigante** (jefe con 300 de vida y barra grande) y el fondo
+    cambia a `boveda_ataque.png` (ataúd abierto, tesoro a la vista). El **cofre del mapa**
+    del pedestal está bloqueado (*"Seok: Centrémonos en la misión..."*) hasta derrotar al
+    jefe; luego te da el **mapa del tesoro**. El **agujero** (*Bajar (E)*) también se
+    desbloquea al ganar y muestra *"¡Continuará!"*. De momento el gigante va **dibujado
+    por código** (falta el sprite limpio).
+  - **Falta:** enchufar el sprite limpio del gigante (`esqueleto_gigante.png` /
+    `esqueleto_gigante_ataque.png` sin texto) y los esqueletos con **arma**
+    (maza/espada/arco) más adelante.
 - Falta guardar algunos PNG: `casa_azul/verde/amarilla/morada.png`, `fumador.png`,
   `int_fruta/verdura/pollo/minerales.png`, `puerta.png`, `calabozo.png`
   (mientras tanto usan dibujo de reserva).

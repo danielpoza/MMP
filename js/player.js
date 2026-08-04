@@ -44,6 +44,8 @@ class Player {
     this.tieneLlave = false;
     // Espada del Golpe Místico (premio del cofre de la celda-regalo): ataques más fuertes
     this.espadaMistica = false;
+    // Mapa del tesoro (premio de la bóveda, tras derrotar al esqueleto gigante)
+    this.tieneMapaTesoro = false;
   }
 
   // ¿Tiene ahora mismo el efecto de fuerza activo?

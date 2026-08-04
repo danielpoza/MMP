@@ -43,6 +43,10 @@ class Calabozo {
     // (x,y = base/pies en coords de imagen). Dentro hay una Manzana misteriosa.
     this.cofre = { x: 895, y: 815, abierto: false };
 
+    // Pared agrietada (coords de imagen): con la Fuerza de la manzana se rompe (E) y
+    // hace un agujero de la celda al jardín. Al romperla, ese trozo se vuelve caminable.
+    this.paredAgrietada = { x: 1180, y: 462, w: 240, h: 200, rota: false };
+
     this.enemigos = [];   // los esqueletos se colocan en el Trozo 4
   }
 
@@ -56,6 +60,9 @@ class Calabozo {
     for (const z of this.zonas) {
       if (ix > z.x && ix < z.x + z.w && iy > z.y && iy < z.y + z.h) { dentro = true; break; }
     }
+    // Si la pared agrietada está rota, su hueco también es caminable (celda <-> jardín)
+    const p = this.paredAgrietada;
+    if (!dentro && p.rota && ix > p.x && ix < p.x + p.w && iy > p.y && iy < p.y + p.h) dentro = true;
     if (!dentro) return false;
     // La puerta de la celda vacía bloquea el paso mientras esté cerrada
     const d = this.puertaCelda;
@@ -85,6 +92,14 @@ class Calabozo {
     return Math.hypot(px - this.cofre.x * this.escala, py - (this.cofre.y - 18) * this.escala) < 80;
   }
 
+  // ¿Está el jugador junto a la pared agrietada (por el lado de la celda)?
+  cercaDePared(player) {
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    const p = this.paredAgrietada;
+    const cx = p.x * this.escala, cy = (p.y + p.h / 2) * this.escala;   // borde izquierdo (lado celda)
+    return Math.hypot(px - cx, py - cy) < 90;
+  }
+
   // ================= DIBUJO =================
   drawGround(ctx, cam) {
     if (Assets.listo("prision")) {
@@ -94,6 +109,28 @@ class Calabozo {
     }
     // Si la puerta de la celda está abierta, tapamos las rejas con un hueco oscuro
     if (this.puertaCelda.abierta) this._dibujarHuecoCelda(ctx, cam);
+    // Si la pared agrietada está rota, tapamos ese trozo con un agujero (paso al jardín)
+    if (this.paredAgrietada.rota) this._dibujarAgujeroPared(ctx, cam);
+  }
+
+  _dibujarAgujeroPared(ctx, cam) {
+    const p = this.paredAgrietada, s = this.escala;
+    const x = Math.round(p.x * s - cam.x), y = Math.round(p.y * s - cam.y);
+    const w = Math.round(p.w * s), h = Math.round(p.h * s);
+    // Paso: oscuro por el lado de la celda, con luz del jardín por la derecha
+    const g = ctx.createLinearGradient(x, y, x + w, y);
+    g.addColorStop(0, "#14161b"); g.addColorStop(0.6, "#26302a"); g.addColorStop(1, "#4a6b32");
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+    // Escombros de piedra rota en los bordes (arriba, abajo y esquinas)
+    ctx.fillStyle = "#3a3e46";
+    const chunk = (cx, cy, s2) => { ctx.fillRect(cx, cy, s2, s2 * 0.7); };
+    for (let i = 0; i < 6; i++) { chunk(x + 6 + i * (w / 6), y - 2, 10); chunk(x + 4 + i * (w / 6), y + h - 8, 9); }
+    ctx.fillStyle = "#52565f";
+    chunk(x + 4, y + 8, 8); chunk(x + w - 14, y + 10, 9); chunk(x + w * 0.5, y + h - 16, 8);
+    // Un par de piedras sueltas en el suelo del hueco
+    ctx.fillStyle = "#5a5e67";
+    ctx.beginPath(); ctx.ellipse(x + w * 0.35, y + h - 6, 7, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + w * 0.62, y + h - 4, 5, 3, 0, 0, Math.PI * 2); ctx.fill();
   }
 
   _dibujarHuecoCelda(ctx, cam) {

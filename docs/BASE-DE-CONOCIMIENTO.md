@@ -292,9 +292,14 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     la celda). Al acercarse sale **Abrir (E)** (`_hintCofre`); al abrirlo da una
     **Manzana misteriosa** (`player.comida`) y se dibuja abierto. Asset `cofre.png`
     (chroma) con dibujo de reserva (`_cofreReserva`).
-  - **PENDIENTE (Trozo 2, falta):** la **pared agrietada** de la celda que se rompe
-    con la **Fuerza** de la manzana → agujero al **jardín**, y conectar
-    jardín → comedor → bóveda. (Las **rejas** ya cortan el pasillo vía colisiones.)
+  - ✅ **Pared agrietada / Trozo 2 (hecho):** `Calabozo.paredAgrietada` (rect en coords
+    de imagen, entre la celda y el jardín). Junto a ella, con **Fuerza** activa sale
+    **Romper (E)** (`_hintPared`); al romper (`rota=true`) se **tapa ese trozo con un
+    agujero de escombros** (`_dibujarAgujeroPared`) y ese hueco se vuelve caminable
+    (celda ↔ jardín en `esCaminable`). Sin Fuerza, avisa que necesita fuerza. Flujo
+    completo del Trozo 2: cofre → Manzana → comer (P) → Fuerza → romper pared → jardín.
+  - **PENDIENTE:** conectar **jardín → comedor → bóveda** (cuando se construya la
+    bóveda); afinar que romper/entrar exija estar dentro de la celda (colisión suelta).
     Trozo 3 = arbusto con la llave + celda-regalo; Trozo 4 = repartir esqueletos y
     la bóveda (mapa del tesoro que completa "boveda"). Dudas pendientes del usuario:
     contenido del regalo, dónde van los esqueletos, y qué hay en la bóveda.

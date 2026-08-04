@@ -195,6 +195,7 @@ class Game {
     this.salidaCerca = false; // ¿el jugador está junto a la salida del calabozo?
     this.celdaCerca = false;  // ¿el jugador está junto a la puerta de la celda vacía?
     this.cofreCerca = false;  // ¿el jugador está junto al cofre del pasillo?
+    this.paredCerca = false;  // ¿el jugador está junto a la pared agrietada?
     this.danoFlashT = 0;      // parpadeo rojo al recibir daño
     this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
@@ -761,14 +762,23 @@ class Game {
         for (const en of this.calabozo.enemigos) en.update(dt, this.player, this.calabozo, this);
         this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
         this.salidaCerca = this.calabozo.cercaDeSalida(this.player);
-        // Interacciones con E (cofre, puerta de la celda, salida) según dónde estés
+        // Interacciones con E (cofre, pared agrietada, puerta de la celda, salida)
         this.cofreCerca = !this.calabozo.cofre.abierto && this.calabozo.cercaDeCofre(this.player);
+        this.paredCerca = !this.calabozo.paredAgrietada.rota && this.calabozo.cercaDePared(this.player);
         this.celdaCerca = !this.calabozo.puertaCelda.abierta && this.calabozo.cercaDeCelda(this.player);
         if (this.cofreCerca && Input.pressed["e"]) {
           this.calabozo.cofre.abierto = true;
           this.player.comida["Manzana misteriosa"] = (this.player.comida["Manzana misteriosa"] || 0) + 1;
           this.mensaje = "¡Una Manzana misteriosa! Úsala en la mochila (P)."; this.mensajeT = 3.4;
           this.cofreCerca = false;
+        } else if (this.paredCerca && Input.pressed["e"]) {
+          if (this.player.tieneFuerza) {
+            this.calabozo.paredAgrietada.rota = true;
+            this.mensaje = "¡Rompes la pared de un puñetazo!"; this.mensajeT = 2.8;
+            this.paredCerca = false;
+          } else {
+            this.mensaje = "La pared está agrietada... necesito fuerza (come una manzana)."; this.mensajeT = 3;
+          }
         } else if (this.celdaCerca && Input.pressed["e"]) {
           this.calabozo.puertaCelda.abierta = true;
           this.mensaje = "Abres la puerta de la celda."; this.mensajeT = 2.2;
@@ -849,6 +859,7 @@ class Game {
       if (this.salidaCerca) this._hintSalidaCalabozo(ctx);
       if (this.celdaCerca) this._hintCeldaVacia(ctx);
       if (this.cofreCerca) this._hintCofre(ctx);
+      if (this.paredCerca && this.player.tieneFuerza) this._hintPared(ctx);
       this._hud(ctx);
       // Contador de esqueletos (si hay)
       if (this.calabozo.enemigos.length) {
@@ -1344,6 +1355,20 @@ class Game {
     ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
     ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("Abrir (E)", cx, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Aviso "Romper (E)" sobre la pared agrietada (solo si tienes Fuerza)
+  _hintPared(ctx) {
+    const p = this.calabozo.paredAgrietada, s = this.calabozo.escala;
+    const cx = Math.round((p.x + p.w / 2) * s - this.cam.x);
+    const yy = Math.round(p.y * s - this.cam.y) - 6;
+    const w = 104, h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Romper (E)", cx, y + h / 2 + 1);
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 

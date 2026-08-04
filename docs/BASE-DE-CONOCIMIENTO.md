@@ -280,6 +280,11 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
   jardín → comedor → pasillo de la bóveda → bóveda (+ celda-regalo). Se entra por el
   calabozo y se sale por la puerta tumbada (`salida`, Salir E). Las zonas son un
   primer pase (se pueden afinar para que peguen mejor a las paredes).
+  - ✅ **Puerta de la celda vacía (hecho):** `Calabozo.puertaCelda` (rect en coords
+    de imagen). Al acercarse sale **Abrir (E)** (`_hintCeldaVacia`); mientras está
+    cerrada bloquea el paso (`esCaminable`); al abrir, se **tapan las rejas** con un
+    hueco oscuro (`_dibujarHuecoCelda`) y se puede pasar. (Hecho por código sobre la
+    imagen, sin regenerar el mapa.)
   - **PENDIENTE (siguientes trozos):** Trozo 2 = la verja (rejas) que corta el
     pasillo + la pared agrietada que se rompe con la manzana → agujero al jardín;
     Trozo 3 = arbusto con la llave + celda-regalo; Trozo 4 = repartir esqueletos y

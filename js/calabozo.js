@@ -37,6 +37,9 @@ class Calabozo {
     this.inicio = { x: Math.round(330 * this.escala), y: Math.round(900 * this.escala) };
     this.salida = { x: 210, y: 1030, w: 220, h: 200 };   // coords de imagen (puerta tumbada)
 
+    // Puerta de rejas de la celda vacía (coords de imagen): bloquea hasta abrirla (E)
+    this.puertaCelda = { x: 1018, y: 495, w: 180, h: 205, abierta: false };
+
     this.enemigos = [];   // los esqueletos se colocan en el Trozo 4
   }
 
@@ -46,10 +49,15 @@ class Calabozo {
   esCaminable(px, py) {
     if (px < 0 || py < 0 || px >= this.pixelWidth || py >= this.pixelHeight) return false;
     const ix = px / this.escala, iy = py / this.escala;
+    let dentro = false;
     for (const z of this.zonas) {
-      if (ix > z.x && ix < z.x + z.w && iy > z.y && iy < z.y + z.h) return true;
+      if (ix > z.x && ix < z.x + z.w && iy > z.y && iy < z.y + z.h) { dentro = true; break; }
     }
-    return false;
+    if (!dentro) return false;
+    // La puerta de la celda vacía bloquea el paso mientras esté cerrada
+    const d = this.puertaCelda;
+    if (!d.abierta && ix > d.x && ix < d.x + d.w && iy > d.y && iy < d.y + d.h) return false;
+    return true;
   }
 
   // ¿Está el jugador junto a la salida (la puerta tumbada)?
@@ -60,6 +68,14 @@ class Calabozo {
     return Math.hypot(px - sx, py - sy) < 70;
   }
 
+  // ¿Está el jugador junto a la puerta de la celda vacía?
+  cercaDeCelda(player) {
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    const d = this.puertaCelda;
+    const cx = (d.x + d.w / 2) * this.escala, cy = (d.y + d.h) * this.escala;
+    return Math.hypot(px - cx, py - cy) < 95;
+  }
+
   // ================= DIBUJO =================
   drawGround(ctx, cam) {
     if (Assets.listo("prision")) {
@@ -67,6 +83,20 @@ class Calabozo {
     } else {
       ctx.fillStyle = "#0a0b0e"; ctx.fillRect(0, 0, cam.ancho, cam.alto);
     }
+    // Si la puerta de la celda está abierta, tapamos las rejas con un hueco oscuro
+    if (this.puertaCelda.abierta) this._dibujarHuecoCelda(ctx, cam);
+  }
+
+  _dibujarHuecoCelda(ctx, cam) {
+    const d = this.puertaCelda, s = this.escala;
+    const x = Math.round(d.x * s - cam.x), y = Math.round(d.y * s - cam.y);
+    const w = Math.round(d.w * s), h = Math.round(d.h * s);
+    // Hueco oscuro (la celda por dentro) con un poco de suelo al fondo
+    ctx.fillStyle = "#0b0c10"; ctx.fillRect(x, y, w, h);
+    const g = ctx.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, "rgba(0,0,0,.55)"); g.addColorStop(1, "rgba(60,58,54,.35)");
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "rgba(40,42,48,.6)"; ctx.fillRect(x, y + h - 6, w, 6);   // suelo abajo
   }
 
   drawObjects(ctx, cam, player) {

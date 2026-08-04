@@ -193,6 +193,8 @@ class Game {
     this.puertaCerca = false; // ¿el jugador está junto a la puerta escondida?
     this.mirandoCalabozo = false; // ¿está mirando el calabozo por las rejillas?
     this.salidaCerca = false; // ¿el jugador está junto a la salida del calabozo?
+    this.celdaCerca = false;  // ¿el jugador está junto a la puerta de la celda vacía?
+    this.cofreCerca = false;  // ¿el jugador está junto al cofre del pasillo?
     this.danoFlashT = 0;      // parpadeo rojo al recibir daño
     this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
@@ -759,8 +761,21 @@ class Game {
         for (const en of this.calabozo.enemigos) en.update(dt, this.player, this.calabozo, this);
         this.cam.seguir(this.player, this.calabozo.pixelWidth, this.calabozo.pixelHeight);
         this.salidaCerca = this.calabozo.cercaDeSalida(this.player);
-        // Solo se sale llegando a la puerta (Salir E). No vale Esc.
-        if (this.salidaCerca && Input.pressed["e"]) this._salirCalabozo();
+        // Interacciones con E (cofre, puerta de la celda, salida) según dónde estés
+        this.cofreCerca = !this.calabozo.cofre.abierto && this.calabozo.cercaDeCofre(this.player);
+        this.celdaCerca = !this.calabozo.puertaCelda.abierta && this.calabozo.cercaDeCelda(this.player);
+        if (this.cofreCerca && Input.pressed["e"]) {
+          this.calabozo.cofre.abierto = true;
+          this.player.comida["Manzana misteriosa"] = (this.player.comida["Manzana misteriosa"] || 0) + 1;
+          this.mensaje = "¡Una Manzana misteriosa! Úsala en la mochila (P)."; this.mensajeT = 3.4;
+          this.cofreCerca = false;
+        } else if (this.celdaCerca && Input.pressed["e"]) {
+          this.calabozo.puertaCelda.abierta = true;
+          this.mensaje = "Abres la puerta de la celda."; this.mensajeT = 2.2;
+          this.celdaCerca = false;
+        } else if (this.salidaCerca && Input.pressed["e"]) {
+          this._salirCalabozo();   // solo se sale llegando a la puerta tumbada. No vale Esc.
+        }
         break;
       }
       case "salir": {
@@ -832,6 +847,8 @@ class Game {
       this.calabozo.drawObjects(ctx, this.cam, this.player);
       if (this.player.atacandoT > 0) this._dibujarTajo(ctx);      // el espadazo
       if (this.salidaCerca) this._hintSalidaCalabozo(ctx);
+      if (this.celdaCerca) this._hintCeldaVacia(ctx);
+      if (this.cofreCerca) this._hintCofre(ctx);
       this._hud(ctx);
       // Contador de esqueletos (si hay)
       if (this.calabozo.enemigos.length) {
@@ -1313,6 +1330,34 @@ class Game {
     ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
     ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("Salir (E)", cx, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Aviso "Abrir (E)" sobre la puerta de rejas de la celda vacía
+  _hintCeldaVacia(ctx) {
+    const d = this.calabozo.puertaCelda, s = this.calabozo.escala;
+    const cx = Math.round((d.x + d.w / 2) * s - this.cam.x);
+    const yy = Math.round(d.y * s - this.cam.y) - 8;
+    const w = 96, h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Abrir (E)", cx, y + h / 2 + 1);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // Aviso "Abrir (E)" sobre el cofre del pasillo
+  _hintCofre(ctx) {
+    const c = this.calabozo.cofre, s = this.calabozo.escala;
+    const cx = Math.round(c.x * s - this.cam.x);
+    const yy = Math.round((c.y - 44) * s - this.cam.y) - 6;
+    const w = 96, h = 28, x = cx - w / 2, y = yy - h;
+    ctx.save();
+    ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.strokeStyle = "#8a6d3b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.stroke();
+    ctx.fillStyle = "#5b3b20"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Abrir (E)", cx, y + h / 2 + 1);
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 

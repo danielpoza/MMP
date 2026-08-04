@@ -278,10 +278,23 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
   array `zonas` (rectángulos caminables en coords de imagen) para las colisiones
   (`Calabozo.esCaminable`). Recorrido: calabozo (entrada) → pasillo → celda vacía →
   jardín → comedor → pasillo de la bóveda → bóveda (+ celda-regalo). Se entra por el
-  calabozo y se sale por la puerta tumbada (`salida`, Salir E). Las zonas son un
-  primer pase (se pueden afinar para que peguen mejor a las paredes).
-  - **PENDIENTE (siguientes trozos):** Trozo 2 = la verja (rejas) que corta el
-    pasillo + la pared agrietada que se rompe con la manzana → agujero al jardín;
+  calabozo y se sale por la puerta tumbada (`salida`, Salir E). Las zonas se han
+  **afinado** para pegar a los suelos reales (las paredes ya bloquean bien). Entre el
+  pasillo izquierdo (zona 1) y el derecho (zona 4) queda un hueco a la altura de las
+  **rejas**: no se cruza el pasillo de frente (obstáculo del Trozo 2). El jardín (zona
+  3) queda aislado salvo por la **pared agrietada**, pendiente de abrir con la manzana.
+  - ✅ **Puerta de la celda vacía (hecho):** `Calabozo.puertaCelda` (rect en coords
+    de imagen). Al acercarse sale **Abrir (E)** (`_hintCeldaVacia`); mientras está
+    cerrada bloquea el paso (`esCaminable`); al abrir, se **tapan las rejas** con un
+    hueco oscuro (`_dibujarHuecoCelda`) y se puede pasar. (Hecho por código sobre la
+    imagen, sin regenerar el mapa.)
+  - ✅ **Cofre del pasillo (hecho):** `Calabozo.cofre` (a la izquierda de la puerta de
+    la celda). Al acercarse sale **Abrir (E)** (`_hintCofre`); al abrirlo da una
+    **Manzana misteriosa** (`player.comida`) y se dibuja abierto. Asset `cofre.png`
+    (chroma) con dibujo de reserva (`_cofreReserva`).
+  - **PENDIENTE (Trozo 2, falta):** la **pared agrietada** de la celda que se rompe
+    con la **Fuerza** de la manzana → agujero al **jardín**, y conectar
+    jardín → comedor → bóveda. (Las **rejas** ya cortan el pasillo vía colisiones.)
     Trozo 3 = arbusto con la llave + celda-regalo; Trozo 4 = repartir esqueletos y
     la bóveda (mapa del tesoro que completa "boveda"). Dudas pendientes del usuario:
     contenido del regalo, dónde van los esqueletos, y qué hay en la bóveda.

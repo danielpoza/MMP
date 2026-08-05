@@ -1494,11 +1494,11 @@ class Game {
     ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
-  // Aviso "Salir (E)" junto al hueco de salida del calabozo
+  // Aviso "Salir (E)" sobre el hueco brillante de salida del calabozo
   _hintSalidaCalabozo(ctx) {
-    const s = this.calabozo.salida;
-    const cx = Math.round((s.c + 0.5) * TILE - this.cam.x);
-    const yy = Math.round(s.f * TILE - this.cam.y) - 8;
+    const s = this.calabozo.salida, esc = this.calabozo.escala;
+    const cx = Math.round((s.x + s.w / 2) * esc - this.cam.x);
+    const yy = Math.round(s.y * esc - this.cam.y) - 8;
     const w = 96, h = 28, x = cx - w / 2, y = yy - h;
     ctx.save();
     ctx.fillStyle = "#f2e4bb"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 8); ctx.fill();

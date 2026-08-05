@@ -32,9 +32,11 @@ class Calabozo {
       { x: 1775, y: 1000, w: 250,  h: 360 },   // 8 celda con llave (regalo)
     ];
 
-    // Entrada (dentro del calabozo) y salida (la puerta tumbada, para volver a la plaza)
+    // Entrada (dentro del calabozo) y salida (para volver a la plaza).
+    // La salida está en el HUECO BRILLANTE de arriba del calabozo de entrada (la puerta
+    // de salida abierta de una patada). Coords de imagen.
     this.inicio = { x: Math.round(330 * this.escala), y: Math.round(900 * this.escala) };
-    this.salida = { x: 210, y: 1030, w: 220, h: 200 };   // coords de imagen (puerta tumbada)
+    this.salida = { x: 300, y: 550, w: 105, h: 110 };   // hueco brillante (centro ~352, 605)
 
     // Puerta de rejas de la celda vacía (coords de imagen): bloquea hasta abrirla (E)
     this.puertaCelda = { x: 1018, y: 495, w: 180, h: 205, abierta: false };

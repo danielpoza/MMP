@@ -279,7 +279,7 @@ class EsqueletoGigante extends Esqueleto {
     const el = Assets.el(hoja), cw = Assets.w(hoja) / cols, ch = Assets.h(hoja) / filas;
     const insx = cw * 0.04, insy = ch * 0.03;
     const sx = col * cw + insx, sy = fila * ch + insy, sw = cw - insx * 2, sh = ch - insy * 2;
-    const destH = 150, destW = destH * (sw / sh);
+    const destH = 220, destW = destH * (sw / sh);
     const dx = Math.round(cx - destW / 2), dy = Math.round(baseY - destH);
     ctx.save();
     if (flip) { ctx.translate(dx + destW, dy); ctx.scale(-1, 1); ctx.drawImage(el, sx, sy, sw, sh, 0, 0, destW, destH); }

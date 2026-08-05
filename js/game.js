@@ -899,7 +899,8 @@ class Game {
     ctx.clearRect(0, 0, this.ancho, this.alto);
 
     // En la bóveda, Seok se dibuja más grande (solo el dibujo, no la caja de colisiones)
-    if (this.player) this.player.escalaDibujo = this.estado === "boveda" ? 1.8 : 1;
+    // para que sea proporcionado a los muebles grandes de la sala.
+    if (this.player) this.player.escalaDibujo = this.estado === "boveda" ? 2.4 : 1;
 
     if (this.estado === "titulo") {
       this.titulo.draw(ctx);

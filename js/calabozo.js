@@ -24,8 +24,8 @@ class Calabozo {
       { x: 110,  y: 555,  w: 455,  h: 680 },   // 0 calabozo (sala de entrada)
       { x: 520,  y: 560,  w: 790,  h: 490 },   // 1 pasillo (izquierda, antes de las rejas)
       { x: 1010, y: 400,  w: 235,  h: 300 },   // 2 celda vacía (interior, con la puerta de rejas)
-      { x: 1405, y: 150,  w: 375,  h: 525 },   // 3 jardín (al aire libre)
-      { x: 1360, y: 700,  w: 460,  h: 350 },   // 4 pasillo (derecha, tras las rejas)
+      { x: 1405, y: 150,  w: 375,  h: 530 },   // 3 jardín (al aire libre)
+      { x: 1360, y: 655,  w: 500,  h: 395 },   // 4 pasillo (une el jardín por el sur con el comedor)
       { x: 1795, y: 400,  w: 335,  h: 545 },   // 5 comedor
       { x: 2010, y: 555,  w: 475,  h: 305 },   // 6 pasillo de la bóveda
       { x: 2300, y: 150,  w: 400,  h: 435 },   // 7 bóveda

@@ -298,6 +298,9 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     agujero de escombros** (`_dibujarAgujeroPared`) y ese hueco se vuelve caminable
     (celda ↔ jardín en `esCaminable`). Sin Fuerza, avisa que necesita fuerza. Flujo
     completo del Trozo 2: cofre → Manzana → comer (P) → Fuerza → romper pared → jardín.
+    NOTA colisiones: el jardín (zona 3) sale **por el sur** al pasillo (zona 4), que se
+    amplió (`{1360,655,500,395}`) para unir jardín ↔ pasillo ↔ comedor sin muros
+    invisibles. La pared rota (oeste) sigue siendo la entrada desde la celda.
   - ✅ **Arbustos del jardín + llave escondida (hecho):** `Calabozo.arbustos` (lista de
     4 con x,y en coords de imagen; uno lleva `llave:true`). Se dibujan con
     `_dibujarArbusto` (una capa de césped tapa el arbusto pintado del mapa y encima va

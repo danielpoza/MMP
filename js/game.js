@@ -1073,7 +1073,7 @@ class Game {
       if (this.player.atacandoT > 0) this._dibujarTajo(ctx);      // el espadazo
       if (this.ataudCerca) this._hintBov(ctx, this.boveda.ataud.x + this.boveda.ataud.w / 2, this.boveda.ataud.y, "Mirar (E)", 96);
       if (this.cofreMapaCerca) this._hintBov(ctx, this.boveda.pedestal.x + this.boveda.pedestal.w / 2, this.boveda.pedestal.y, "Abrir (E)", 88);
-      if (this.agujeroCerca && this.boveda.jefeDerrotado) this._hintBov(ctx, this.boveda.agujero.x + this.boveda.agujero.w / 2, this.boveda.agujero.y, "Bajar (E)", 96);
+      if (this.agujeroCerca) this._hintBov(ctx, this.boveda.agujero.x + this.boveda.agujero.w / 2, this.boveda.agujero.y, "Bajar (E)", 96);
       if (this.salidaBovedaCerca) this._hintBov(ctx, this.boveda.puertaSalida.x + this.boveda.puertaSalida.w / 2, this.boveda.puertaSalida.y, "Volver (E)", 84);
       this._hud(ctx);
       // Barra de vida del jefe (si está vivo)

@@ -178,8 +178,9 @@ class Calabozo {
     if (Assets.listo("puerta_salida")) {
       const sa = this.salida, s = this.escala;
       const el = Assets.el("puerta_salida"), iw = Assets.w("puerta_salida"), ih = Assets.h("puerta_salida");
-      const dw = sa.w * s * 1.7, dh = dw * (ih / iw);
-      const cx = (sa.x + sa.w / 2) * s - cam.x, cy = (sa.y + sa.h / 2) * s - cam.y;
+      const dw = sa.w * s * 1.5, dh = dw * (ih / iw);
+      const cx = (sa.x + sa.w / 2) * s - cam.x;
+      const cy = (sa.y + sa.h / 2) * s - cam.y - 12;   // un poco más arriba (base en la pared)
       ctx.drawImage(el, Math.round(cx - dw / 2), Math.round(cy - dh / 2), dw, dh);
     }
   }

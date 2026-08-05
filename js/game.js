@@ -165,6 +165,38 @@ const DIALOGO_ANCIANO_2 = [
   ],
 ];
 
+// Conversación con el anciano cuando YA tienes el mapa del tesoro (te manda a por un barco).
+const DIALOGO_ANCIANO_MAPA = [
+  [
+    { quien: "Anciano", texto: "Ahora sí, ¿encontraste el mapa, no?" },
+    { quien: "Seok", texto: "Sí, ya puedo empezar a buscar." },
+  ],
+  [
+    { quien: "Anciano", texto: "Sí, claro, pero antes tienes que comprarte un barco. ¿No pensarás ir nadando, al igual que has hecho en las otras misiones? ¿Verdad?" },
+  ],
+  [
+    { quien: "Seok", texto: "Es verdad, no puedo ir nadando. Pero no he visto barcos por ahí, y en la isla del comercio no hay barcos a la venta." },
+  ],
+  [
+    { quien: "Anciano", texto: "Eso es porque no conoces la Sala del Comercio 2. Te diré cómo ir. Viste un agujero en la bóveda, ¿verdad?" },
+    { quien: "Seok", texto: "Sí." },
+  ],
+  [
+    { quien: "Anciano", texto: "No fue un accidente que se hiciera. Lo hicieron a propósito para poder bajar a la cueva en la que venden barcos." },
+  ],
+  [
+    { quien: "Anciano", texto: "Ve ahí y busca un barco rentable. Si no te llega, trabaja en la mina." },
+    { quien: "Seok", texto: "De acuerdo." },
+  ],
+];
+
+// Recordatorio si vuelves a hablar con el anciano después de esa charla.
+const DIALOGO_ANCIANO_MAPA_FIN = [
+  [
+    { quien: "Anciano", texto: "¿A qué esperas? Baja por el agujero de la bóveda hasta la cueva y cómprate un barco." },
+  ],
+];
+
 class Game {
   constructor(canvas) {
     this.canvas = canvas;
@@ -218,6 +250,7 @@ class Game {
     this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
     this.ancianoLlaveHablado = false; // ¿ya ha hablado con el anciano sobre la llave?
+    this.ancianoMapaHablado = false;  // ¿ya ha hablado con el anciano tras encontrar el mapa?
     this.puertaAbierta = false; // ¿se ha tumbado ya la puerta del calabozo?
     this.tiendaComercio = null; // tipo de tienda abierta (fruta/verdura/pollo/minerales)
     this.ventaSel = {};       // minerales seleccionados para vender
@@ -313,6 +346,7 @@ class Game {
     this.fumadorHablado = false;
     this.tiendasVistas = {};
     this.ancianoLlaveHablado = false;
+    this.ancianoMapaHablado = false;
     this.puertaAbierta = false;
     this.reloj = 0;
     this.estado = "jugando";
@@ -331,10 +365,12 @@ class Game {
         reales: p.reales, vida: p.vida, vidaMax: p.vidaMax,
         picos: p.picos, picoEquipado: p.picoEquipado, picoDurabilidad: p.picoDurabilidad,
         inventario: p.inventario, comida: p.comida, maldito: p.maldito,
+        tieneLlave: p.tieneLlave, tieneMapaTesoro: p.tieneMapaTesoro,
       },
       misiones: JSON.parse(JSON.stringify(this.misiones)),
       tiendasVistas: { ...this.tiendasVistas },
       ancianoLlaveHablado: this.ancianoLlaveHablado,
+      ancianoMapaHablado: this.ancianoMapaHablado,
       puertaAbierta: this.puertaAbierta,
     });
   }
@@ -350,9 +386,11 @@ class Game {
     p.inventario = s.inventario || {};
     p.comida = s.comida || {};
     p.maldito = !!s.maldito;
+    p.tieneLlave = !!s.tieneLlave; p.tieneMapaTesoro = !!s.tieneMapaTesoro;
     this.misiones = d.misiones || [];
     this.tiendasVistas = d.tiendasVistas || {};
     this.ancianoLlaveHablado = !!d.ancianoLlaveHablado;
+    this.ancianoMapaHablado = !!d.ancianoMapaHablado;
     this.puertaAbierta = !!d.puertaAbierta;
     this.reloj = d.reloj || 0;
     this.cam.seguir(p, this.world.pixelWidth, this.world.pixelHeight);
@@ -375,6 +413,12 @@ class Game {
     } else if (!hierro.completada) {
       // Misión del hierro a medias: te echa
       this.dialogo = { guion: DIALOGO_EXPULSION, i: 0, alTerminar: "expulsar" };
+    } else if (this.player.tieneMapaTesoro && !this.ancianoMapaHablado) {
+      // ¡Ya tienes el mapa del tesoro! Te manda a por un barco.
+      this.dialogo = { guion: DIALOGO_ANCIANO_MAPA, i: 0, alTerminar: "mapaHablado" };
+    } else if (this.player.tieneMapaTesoro) {
+      // Ya te lo explicó: recordatorio
+      this.dialogo = { guion: DIALOGO_ANCIANO_MAPA_FIN, i: 0, alTerminar: "expulsar" };
     } else if (!boveda) {
       // Hierro cumplido y aún no ha oído lo del mapa: segundo diálogo
       this.dialogo = { guion: DIALOGO_ANCIANO_2, i: 0, alTerminar: "fin2" };
@@ -474,6 +518,12 @@ class Game {
 
   // Un esqueleto te ha golpeado: flash rojo en los bordes
   recibirDano() { this.danoFlashT = 0.35; }
+
+  // Bajar por el agujero de la bóveda = final de la demo
+  _finDeLaDemo() {
+    document.getElementById("hint")?.classList.add("oculto");
+    this.estado = "findemo";
+  }
 
   // Has muerto: pantalla de Game Over. causa = "manos" / "gigante" / "puro"
   gameOver(causa) {
@@ -670,6 +720,9 @@ class Game {
       this._entrarTiendaComercio("puros");   // el fumador te "vende" puros
     } else if (accion === "llaveHablado") {
       this.ancianoLlaveHablado = true;       // ya sabe que debe mirar la manzana
+      this._salirCasa();
+    } else if (accion === "mapaHablado") {
+      this.ancianoMapaHablado = true;        // ya sabe que debe bajar por el agujero de la bóveda
       this._salirCasa();
     }
   }
@@ -893,15 +946,20 @@ class Game {
           if (!this.boveda.mapaObtenido) {
             this.boveda.mapaObtenido = true;
             this.player.tieneMapaTesoro = true;
-            this.mensaje = "¡El MAPA DEL TESORO! La misión está casi lista."; this.mensajeT = 3.6;
+            // Completamos la misión de la bóveda (así el anciano vuelve a recibirte)
+            const mb = this.misiones.find((m) => m.id === "boveda");
+            if (mb) { mb.progreso = mb.objetivo; mb.completada = true; }
+            this.mensaje = "🗺️ ¡El MAPA DEL TESORO! Vuelve a enseñárselo al anciano."; this.mensajeT = 4.5;
           } else {
             this.mensaje = "Ya tienes el mapa del tesoro."; this.mensajeT = 1.8;
           }
         } else if (this.agujeroCerca && Input.pressed["e"]) {
           if (!this.boveda.jefeDerrotado) {
             this.mensaje = "Seok: Centrémonos en la misión..."; this.mensajeT = 2.8;
+          } else if (!this.ancianoMapaHablado) {
+            this.mensaje = "Antes de bajar, enséñale el mapa del tesoro al anciano."; this.mensajeT = 3.4;
           } else {
-            this.mensaje = "Bajas por el agujero... ¡Continuará! 🗺️"; this.mensajeT = 4;
+            this._finDeLaDemo();   // bajar a la cueva del comercio 2 = fin de la demo
           }
         } else if (this.salidaBovedaCerca && Input.pressed["e"]) {
           this._salirBoveda();
@@ -918,6 +976,10 @@ class Game {
           if (this.player) this.player.vida = this.player.vidaMax;
           this.estado = "titulo";
         }
+        break;
+      }
+      case "findemo": {
+        if (Input.pressed["enter"] || Input.pressed[" "]) this.estado = "titulo";
         break;
       }
     }
@@ -1023,8 +1085,34 @@ class Game {
       if (this.danoFlashT > 0) this._dibujarDanoFlash(ctx);
     } else if (this.estado === "gameover") {
       this._dibujarGameOver(ctx);
+    } else if (this.estado === "findemo") {
+      this._dibujarFinDemo(ctx);
     }
     if (this.inventarioAbierto) this._dibujarInventario(ctx);   // mochila (P), encima de todo
+  }
+
+  // Pantalla de FIN DE LA DEMO (al bajar por el agujero de la bóveda)
+  _dibujarFinDemo(ctx) {
+    const W = this.ancho, H = this.alto;
+    ctx.fillStyle = "#0b0a14"; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, W * 0.75);
+    g.addColorStop(0, "rgba(30,20,60,0)"); g.addColorStop(1, "rgba(0,0,0,.7)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.save();
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "#d9c48a"; ctx.font = "italic 20px Georgia, serif";
+    ctx.fillText("Seok baja por el agujero hacia la Sala del Comercio 2...", W / 2, H * 0.26);
+    ctx.fillText("en busca de un barco con el que encontrar el tesoro.", W / 2, H * 0.26 + 30);
+    ctx.shadowColor = "rgba(120,200,255,.85)"; ctx.shadowBlur = 24;
+    ctx.fillStyle = "#7fd0ff"; ctx.font = "bold 52px Georgia, serif";
+    ctx.fillText("FIN DE LA DEMO", W / 2, H * 0.52);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#e8dcc0"; ctx.font = "22px Georgia, serif";
+    ctx.fillText("¡Gracias por jugar!   ·   Continuará...", W / 2, H * 0.68);
+    const blink = 0.5 + 0.5 * Math.abs(Math.sin(this.reloj * 3));
+    ctx.fillStyle = `rgba(235,225,205,${blink})`; ctx.font = "16px Georgia, serif";
+    ctx.fillText("Pulsa ENTER para volver al título", W / 2, H - 30);
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
   // ================= PANTALLA DE GAME OVER (4 cuadrantes) =================

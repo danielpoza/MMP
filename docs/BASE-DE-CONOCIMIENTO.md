@@ -347,8 +347,16 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     abajo-izq **cara de Seok sangrando** (`cara_seok_muerto`), abajo-der la **frase**
     (`FRASES_MUERTE`). Todas las caras tienen dibujo de reserva por código. **Enter**
     cura y vuelve al título.
-  - **PENDIENTE:** los PNG de las caras (`cara_esqueleto/gigante/fumador/seok_muerto.png`,
-    fondo magenta); esqueletos con arma (maza/espada/arco).
+  - ✅ **Final de la demo (hecho):** al coger el **mapa del tesoro** (cofre del pedestal
+    de la bóveda) se pone `player.tieneMapaTesoro` y se **completa la misión "boveda"**
+    (así el anciano vuelve a recibirte). Al hablar con el **anciano** con el mapa, sale
+    `DIALOGO_ANCIANO_MAPA` (te manda a comprar un barco bajando por el agujero de la
+    bóveda a la "Sala del Comercio 2") → pone `ancianoMapaHablado`. El **agujero** de la
+    bóveda (*Bajar (E)*) exige: jefe muerto → mapa enseñado al anciano → entonces
+    `_finDeLaDemo()` (estado `"findemo"`, pantalla `_dibujarFinDemo`, Enter vuelve al
+    título). `tieneMapaTesoro`/`ancianoMapaHablado` se guardan en la partida.
+  - **PENDIENTE (versión completa):** la Sala del Comercio 2 (cueva de barcos), esqueletos
+    con arma (maza/espada/arco).
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,

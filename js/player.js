@@ -46,6 +46,10 @@ class Player {
     this.espadaMistica = false;
     // Mapa del tesoro (premio de la bóveda, tras derrotar al esqueleto gigante)
     this.tieneMapaTesoro = false;
+
+    // Factor de tamaño del DIBUJO (no cambia la caja de colisiones). En la bóveda
+    // se pone más grande para que Seok se vea imponente junto al esqueleto gigante.
+    this.escalaDibujo = 1;
   }
 
   // ¿Tiene ahora mismo el efecto de fuerza activo?
@@ -99,6 +103,18 @@ class Player {
   }
 
   draw(ctx, cam) {
+    const esc = this.escalaDibujo || 1;
+    if (esc === 1) { this._dibujarCuerpo(ctx, cam); return; }
+    // Escalamos alrededor de los "pies" para que el héroe siga pisando el suelo
+    const fx = Math.round(this.x + this.ancho / 2 - cam.x);
+    const fy = Math.round(this.y + this.alto - cam.y);
+    ctx.save();
+    ctx.translate(fx, fy); ctx.scale(esc, esc); ctx.translate(-fx, -fy);
+    this._dibujarCuerpo(ctx, cam);
+    ctx.restore();
+  }
+
+  _dibujarCuerpo(ctx, cam) {
     const x = Math.round(this.x - cam.x);
     const y = Math.round(this.y - cam.y);
     const w = this.ancho, h = this.alto;

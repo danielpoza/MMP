@@ -168,6 +168,14 @@ class Calabozo {
     const p = this.paredAgrietada, s = this.escala;
     const x = Math.round(p.x * s - cam.x), y = Math.round(p.y * s - cam.y);
     const w = Math.round(p.w * s), h = Math.round(p.h * s);
+    // Si existe la imagen de la pared rota (fondo magenta), la usamos encima del hueco.
+    if (Assets.listo("pared_rota")) {
+      const el = Assets.el("pared_rota"), iw = Assets.w("pared_rota"), ih = Assets.h("pared_rota");
+      // La dibujamos un poco más grande que el rectángulo para tapar bien el trozo de pared
+      const dw = w * 1.12, dh = dw * (ih / iw);
+      ctx.drawImage(el, Math.round(x + w / 2 - dw / 2), Math.round(y + h - dh), dw, dh);
+      return;
+    }
     // Paso: oscuro por el lado de la celda, con luz del jardín por la derecha
     const g = ctx.createLinearGradient(x, y, x + w, y);
     g.addColorStop(0, "#14161b"); g.addColorStop(0.6, "#26302a"); g.addColorStop(1, "#4a6b32");

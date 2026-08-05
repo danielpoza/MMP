@@ -171,9 +171,10 @@ class Calabozo {
     // Si existe la imagen de la pared rota (fondo magenta), la usamos encima del hueco.
     if (Assets.listo("pared_rota")) {
       const el = Assets.el("pared_rota"), iw = Assets.w("pared_rota"), ih = Assets.h("pared_rota");
-      // La dibujamos un poco más grande que el rectángulo para tapar bien el trozo de pared
-      const dw = w * 1.12, dh = dw * (ih / iw);
-      ctx.drawImage(el, Math.round(x + w / 2 - dw / 2), Math.round(y + h - dh), dw, dh);
+      // El agujero de la imagen está centrado; lo alineamos con el hueco de colisión.
+      const dw = w * 1.5, dh = dw * (ih / iw);
+      const cx = x + w / 2, cy = y + h / 2;
+      ctx.drawImage(el, Math.round(cx - dw / 2), Math.round(cy - dh / 2), dw, dh);
       return;
     }
     // Paso: oscuro por el lado de la celda, con luz del jardín por la derecha

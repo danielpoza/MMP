@@ -58,6 +58,11 @@ window.addEventListener("load", () => {
   Assets.load("int_minerales", "assets/int_minerales.png");
   Assets.load("interior_casa", "assets/interior_casa.png");   // escena 1ª persona (fondo lleno)
   Assets.load("portada",       "assets/portada.png");
+  // Caras de la pantalla de Game Over (fondo magenta). Reserva por código si faltan.
+  Assets.load("cara_esqueleto",   "assets/cara_esqueleto.png",   { chroma: true });
+  Assets.load("cara_gigante",     "assets/cara_gigante.png",     { chroma: true });
+  Assets.load("cara_fumador",     "assets/cara_fumador.png",     { chroma: true });
+  Assets.load("cara_seok_muerto", "assets/cara_seok_muerto.png", { chroma: true });
 
   const game = new Game(canvas);
 

@@ -75,6 +75,7 @@ class Esqueleto {
       this.golpeCD = 0.9;
       this.atacandoT = 0.25;
       if (game) game.recibirDano();
+      if (player.vida <= 0 && game) game.gameOver(this.tipo);   // "manos" o "gigante"
     }
   }
 

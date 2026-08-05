@@ -339,8 +339,16 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     *Abrir (E)* (sin condición). El **agujero** (*Bajar (E)*) dice *"Seok: Centrémonos en
     la misión..."* mientras el jefe viva, y al ganar *"¡Continuará!"*. HUD del jefe:
     `game._barraJefe`.
-  - **PENDIENTE:** esqueletos con arma (maza/espada/arco) y afinar la colisión de la
-    pared agrietada.
+  - ✅ **Pantalla de Game Over (hecho):** al llegar la vida a 0 se llama
+    `game.gameOver(causa)` (estado `"gameover"`). La causa la pasa el enemigo
+    (`enemigo.js`: `this.tipo` = "manos"/"gigante") o el puro (`_consumir` → "puro").
+    `_dibujarGameOver` pinta 4 cuadrantes: arriba-izq **GAME OVER** (rojo), arriba-der la
+    **cara del enemigo** (`CARA_ENEMIGO` → `cara_esqueleto/cara_gigante/cara_fumador`),
+    abajo-izq **cara de Seok sangrando** (`cara_seok_muerto`), abajo-der la **frase**
+    (`FRASES_MUERTE`). Todas las caras tienen dibujo de reserva por código. **Enter**
+    cura y vuelve al título.
+  - **PENDIENTE:** los PNG de las caras (`cara_esqueleto/gigante/fumador/seok_muerto.png`,
+    fondo magenta); esqueletos con arma (maza/espada/arco).
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,

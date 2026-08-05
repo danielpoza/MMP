@@ -80,6 +80,14 @@ const COLORES_PROD = {
   "Lechuga": "#7bc86a", "Pepino": "#3f8a3a", "Pollo": "#e8c9a0", "Pato": "#caa24a", "Puro": "#6b5a4a",
 };
 
+// Pantalla de Game Over: frase que dice quien te mata, e imagen de su cara
+const FRASES_MUERTE = {
+  manos:   "Mis huesos sin carne te han destrozado. Respeta a tus mayores para la próxima.",
+  gigante: "No tenías nada que hacer, pero es el precio de haberme despertado.",
+  puro:    "Hmm, pobre chaval... no estaba preparado para ser un hombre.",
+};
+const CARA_ENEMIGO = { manos: "cara_esqueleto", gigante: "cara_gigante", puro: "cara_fumador" };
+
 // Diálogo del fumador al entrar en la isla del comercio (acaba abriendo la tienda de puros)
 const DIALOGO_FUMADOR = [
   [
@@ -205,6 +213,7 @@ class Game {
     this.cofreMapaCerca = false; // ¿junto al cofre del mapa (pedestal)?
     this.agujeroCerca = false; // ¿junto al agujero de la bóveda?
     this.salidaBovedaCerca = false; // ¿junto a la puerta de salida de la bóveda?
+    this.muertePor = null;    // quién te mató (manos/gigante/puro) para la pantalla de Game Over
     this.danoFlashT = 0;      // parpadeo rojo al recibir daño
     this._ataquePedido = false; // clic derecho pidió atacar
     this.tiendasVistas = {};  // tiendas del comercio ya visitadas (fruta/verdura/pollo/minerales/puros)
@@ -466,6 +475,16 @@ class Game {
   // Un esqueleto te ha golpeado: flash rojo en los bordes
   recibirDano() { this.danoFlashT = 0.35; }
 
+  // Has muerto: pantalla de Game Over. causa = "manos" / "gigante" / "puro"
+  gameOver(causa) {
+    if (this.estado === "gameover") return;
+    this.muertePor = causa || "manos";
+    this.inventarioAbierto = false; this.mapaAbierto = false;
+    this.panelMisiones = false; this.dialogo = null;
+    document.getElementById("hint")?.classList.add("oculto");
+    this.estado = "gameover";
+  }
+
   // Clic derecho = atacar (lo pide desde main.js)
   onAtaque() { this._ataquePedido = true; }
 
@@ -562,6 +581,8 @@ class Game {
     const verbo = nombre === "Puro" ? "Fumas un puro" : "Comes " + nombre;
     this.invMsg = verbo + (dif >= 0 ? " (+" + dif + " vida)" : " (" + dif + " vida)");
     this.invMsgT = 2.6;
+    // El puro puede matarte (te quita vida): Game Over del fumador
+    if (this.player.vida <= 0) this.gameOver("puro");
   }
   // La manzana misteriosa: cura del todo, da Fuerza nivel 5 (30 s) y te maldice
   _efectoManzana() {
@@ -891,6 +912,14 @@ class Game {
         if (Input.pressed["enter"] || Input.pressed[" "]) this.estado = "titulo";
         break;
       }
+      case "gameover": {
+        // Enter: reintentar (curamos al héroe y volvemos al título)
+        if (Input.pressed["enter"] || Input.pressed[" "]) {
+          if (this.player) this.player.vida = this.player.vidaMax;
+          this.estado = "titulo";
+        }
+        break;
+      }
     }
   }
 
@@ -992,8 +1021,120 @@ class Game {
       ctx.textAlign = "left";
       if (this.mensajeT > 0) this._toast(ctx, this.mensaje);
       if (this.danoFlashT > 0) this._dibujarDanoFlash(ctx);
+    } else if (this.estado === "gameover") {
+      this._dibujarGameOver(ctx);
     }
     if (this.inventarioAbierto) this._dibujarInventario(ctx);   // mochila (P), encima de todo
+  }
+
+  // ================= PANTALLA DE GAME OVER (4 cuadrantes) =================
+  _dibujarGameOver(ctx) {
+    const W = this.ancho, H = this.alto, MW = W / 2, MH = H / 2;
+    // Fondo oscuro con viñeta roja
+    ctx.fillStyle = "#0a0506"; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, W * 0.72);
+    g.addColorStop(0, "rgba(70,0,0,0)"); g.addColorStop(1, "rgba(90,0,0,.6)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Cruz divisoria de los cuadrantes
+    ctx.strokeStyle = "rgba(180,40,40,.3)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(MW, 22); ctx.lineTo(MW, H - 22); ctx.moveTo(26, MH); ctx.lineTo(W - 26, MH); ctx.stroke();
+
+    // ARRIBA-IZQUIERDA: GAME OVER
+    ctx.save();
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(255,60,60,.85)"; ctx.shadowBlur = 22;
+    ctx.fillStyle = "#e63030"; ctx.font = "bold 64px Georgia, serif";
+    ctx.fillText("GAME", MW * 0.5, MH * 0.42);
+    ctx.fillText("OVER", MW * 0.5, MH * 0.42 + 60);
+    ctx.restore();
+
+    // ARRIBA-DERECHA: cara del enemigo que te mató
+    this._caraGO(ctx, MW, 0, MW, MH, CARA_ENEMIGO[this.muertePor], this.muertePor);
+    // ABAJO-IZQUIERDA: cara de Seok en el suelo, sangrando
+    this._caraGO(ctx, 0, MH, MW, MH, "cara_seok_muerto", "seok");
+    // ABAJO-DERECHA: la frase del enemigo
+    this._fraseGO(ctx, MW, MH, MW, MH, FRASES_MUERTE[this.muertePor] || FRASES_MUERTE.manos);
+
+    // Pie: reintentar
+    ctx.save();
+    ctx.textAlign = "center"; ctx.fillStyle = "rgba(235,225,205,.9)"; ctx.font = "16px Georgia, serif";
+    ctx.fillText("Pulsa ENTER para reintentar", W / 2, H - 12);
+    ctx.restore();
+  }
+
+  // Dibuja una cara (imagen con fondo magenta o dibujo de reserva) en un cuadrante
+  _caraGO(ctx, qx, qy, qw, qh, nombre, tipo) {
+    const m = 26, x = qx + m, y = qy + m, w = qw - 2 * m, h = qh - 2 * m;
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "rgba(180,60,60,.5)"; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+    if (nombre && Assets.listo(nombre)) {
+      const el = Assets.el(nombre), iw = Assets.w(nombre), ih = Assets.h(nombre);
+      const k = Math.min(w / iw, h / ih) * 0.94, dw = iw * k, dh = ih * k;
+      ctx.drawImage(el, Math.round(x + (w - dw) / 2), Math.round(y + (h - dh) / 2), dw, dh);
+    } else {
+      const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) * 0.4;
+      if (tipo === "seok") this._reservaCaraSeok(ctx, cx, cy, r);
+      else if (tipo === "puro") this._reservaCaraFumador(ctx, cx, cy, r);
+      else this._reservaCraneo(ctx, cx, cy, r, tipo === "gigante");
+    }
+    ctx.restore();
+  }
+
+  // Frase del enemigo, envuelta y centrada en el cuadrante
+  _fraseGO(ctx, qx, qy, qw, qh, texto) {
+    ctx.save();
+    const m = 30, maxW = qw - 2 * m;
+    ctx.fillStyle = "#f0d9a0"; ctx.font = "italic 20px Georgia, serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    const lineas = this._wrap(ctx, "«" + texto + "»", maxW);
+    const lh = 30; let yy = qy + qh / 2 - (lineas.length * lh) / 2;
+    for (const ln of lineas) { ctx.fillText(ln, qx + qw / 2, yy); yy += lh; }
+    ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // ---- Dibujos de reserva de las caras (mientras no existan los PNG) ----
+  _reservaCraneo(ctx, cx, cy, r, grande) {
+    ctx.save();
+    ctx.fillStyle = "#e8e4d2";
+    ctx.beginPath(); ctx.arc(cx, cy - r * 0.1, r, 0, Math.PI * 2); ctx.fill();       // cráneo
+    ctx.fillRect(cx - r * 0.48, cy + r * 0.5, r * 0.96, r * 0.5);                     // mandíbula
+    ctx.save(); ctx.shadowColor = "#8ef58a"; ctx.shadowBlur = 16; ctx.fillStyle = "#8ef58a";
+    ctx.beginPath(); ctx.arc(cx - r * 0.38, cy - r * 0.1, r * 0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.38, cy - r * 0.1, r * 0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = "#2a2a2a";
+    ctx.beginPath(); ctx.moveTo(cx, cy + r * 0.02); ctx.lineTo(cx - r * 0.13, cy + r * 0.28); ctx.lineTo(cx + r * 0.13, cy + r * 0.28); ctx.fill();
+    for (let i = 0; i < 4; i++) ctx.fillRect(cx - r * 0.4 + i * r * 0.26, cy + r * 0.5, r * 0.13, r * 0.42);
+    if (grande) { ctx.strokeStyle = "#8a8571"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx - r * 0.2, cy - r); ctx.lineTo(cx - r * 0.02, cy - r * 0.3); ctx.stroke(); }
+    ctx.restore();
+  }
+  _reservaCaraFumador(ctx, cx, cy, r) {
+    ctx.save();
+    ctx.fillStyle = "#d9a878"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#4a382a"; ctx.fillRect(cx - r * 0.75, cy - r * 0.95, r * 1.5, r * 0.35);
+    ctx.fillStyle = "#2a2a2a";
+    ctx.beginPath(); ctx.arc(cx - r * 0.32, cy - r * 0.12, r * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.32, cy - r * 0.12, r * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#3a2a20"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx - r * 0.32, cy + r * 0.42); ctx.lineTo(cx + r * 0.05, cy + r * 0.42); ctx.stroke();
+    ctx.fillStyle = "#6b4a2a"; ctx.fillRect(cx + r * 0.02, cy + r * 0.32, r * 0.7, r * 0.16);   // puro
+    ctx.fillStyle = "#e0642a"; ctx.fillRect(cx + r * 0.72, cy + r * 0.32, r * 0.09, r * 0.16);  // brasa
+    ctx.strokeStyle = "rgba(230,230,230,.6)"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cx + r * 0.8, cy + r * 0.3); ctx.quadraticCurveTo(cx + r * 1.15, cy - r * 0.2, cx + r * 0.85, cy - r * 0.6); ctx.stroke();
+    ctx.restore();
+  }
+  _reservaCaraSeok(ctx, cx, cy, r) {
+    ctx.save();
+    ctx.fillStyle = "#e8b48a"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#6b4423"; ctx.fillRect(cx - r * 0.8, cy - r * 0.98, r * 1.6, r * 0.42);
+    ctx.strokeStyle = "#3a2a20"; ctx.lineWidth = 3;
+    const ojoX = (ex) => { ctx.beginPath(); ctx.moveTo(ex - r * 0.13, cy - r * 0.24); ctx.lineTo(ex + r * 0.13, cy + r * 0.02); ctx.moveTo(ex + r * 0.13, cy - r * 0.24); ctx.lineTo(ex - r * 0.13, cy + r * 0.02); ctx.stroke(); };
+    ojoX(cx - r * 0.35); ojoX(cx + r * 0.35);
+    ctx.beginPath(); ctx.arc(cx, cy + r * 0.5, r * 0.2, Math.PI, 0); ctx.stroke();   // boca triste
+    ctx.fillStyle = "#b11414";                                                       // sangre
+    ctx.beginPath(); ctx.moveTo(cx - r * 0.18, cy - r * 0.4); ctx.quadraticCurveTo(cx - r * 0.34, cy + r * 0.2, cx - r * 0.24, cy + r * 0.65); ctx.lineTo(cx - r * 0.08, cy + r * 0.6); ctx.quadraticCurveTo(cx - r * 0.1, cy + r * 0.1, cx - r * 0.03, cy - r * 0.36); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - r * 0.24, cy + r * 0.78, r * 0.08, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
   }
 
   // Aviso "(E)" genérico de la bóveda, colocado sobre un punto en coords de imagen

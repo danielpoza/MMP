@@ -143,6 +143,16 @@ class Calabozo {
     return null;
   }
 
+  // ¿Está el jugador DETRÁS del arbusto que esconde la llave? (por encima de su base,
+  // tapado por el arbusto). Al ponerse ahí, se encuentra la llave sin pulsar nada.
+  detrasDeArbustoLlave(player) {
+    const a = this.arbustos.find((b) => b.llave);
+    if (!a) return false;
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    const ax = a.x * this.escala, ay = a.y * this.escala;   // base (pies) del arbusto
+    return Math.abs(px - ax) < 34 && py < ay && py > ay - 62;
+  }
+
   // ¿Está el jugador junto a la pared agrietada (por el lado de la celda)?
   cercaDePared(player) {
     const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
@@ -240,7 +250,8 @@ class Calabozo {
     }
   }
 
-  // Cofre del tesoro de la celda-regalo (dorado). Dibujo por código (no necesita PNG).
+  // Cofre del tesoro de la celda-regalo. Usa la imagen cofre.png (buena para sitios
+  // oscuros); si falta, dibujo por código (dorado) como reserva.
   _dibujarCofreRegalo(ctx, cam) {
     const s = this.escala, c = this.cofreRegalo;
     const cx = Math.round(c.x * s - cam.x), by = Math.round(c.y * s - cam.y);
@@ -248,6 +259,14 @@ class Calabozo {
     // Sombra
     ctx.fillStyle = "rgba(0,0,0,.35)";
     ctx.beginPath(); ctx.ellipse(cx, by, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+    if (Assets.listo("cofre")) {
+      const el = Assets.el("cofre"), iw = Assets.w("cofre"), ih = Assets.h("cofre");
+      const dh = 46, dw = dh * (iw / ih);
+      ctx.drawImage(el, Math.round(cx - dw / 2), Math.round(by - dh), dw, dh);
+      if (c.abierto) { ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.fillRect(Math.round(cx - dw / 2 + 4), Math.round(by - dh + 4), dw - 8, 8); }
+      ctx.restore();
+      return;
+    }
     const w = 46, h = 36, x = cx - w / 2, y = by - h;
     // Base (madera oscura) y tapa (madera clara)
     ctx.fillStyle = "#5e3f20"; ctx.fillRect(x, y + h * 0.42, w, h * 0.58);

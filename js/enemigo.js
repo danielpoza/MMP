@@ -247,8 +247,7 @@ class EsqueletoGigante extends Esqueleto {
     this.escalaDibujo = 3.0;     // factor de tamaño del dibujo por código
   }
 
-  // De momento NO usamos los PNG del gigante (llevan texto rotulado): dibujo por código.
-  _tieneSprites() { return false; }
+  _tieneSprites() { return Assets.listo("esqueleto_gigante"); }
 
   draw(ctx, cam) {
     const cx = Math.round(this.x + this.ancho / 2 - cam.x);
@@ -257,10 +256,39 @@ class EsqueletoGigante extends Esqueleto {
     // Sombra grande
     ctx.fillStyle = "rgba(0,0,0,.38)";
     ctx.beginPath(); ctx.ellipse(cx, baseY, this.ancho * 0.62, this.ancho * 0.24, 0, 0, Math.PI * 2); ctx.fill();
-    // Cuerpo (esqueleto normal dibujado a lo grande). La barra de vida del jefe se
-    // pinta en el HUD (game._barraJefe), así que aquí NO ponemos la barrita pequeña.
+    // Con la hoja de sprites (esqueleto_gigante.png), o dibujo por código de reserva.
+    // La barra de vida del jefe se pinta en el HUD (game._barraJefe).
+    if (this._tieneSprites()) { this._dibujarSpriteGigante(ctx, cx, baseY); return; }
     ctx.save(); ctx.translate(cx, baseY); ctx.scale(this.escalaDibujo, this.escalaDibujo);
     this._cuerpoGigante(ctx);
+    ctx.restore();
+  }
+
+  // Dibuja el fotograma correcto de las hojas 6×3 (fila 0 = de frente, fila 2 = de perfil
+  // mirando a la derecha; se voltea para la izquierda). Usa la hoja de ataque al golpear.
+  _dibujarSpriteGigante(ctx, cx, baseY) {
+    const atacando = this.atacandoT > 0 && Assets.listo("esqueleto_gigante_ataque");
+    const hoja = atacando ? "esqueleto_gigante_ataque" : "esqueleto_gigante";
+    const cols = 6, filas = 3;
+    const lado = (this.dir === "izq" || this.dir === "der");
+    const fila = lado ? 2 : 0;                 // de perfil o de frente
+    const flip = this.dir === "izq";           // el perfil mira a la derecha
+    const col = atacando
+      ? Math.min(cols - 1, Math.floor((1 - this.atacandoT / 0.25) * cols))   // recorre el golpe
+      : Math.floor(this.paso * 1.4) % cols;                                   // ciclo de andar
+    const el = Assets.el(hoja), cw = Assets.w(hoja) / cols, ch = Assets.h(hoja) / filas;
+    const insx = cw * 0.04, insy = ch * 0.03;
+    const sx = col * cw + insx, sy = fila * ch + insy, sw = cw - insx * 2, sh = ch - insy * 2;
+    const destH = 150, destW = destH * (sw / sh);
+    const dx = Math.round(cx - destW / 2), dy = Math.round(baseY - destH);
+    ctx.save();
+    if (flip) { ctx.translate(dx + destW, dy); ctx.scale(-1, 1); ctx.drawImage(el, sx, sy, sw, sh, 0, 0, destW, destH); }
+    else ctx.drawImage(el, sx, sy, sw, sh, dx, dy, destW, destH);
+    if (this.hitFlash > 0) {                    // destello blanco al recibir un golpe
+      ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = 0.5;
+      if (flip) ctx.drawImage(el, sx, sy, sw, sh, 0, 0, destW, destH);
+      else ctx.drawImage(el, sx, sy, sw, sh, dx, dy, destW, destH);
+    }
     ctx.restore();
   }
 

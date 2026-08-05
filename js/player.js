@@ -42,8 +42,11 @@ class Player {
 
     // Llave de la celda-regalo (se encuentra en un arbusto del jardín)
     this.tieneLlave = false;
-    // Espada del Golpe Místico (premio del cofre de la celda-regalo): ataques más fuertes
-    this.espadaMistica = false;
+    // Golpe Místico (premio del cofre de la celda-regalo): se GUARDA en la mochila y
+    // se activa desde ahí. Cuando está armado, el SIGUIENTE golpe hace 10000 de daño
+    // (un solo uso, no es permanente). golpeMisticoFx es el destello del tajo mágico.
+    this.golpeMisticoArmado = false;
+    this.golpeMisticoFx = 0;
     // Mapa del tesoro (premio de la bóveda, tras derrotar al esqueleto gigante)
     this.tieneMapaTesoro = false;
 
@@ -68,6 +71,7 @@ class Player {
     // Enfriamientos del combate
     if (this.ataqueCD > 0) this.ataqueCD -= dt;
     if (this.atacandoT > 0) this.atacandoT -= dt;
+    if (this.golpeMisticoFx > 0) this.golpeMisticoFx -= dt;
 
     // 1) Leer dirección deseada
     let mx = 0, my = 0;

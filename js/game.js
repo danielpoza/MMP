@@ -64,6 +64,7 @@ const PRODUCTOS_COMERCIO = {
 const CONSUMIBLES = {
   "Manzana": { vida: 25 },
   "Manzana misteriosa": { misteriosa: true },
+  "Golpe Místico": { golpeMistico: true },
   "Pera": { vida: 10 },
   "Lechuga": { vida: 50 },
   "Pepino": { vida: 20 },
@@ -75,7 +76,7 @@ const CONSUMIBLES = {
 const MINERAL_VENTA = { hierro: 5, oro: 7, ametista: 15, diamante: 21 };
 const NOMBRE_TIENDA = { fruta: "Frutería", verdura: "Verdulería", pollo: "Pollería", minerales: "Compra de minerales", puros: "Puros" };
 const COLORES_PROD = {
-  "Manzana": "#e0392b", "Manzana misteriosa": "#9b59b6", "Pera": "#8bc34a",
+  "Manzana": "#e0392b", "Manzana misteriosa": "#9b59b6", "Golpe Místico": "#b478ff", "Pera": "#8bc34a",
   "Lechuga": "#7bc86a", "Pepino": "#3f8a3a", "Pollo": "#e8c9a0", "Pato": "#caa24a", "Puro": "#6b5a4a",
 };
 
@@ -485,7 +486,11 @@ class Game {
     p.ataqueCD = 0.35;
     p.atacandoT = 0.18;                       // animación del tajo
     let dmg = p.tieneFuerza ? 50 : 25;        // con Fuerza mata de un golpe
-    if (p.espadaMistica) dmg += 20;           // la Espada del Golpe Místico pega más fuerte
+    if (p.golpeMisticoArmado) {               // Golpe Místico: un único golpe de 10000
+      dmg = 10000;
+      p.golpeMisticoArmado = false;           // se gasta (no es permanente)
+      p.golpeMisticoFx = 0.35;                // destello mágico del tajo
+    }
     const fx = p.dir === "izq" ? -1 : p.dir === "der" ? 1 : 0;
     const fy = p.dir === "arriba" ? -1 : p.dir === "abajo" ? 1 : 0;
     const ax = p.x + p.ancho / 2 + fx * 34, ay = p.y + p.alto / 2 + fy * 34;   // centro del tajo
@@ -543,6 +548,13 @@ class Game {
     this.player.comida[nombre]--;
     if (this.player.comida[nombre] <= 0) delete this.player.comida[nombre];
     const c = CONSUMIBLES[nombre] || {};
+    if (c.golpeMistico) {
+      this.player.golpeMisticoArmado = true;
+      this.inventarioAbierto = false;   // cerramos la mochila para poder atacar ya
+      this.mensaje = "✨ ¡GOLPE MÍSTICO ARMADO! Tu PRÓXIMO golpe hará 10000 de daño.";
+      this.mensajeT = 4;
+      return;
+    }
     if (c.misteriosa) { this.invMsg = this._efectoManzana(); this.invMsgT = 3.2; return; }
     const antes = this.player.vida;
     this.player.vida = Math.max(0, Math.min(this.player.vidaMax, this.player.vida + (c.vida || 0)));
@@ -796,7 +808,12 @@ class Game {
         this.cofreCerca = !this.calabozo.cofre.abierto && this.calabozo.cercaDeCofre(this.player);
         this.paredCerca = !this.calabozo.paredAgrietada.rota && this.calabozo.cercaDePared(this.player);
         this.celdaCerca = !this.calabozo.puertaCelda.abierta && this.calabozo.cercaDeCelda(this.player);
-        this.arbustoCerca = this.calabozo.cercaDeArbusto(this.player);
+        // La llave se encuentra automáticamente al ponerse DETRÁS del arbusto que la esconde
+        if (!this.calabozo.llaveEncontrada && this.calabozo.detrasDeArbustoLlave(this.player)) {
+          this.calabozo.llaveEncontrada = true;
+          this.player.tieneLlave = true;
+          this.mensaje = "🔑 ¡Encuentras una llave escondida detrás del arbusto!"; this.mensajeT = 3.4;
+        }
         this.cofreRegaloCerca = !this.calabozo.cofreRegalo.abierto && this.calabozo.cercaDeCofreRegalo(this.player);
         this.bovedaCerca = this.calabozo.cercaDeBoveda(this.player);
         if (this.cofreCerca && Input.pressed["e"]) {
@@ -804,15 +821,6 @@ class Game {
           this.player.comida["Manzana misteriosa"] = (this.player.comida["Manzana misteriosa"] || 0) + 1;
           this.mensaje = "¡Una Manzana misteriosa! Úsala en la mochila (P)."; this.mensajeT = 3.4;
           this.cofreCerca = false;
-        } else if (this.arbustoCerca && Input.pressed["e"]) {
-          const a = this.arbustoCerca;
-          if (a.llave && !this.calabozo.llaveEncontrada) {
-            this.calabozo.llaveEncontrada = true;
-            this.player.tieneLlave = true;
-            this.mensaje = "¡Encuentras una llave escondida!"; this.mensajeT = 3;
-          } else {
-            this.mensaje = "Aquí no hay nada..."; this.mensajeT = 1.8;
-          }
         } else if (this.paredCerca && Input.pressed["e"]) {
           if (this.player.tieneFuerza) {
             this.calabozo.paredAgrietada.rota = true;
@@ -828,8 +836,8 @@ class Game {
         } else if (this.cofreRegaloCerca && Input.pressed["e"]) {
           if (this.player.tieneLlave) {
             this.calabozo.cofreRegalo.abierto = true;
-            this.player.espadaMistica = true;
-            this.mensaje = "¡La Espada del Golpe Místico! Tus ataques pegan más fuerte."; this.mensajeT = 3.6;
+            this.player.comida["Golpe Místico"] = (this.player.comida["Golpe Místico"] || 0) + 1;
+            this.mensaje = "✨ ¡El GOLPE MÍSTICO! Actívalo en la mochila (P): tu próximo golpe hará 10000 de daño."; this.mensajeT = 4.5;
             this.cofreRegaloCerca = false;
           } else {
             this.mensaje = "🔒 El cofre está cerrado con llave. Búscala en el jardín."; this.mensajeT = 3;
@@ -861,9 +869,7 @@ class Game {
           this.mensaje = "¡Un ESQUELETO GIGANTE sale del ataúd!"; this.mensajeT = 3.2;
           this.ataudCerca = false;
         } else if (this.cofreMapaCerca && Input.pressed["e"]) {
-          if (!this.boveda.jefeDerrotado) {
-            this.mensaje = "Seok: Centrémonos en la misión..."; this.mensajeT = 2.6;
-          } else if (!this.boveda.mapaObtenido) {
+          if (!this.boveda.mapaObtenido) {
             this.boveda.mapaObtenido = true;
             this.player.tieneMapaTesoro = true;
             this.mensaje = "¡El MAPA DEL TESORO! La misión está casi lista."; this.mensajeT = 3.6;
@@ -872,7 +878,7 @@ class Game {
           }
         } else if (this.agujeroCerca && Input.pressed["e"]) {
           if (!this.boveda.jefeDerrotado) {
-            this.mensaje = "El agujero está tapiado por la magia... derrota al gigante."; this.mensajeT = 3;
+            this.mensaje = "Seok: Centrémonos en la misión..."; this.mensajeT = 2.8;
           } else {
             this.mensaje = "Bajas por el agujero... ¡Continuará! 🗺️"; this.mensajeT = 4;
           }
@@ -956,7 +962,6 @@ class Game {
       if (this.celdaCerca) this._hintCeldaVacia(ctx);
       if (this.cofreCerca) this._hintCofre(ctx);
       if (this.paredCerca && this.player.tieneFuerza) this._hintPared(ctx);
-      if (this.arbustoCerca) this._hintArbusto(ctx);
       if (this.cofreRegaloCerca) this._hintCofreRegalo(ctx);
       if (this.bovedaCerca) this._hintBoveda(ctx);
       this._hud(ctx);
@@ -1580,9 +1585,11 @@ class Game {
     const ang = p.dir === "izq" ? Math.PI : p.dir === "der" ? 0 : p.dir === "arriba" ? -Math.PI / 2 : Math.PI / 2;
     ctx.save();
     ctx.translate(cx, cy); ctx.rotate(ang);
-    ctx.strokeStyle = p.tieneFuerza ? "rgba(255,225,120,.9)" : p.espadaMistica ? "rgba(180,120,255,.9)" : "rgba(255,255,255,.85)";
-    ctx.lineWidth = 4; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.arc(14, 0, 24, -0.9, 0.9); ctx.stroke();
+    const mistico = p.golpeMisticoFx > 0;
+    ctx.strokeStyle = mistico ? "rgba(180,120,255,.95)" : p.tieneFuerza ? "rgba(255,225,120,.9)" : "rgba(255,255,255,.85)";
+    ctx.lineWidth = mistico ? 7 : 4; ctx.lineCap = "round";
+    if (mistico) { ctx.shadowColor = "#c79bff"; ctx.shadowBlur = 14; }
+    ctx.beginPath(); ctx.arc(14, 0, mistico ? 34 : 24, -0.9, 0.9); ctx.stroke();
     ctx.restore();
   }
 

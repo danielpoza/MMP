@@ -304,17 +304,20 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
   - ✅ **Arbustos del jardín + llave escondida (hecho):** `Calabozo.arbustos` (lista de
     4 con x,y en coords de imagen; uno lleva `llave:true`). Se dibujan con
     `_dibujarArbusto` (una capa de césped tapa el arbusto pintado del mapa y encima va
-    `arbusto.png`, con reserva por código). Al acercarse sale **Buscar (E)**
-    (`_hintArbusto`); buscar en el arbusto de la llave da `player.tieneLlave=true`
-    (*"¡Encuentras una llave escondida!"*) y en los demás *"Aquí no hay nada..."*.
-    `Calabozo.cercaDeArbusto` y `llaveEncontrada` controlan el estado.
+    `arbusto.png`, con reserva por código). **NO hay aviso "Buscar (E)"**: la llave se
+    encuentra SOLA al ponerse **detrás** del arbusto que la esconde
+    (`Calabozo.detrasDeArbustoLlave` → `player.tieneLlave=true`, *"¡Encuentras una
+    llave escondida detrás del arbusto!"*). `llaveEncontrada` controla el estado.
   - ✅ **Celda-regalo / Trozo 3 (hecho):** la celda del candado (zona 8, abajo).
-    `Calabozo.cofreRegalo` (x,y en coords de imagen) es un **cofre dorado dibujado por
-    código** (`_dibujarCofreRegalo`, sin PNG). Al acercarse sale **Abrir (E)**
-    (`_hintCofreRegalo`); si `player.tieneLlave` se abre y pone
-    `player.espadaMistica=true` (Espada del Golpe Místico); si no, avisa de que hay que
-    buscar la llave en el jardín. Con la espada mística `_atacar` suma +20 de daño y el
-    tajo (`_dibujarTajo`) se pinta morado.
+    `Calabozo.cofreRegalo` se dibuja con **`cofre.png`** (`_dibujarCofreRegalo`, con
+    reserva dorada por código). Al acercarse sale **Abrir (E)** (`_hintCofreRegalo`); si
+    `player.tieneLlave` se abre y da el consumible **"Golpe Místico"** a la mochila; si
+    no, avisa de que hay que buscar la llave en el jardín.
+  - ✅ **Golpe Místico (consumible de un solo uso):** está en `CONSUMIBLES`
+    (`{golpeMistico:true}`). Se activa en la mochila (`_consumir` → cierra la mochila y
+    pone `player.golpeMisticoArmado=true`). El SIGUIENTE `_atacar` hace **10000 de daño**
+    y se gasta (`golpeMisticoArmado=false`, `golpeMisticoFx` = destello morado grande del
+    tajo). No es permanente: hay que encontrar otro para volver a usarlo.
   - ✅ **Esqueletos / Trozo 4 (hecho):** `Calabozo.enemigos` se rellena en el
     constructor con dos `Esqueleto("manos")`: uno en el calabozo de entrada (zona 0)
     con `dir="izq"` (sentado **de perfil mirando a la izquierda**) y otro en la celda de
@@ -328,16 +331,16 @@ Menú/volver: **Esc** · Avanzar diálogo: **Enter** · Junto a la puerta escond
     abierto). Se entra desde `Calabozo.puertaBoveda` (zona 7) con *Entrar (E)*
     (`game._entrarBoveda`/`_salirBoveda`, estado `"boveda"`, `_mundoActual` lo incluye).
     `cercaDeAtaud` → `despertarGigante()` pone `ataudAbierto=true` (cambia el fondo) y
-    añade un `EsqueletoGigante` (en `enemigo.js`: 300 vida, 22 daño, dibujo por código
-    escalado ×3, `_tieneSprites()=false` para NO usar el PNG con texto). `boveda.update`
-    marca `jefeDerrotado` cuando todos los enemigos están muertos. El cofre del mapa
-    (pedestal) da `player.tieneMapaTesoro` solo tras derrotar al jefe; el agujero
-    (*Bajar (E)*) igual → *"¡Continuará!"*. HUD del jefe: `game._barraJefe`; avisos:
-    `game._hintBov` / `_hintBoveda`.
-  - **PENDIENTE:** enchufar el sprite LIMPIO del gigante (`esqueleto_gigante.png` andar
-    3×4 y `esqueleto_gigante_ataque.png` 2×4, fondo magenta, sin texto) — hoy las PNG
-    del gigante llevan el rótulo "Part 1/2" y anotaciones a mano. Esqueletos con arma
-    (maza/espada/arco) y afinar la colisión de la pared agrietada.
+    añade un `EsqueletoGigante` (en `enemigo.js`: 300 vida, 22 daño). Usa el **sprite
+    `esqueleto_gigante.png` / `esqueleto_gigante_ataque.png`** (rejilla **6×3**: fila 0
+    de frente, fila 2 de perfil mirando a la derecha; `_dibujarSpriteGigante`, `destH`
+    150), con el dibujo por código como reserva. `boveda.update` marca `jefeDerrotado`
+    cuando todos los enemigos mueren. El **cofre del mapa** (pedestal) da el mapa con
+    *Abrir (E)* (sin condición). El **agujero** (*Bajar (E)*) dice *"Seok: Centrémonos en
+    la misión..."* mientras el jefe viva, y al ganar *"¡Continuará!"*. HUD del jefe:
+    `game._barraJefe`.
+  - **PENDIENTE:** esqueletos con arma (maza/espada/arco) y afinar la colisión de la
+    pared agrietada.
 - **Enemigos y combate** (la maldición de la manzana).
 - Assets que faltan por guardar (usan dibujo de reserva): `casa_azul/verde/
   amarilla/morada.png`, `fumador.png`, `int_fruta/verdura/pollo/minerales.png`,

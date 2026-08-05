@@ -49,6 +49,9 @@ window.addEventListener("load", () => {
   Assets.load("esqueleto_manos",         "assets/esqueleto_manos.png",         { chroma: true });
   Assets.load("esqueleto_manos_sentado", "assets/esqueleto_manos_sentado.png", { chroma: true });
   Assets.load("esqueleto_manos_ataque",  "assets/esqueleto_manos_ataque.png",  { chroma: true });
+  // Esqueleto GIGANTE de la bóveda (jefe): andar y ataque (rejilla 6×3, fondo magenta)
+  Assets.load("esqueleto_gigante",        "assets/esqueleto_gigante.png",        { chroma: true });
+  Assets.load("esqueleto_gigante_ataque", "assets/esqueleto_gigante_ataque.png", { chroma: true });
   Assets.load("int_fruta",     "assets/int_fruta.png");       // interiores de las tiendas (fondo lleno)
   Assets.load("int_verdura",   "assets/int_verdura.png");
   Assets.load("int_pollo",     "assets/int_pollo.png");

@@ -174,6 +174,14 @@ class Calabozo {
     if (this.puertaCelda.abierta) this._dibujarHuecoCelda(ctx, cam);
     // Si la pared agrietada está rota, tapamos ese trozo con un agujero (paso al jardín)
     if (this.paredAgrietada.rota) this._dibujarAgujeroPared(ctx, cam);
+    // Puerta de salida rota (imagen) sobre el hueco brillante, si existe la PNG
+    if (Assets.listo("puerta_salida")) {
+      const sa = this.salida, s = this.escala;
+      const el = Assets.el("puerta_salida"), iw = Assets.w("puerta_salida"), ih = Assets.h("puerta_salida");
+      const dw = sa.w * s * 1.7, dh = dw * (ih / iw);
+      const cx = (sa.x + sa.w / 2) * s - cam.x, cy = (sa.y + sa.h / 2) * s - cam.y;
+      ctx.drawImage(el, Math.round(cx - dw / 2), Math.round(cy - dh / 2), dw, dh);
+    }
   }
 
   _dibujarAgujeroPared(ctx, cam) {

@@ -45,6 +45,7 @@ window.addEventListener("load", () => {
   Assets.load("boveda_ataque",    "assets/boveda_ataque.png");                      // bóveda con el ataúd abierto (sale el gigante)
   Assets.load("cofre",            "assets/cofre.png",            { chroma: true }); // cofre camuflado del pasillo (con la manzana)
   Assets.load("pared_rota",       "assets/pared_rota.png",       { chroma: true }); // pared agrietada ya destruida (agujero al jardín)
+  Assets.load("puerta_salida",    "assets/puerta_salida.png",    { chroma: true }); // puerta de salida abierta de una patada (hueco brillante)
   // Esqueletos del calabozo (fondo magenta)
   Assets.load("esqueleto_manos",         "assets/esqueleto_manos.png",         { chroma: true });
   Assets.load("esqueleto_manos_sentado", "assets/esqueleto_manos_sentado.png", { chroma: true });

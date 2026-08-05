@@ -660,11 +660,11 @@ class Game {
     this.reloj += dt;          // reloj del juego (para regenerar menas a los 10 min)
     if (this.invMsgT > 0) this.invMsgT -= dt;
     // La tecla P abre/cierra la mochila en las pantallas jugables
-    if (Input.pressed["p"] && ["jugando", "isla_minerales", "isla_comercio", "interior"].includes(this.estado)) {
+    if (Input.pressed["p"] && ["jugando", "isla_minerales", "isla_comercio", "interior", "calabozo", "boveda"].includes(this.estado)) {
       this.inventarioAbierto = !this.inventarioAbierto;
     }
     // Atacar (Espacio o clic derecho) en cualquier escena donde controlas a Seok
-    const puedeAtacar = ["jugando", "isla_minerales", "isla_comercio", "calabozo"].includes(this.estado)
+    const puedeAtacar = ["jugando", "isla_minerales", "isla_comercio", "calabozo", "boveda"].includes(this.estado)
       && !this.dialogo && !this.inventarioAbierto && !this.mapaAbierto && !this.panelMisiones;
     if (puedeAtacar && (Input.pressed[" "] || this._ataquePedido)) this._atacar();
     this._ataquePedido = false;
@@ -783,6 +783,7 @@ class Game {
         break;
       }
       case "calabozo": {
+        if (this.inventarioAbierto) break;   // con la mochila abierta, todo se pausa
         this.calabozo.update(dt);
         if (this.mensajeT > 0) this.mensajeT -= dt;
         if (this.danoFlashT > 0) this.danoFlashT -= dt;
@@ -841,16 +842,14 @@ class Game {
         break;
       }
       case "boveda": {
+        if (this.inventarioAbierto) break;   // con la mochila abierta, todo se pausa
         this.boveda.update(dt);
         if (this.mensajeT > 0) this.mensajeT -= dt;
         if (this.danoFlashT > 0) this.danoFlashT -= dt;
         this.player.update(dt, this.boveda);
         for (const en of this.boveda.enemigos) en.update(dt, this.player, this.boveda, this);
         this.cam.seguir(this.player, this.boveda.pixelWidth, this.boveda.pixelHeight);
-        // Atacar (espacio o clic derecho)
-        const puedeAtacarB = this.player.ataqueCD <= 0;
-        if (puedeAtacarB && (Input.pressed[" "] || this._ataquePedido)) this._atacar();
-        this._ataquePedido = false;
+        // (el ataque se procesa arriba, con el resto de escenas)
         // Cercanías
         this.ataudCerca = !this.boveda.ataudAbierto && this.boveda.cercaDeAtaud(this.player);
         this.cofreMapaCerca = this.boveda.cercaDeCofreMapa(this.player);

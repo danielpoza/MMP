@@ -1,4 +1,4 @@
-# Base de conocimiento — "Crónicas de Miguel"
+# Base de conocimiento — "SEOK y la senda de la espada"
 
 Documento de referencia para que un asistente de IA (Claude) pueda **continuar el
 desarrollo del juego de forma análoga a como se ha hecho hasta ahora**, incluso
@@ -14,7 +14,7 @@ Documentos hermanos:
 
 ## 1. Qué es el proyecto
 - Videojuego de rol **medieval, vista superior (top-down)** que **Daniel** hace
-  con su hijo **Miguel (12 años)**. Título: **"CRÓNICAS DE MIGUEL"**.
+  con su hijo **Miguel (12 años)**. Título: **"SEOK y la senda de la espada"**.
 - Es un proyecto **educativo y en familia**: el objetivo no es solo el juego, sino
   que Miguel entienda y pueda trastear el código.
 - Protagonista: **Seok** (un joven caballero con espada).

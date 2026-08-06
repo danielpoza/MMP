@@ -91,14 +91,14 @@ class TitleScreen {
     // Título
     ctx.textAlign = "center";
     ctx.fillStyle = "#f6d367";
-    ctx.font = "bold 58px Georgia, serif";
+    ctx.font = "bold 74px Georgia, serif";
     ctx.shadowColor = "rgba(0,0,0,.6)";
     ctx.shadowBlur = 8;
-    ctx.fillText("CRÓNICAS DE MIGUEL", W / 2, 92);
+    ctx.fillText("SEOK", W / 2, 96);
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#c98a3a";
-    ctx.font = "italic 20px Georgia, serif";
-    ctx.fillText("~ La senda de la espada ~", W / 2, 122);
+    ctx.font = "italic 22px Georgia, serif";
+    ctx.fillText("~ y la senda de la espada ~", W / 2, 128);
 
     // Menú (número de opciones variable)
     const n = this.opciones.length;

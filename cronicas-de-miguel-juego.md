@@ -1,4 +1,4 @@
-# Crónicas de Miguel — Estado del proyecto
+# SEOK y la senda de la espada — Estado del proyecto
 
 > Videojuego de rol medieval en vista superior (top-down) que **Daniel** hace
 > junto a su hijo **Miguel (12 años)**. Proyecto educativo y en familia: el

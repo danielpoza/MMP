@@ -78,7 +78,16 @@ class Boveda {
   }
   cercaDeAtaud(player)     { return this._cerca(player, this.ataud.x + this.ataud.w / 2, this.ataud.y, 95); }
   cercaDeCofreMapa(player) { return this._cerca(player, this.pedestal.x + this.pedestal.w / 2, this.pedestal.y + this.pedestal.h, 95); }
-  cercaDeAgujero(player)   { return this._cerca(player, this.agujero.x + this.agujero.w / 2, this.agujero.y + this.agujero.h / 2, 120); }
+  // El agujero es grande y sólido (no se entra): medimos la distancia a su BORDE,
+  // no al centro, para que salga "Bajar (E)" al acercarse por cualquier lado.
+  cercaDeAgujero(player) {
+    const px = player.x + player.ancho / 2, py = player.y + player.alto / 2;
+    const A = this.agujero, s = this.escala;
+    const x0 = A.x * s, y0 = A.y * s, x1 = (A.x + A.w) * s, y1 = (A.y + A.h) * s;
+    const dx = Math.max(x0 - px, 0, px - x1);
+    const dy = Math.max(y0 - py, 0, py - y1);
+    return Math.hypot(dx, dy) < 55;
+  }
   cercaDeSalida(player)    { return this._cerca(player, this.puertaSalida.x + this.puertaSalida.w / 2, this.puertaSalida.y + this.puertaSalida.h, 90); }
 
   // Despierta al jefe: abre el ataúd (cambia el fondo) y lo hace salir

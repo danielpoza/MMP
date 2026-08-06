@@ -1476,23 +1476,29 @@ class Game {
     ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#5b3b20"; ctx.font = "bold 17px Georgia, serif";
     ctx.fillText("Objetos", px + 24, py + 288);
-    const propios = PICOS.filter((p) => this.player.picos[p.id]);
-    if (propios.length === 0) {
+    // Lista de objetos: primero los especiales (mapa del tesoro), luego los picos
+    const objetos = [];
+    if (this.player.tieneMapaTesoro) objetos.push({ icono: "mapa", nombre: "Mapa del tesoro", sub: "Objeto de misión", col: "#3f8a3a" });
+    for (const p of PICOS.filter((p) => this.player.picos[p.id])) {
+      const eq = this.player.picoEquipado === p.id;
+      objetos.push({ icono: "pico", pico: p, nombre: p.nombre, sub: eq ? "Equipado" : "Guardado", eq });
+    }
+    if (objetos.length === 0) {
       ctx.fillStyle = "#6b4a2b"; ctx.font = "italic 15px Georgia, serif";
       ctx.fillText("No tienes objetos todavía.", px + 30, py + 314);
     } else {
       let ox = px + 24;
-      for (const p of propios) {
-        const eq = this.player.picoEquipado === p.id;
+      for (const o of objetos) {
         const bw = 156, bh = 58, oy = py + 300;
         ctx.fillStyle = "#f4ead0"; ctx.beginPath(); ctx.roundRect(ox, oy, bw, bh, 10); ctx.fill();
-        ctx.strokeStyle = eq ? "#3f8a3a" : "#c9b483"; ctx.lineWidth = eq ? 3 : 2;
+        ctx.strokeStyle = o.eq ? "#3f8a3a" : "#c9b483"; ctx.lineWidth = o.eq ? 3 : 2;
         ctx.beginPath(); ctx.roundRect(ox, oy, bw, bh, 10); ctx.stroke();
-        this._dibujarPico(ctx, ox + 26, oy + 30, 0.9, p.color);
+        if (o.icono === "pico") this._dibujarPico(ctx, ox + 26, oy + 30, 0.9, o.pico.color);
+        else this._dibujarIconoMapa(ctx, ox + 26, oy + 30);
         ctx.fillStyle = "#5b3b20"; ctx.font = "bold 14px Georgia, serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-        ctx.fillText(p.nombre, ox + 48, oy + 26);
-        ctx.font = "12px Georgia, serif"; ctx.fillStyle = eq ? "#3f8a3a" : "#6b4a2b";
-        ctx.fillText(eq ? "Equipado" : "Guardado", ox + 48, oy + 46);
+        ctx.fillText(o.nombre, ox + 48, oy + 26);
+        ctx.font = "12px Georgia, serif"; ctx.fillStyle = o.eq ? "#3f8a3a" : (o.col || "#6b4a2b");
+        ctx.fillText(o.sub, ox + 48, oy + 46);
         ox += bw + 14;
       }
     }
@@ -1566,6 +1572,24 @@ class Game {
     ctx.beginPath(); ctx.arc(cx + 6 * s, cy - 12 * s, 17 * s, Math.PI * 0.8, Math.PI * 1.75); ctx.stroke();
     ctx.fillStyle = color;                                 // brillo
     ctx.beginPath(); ctx.arc(cx + 6 * s, cy - 12 * s, 3 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Icono del mapa del tesoro: pergamino con un caminito punteado y una X roja
+  _dibujarIconoMapa(ctx, cx, cy) {
+    ctx.save();
+    const w = 28, h = 22, x = cx - w / 2, y = cy - h / 2;
+    ctx.fillStyle = "#e7d6a8"; ctx.fillRect(x, y, w, h);                    // pergamino
+    ctx.strokeStyle = "#b89a5e"; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
+    ctx.fillStyle = "#c9a86a"; ctx.fillRect(x - 3, y - 1, 3, h + 2); ctx.fillRect(x + w, y - 1, 3, h + 2); // rollos
+    ctx.strokeStyle = "#7a5a2a"; ctx.lineWidth = 1.4; ctx.setLineDash([2, 2]);   // camino
+    ctx.beginPath(); ctx.moveTo(x + 4, y + h - 5); ctx.lineTo(x + 11, y + 6); ctx.lineTo(x + w - 7, y + h - 8); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = "#c0392b"; ctx.lineWidth = 2;                        // X del tesoro
+    ctx.beginPath();
+    ctx.moveTo(x + w - 10, y + h - 12); ctx.lineTo(x + w - 3, y + h - 5);
+    ctx.moveTo(x + w - 3, y + h - 12); ctx.lineTo(x + w - 10, y + h - 5);
+    ctx.stroke();
     ctx.restore();
   }
 

@@ -424,5 +424,8 @@ for _, lamp in ipairs(lamparas) do
 	end)
 end
 
+-- 🚩 Bandera: avisa a los demás scripts de que la casa ya está terminada
+casa:SetAttribute("Listo", true)
+
 print("🏠 Casa construida: pasillo, salón, comedor, cocina y la puerta cerrada.")
 print("   Luces parpadeando: " .. #lamparas)

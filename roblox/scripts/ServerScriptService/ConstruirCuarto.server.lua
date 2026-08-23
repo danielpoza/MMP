@@ -186,5 +186,8 @@ aparicion.Parent = cuarto
 -- El PrimaryPart es "el centro" del Model, hace falta para moverlo entero
 cuarto.PrimaryPart = puerta
 
+-- 🚩 Bandera: avisa a los demás scripts de que el cuarto ya está terminado
+cuarto:SetAttribute("Listo", true)
+
 print("🏠 Cuarto construido. Cama, puerta y silla listas.")
 print("   (Nombres para los próximos scripts: Cama / Puerta / Silla)")

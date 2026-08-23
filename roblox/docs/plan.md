@@ -31,10 +31,16 @@ seguir. Marca ✅ lo que ya esté hecho.
 - [ ] Reloj de la noche: 00:00 → 06:00, y ganar al amanecer
 - [ ] Verlas en pantalla (StarterGui)
 
-## Fase 6 — El pasillo y la cocina  ← ESTAMOS AQUÍ
-- [x] Construir el pasillo oscuro con dos lámparas
-- [ ] Abrir el fondo del pasillo y construir la cocina
-- [ ] La nevera con [E] Comer (hambre −60) y volver al cuarto
+## Fase 6 — La casa entera ✅
+- [x] Pasillo elegante con molduras doradas, cuadros y alfombra
+- [x] Salón: escritorio alto, sofá cama, sofá, tele y lámpara de araña
+- [x] Cortinas que se abren con [E] (el monstruo se acerca 5 metros)
+- [x] Comedor: mesa ancha con planta y seis sillas
+- [x] Habitación de papá y mamá cerrada con llave (texto blanco)
+- [x] Cocina espaciosa con muchos cajones, isla y nevera
+- [x] Todas las luces parpadean solas
+- [x] Nevera: [E] Mirar nevera → coges comida y aparece en la esquina del cuarto
+- [ ] Que la comida quite hambre de verdad (cuando estén las barras)
 
 ## Fase 7 — El monstruo
 - [ ] Personaje del monstruo (Rig Builder, alto y oscuro)

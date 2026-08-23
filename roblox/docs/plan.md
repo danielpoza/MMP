@@ -17,14 +17,14 @@ seguir. Marca ✅ lo que ya esté hecho.
 - [x] Miguel cuenta de qué va el juego → `docs/IDEA-DEL-JUEGO.md`
 - [x] Diseño del juego "La Noche" → `docs/DISENO-LA-NOCHE.md`
 
-## Fase 3 — El cuarto y la noche  ← ESTAMOS AQUÍ
-- [ ] Pegar `NocheOscura.server.lua` (todo oscuro, niebla, medianoche)
-- [ ] Pegar `ConstruirCuarto.server.lua` (paredes, cama, puerta, silla, ventana)
-- [ ] Comprobar que apareces DENTRO del cuarto y que no puedes salir
+## Fase 3 — El cuarto y la noche ✅
+- [x] Pegar `NocheOscura.server.lua` (todo oscuro, niebla, medianoche)
+- [x] Pegar `ConstruirCuarto.server.lua` (paredes, cama, puerta, silla, ventana)
+- [x] Comprobar que apareces DENTRO del cuarto y que no puedes salir
 
-## Fase 4 — Las 3 opciones
-- [ ] Tecla **E** en la Cama, la Puerta y la Silla (ProximityPrompt)
-- [ ] De momento que solo escriban en la Output qué has elegido
+## Fase 4 — Las 3 opciones  ← ESTAMOS AQUÍ
+- [x] Tecla **E** en la Cama, la Puerta y la Silla (ProximityPrompt)
+- [x] De momento que solo escriban en la Output qué has elegido
 
 ## Fase 5 — Las barras y el reloj
 - [ ] Hambre, Sueño y Estrés (suben cada hora)

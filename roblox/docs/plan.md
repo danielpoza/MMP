@@ -22,18 +22,19 @@ seguir. Marca ✅ lo que ya esté hecho.
 - [x] Pegar `ConstruirCuarto.server.lua` (paredes, cama, puerta, silla, ventana)
 - [x] Comprobar que apareces DENTRO del cuarto y que no puedes salir
 
-## Fase 4 — Las 3 opciones  ← ESTAMOS AQUÍ
+## Fase 4 — Las 3 opciones ✅
 - [x] Tecla **E** en la Cama, la Puerta y la Silla (ProximityPrompt)
-- [x] De momento que solo escriban en la Output qué has elegido
+- [x] Salir por la puerta te **teletransporta al pasillo** (y [E] Entrar te devuelve)
 
 ## Fase 5 — Las barras y el reloj
 - [ ] Hambre, Sueño y Estrés (suben cada hora)
 - [ ] Reloj de la noche: 00:00 → 06:00, y ganar al amanecer
 - [ ] Verlas en pantalla (StarterGui)
 
-## Fase 6 — El pasillo y la cocina
-- [ ] Construir pasillo oscuro + cocina con la nevera
-- [ ] Salir del cuarto, comer y volver
+## Fase 6 — El pasillo y la cocina  ← ESTAMOS AQUÍ
+- [x] Construir el pasillo oscuro con dos lámparas
+- [ ] Abrir el fondo del pasillo y construir la cocina
+- [ ] La nevera con [E] Comer (hambre −60) y volver al cuarto
 
 ## Fase 7 — El monstruo
 - [ ] Personaje del monstruo (Rig Builder, alto y oscuro)

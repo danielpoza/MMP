@@ -13,38 +13,42 @@ seguir. Marca ✅ lo que ya esté hecho.
 - [ ] Pegar `scripts/ServerScriptService/PruebaDeConexion.server.lua`
 - [ ] Ver el mensaje en la Output y el cubo girando ✅ (¡ya sabemos programar!)
 
-## Fase 2 — La idea
-- [ ] Miguel cuenta de qué va el juego → se apunta en `docs/IDEA-DEL-JUEGO.md`
-- [ ] Elegir el **primer trocito jugable** (la cosa más pequeña que ya sea divertida)
+## Fase 2 — La idea ✅
+- [x] Miguel cuenta de qué va el juego → `docs/IDEA-DEL-JUEGO.md`
+- [x] Diseño del juego "La Noche" → `docs/DISENO-LA-NOCHE.md`
 
-## Fase 3 — El personaje
-- [ ] Decidir: ¿avatar normal de Roblox o cuerpo propio (`StarterCharacter`)?
-- [ ] Crear el rig con **Rig Builder** (`docs/03-personajes.md`)
-- [ ] Vestirlo (BodyColors, Shirt, Pants, accesorios)
-- [ ] Pasar el checklist de personaje válido
+## Fase 3 — El cuarto y la noche  ← ESTAMOS AQUÍ
+- [ ] Pegar `NocheOscura.server.lua` (todo oscuro, niebla, medianoche)
+- [ ] Pegar `ConstruirCuarto.server.lua` (paredes, cama, puerta, silla, ventana)
+- [ ] Comprobar que apareces DENTRO del cuarto y que no puedes salir
 
-## Fase 4 — El mapa
-- [ ] Zona de aparición (spawn) y suelo
-- [ ] Bloquear que el jugador se caiga al vacío
-- [ ] Decorar con Parts y modelos del Toolbox (¡borrando sus scripts!)
-- [ ] Luz y ambiente (Lighting)
+## Fase 4 — Las 3 opciones
+- [ ] Tecla **E** en la Cama, la Puerta y la Silla (ProximityPrompt)
+- [ ] De momento que solo escriban en la Output qué has elegido
 
-## Fase 5 — La mecánica principal
-- [ ] Lo que el jugador hace todo el rato (saltar / recoger / pegar / construir)
-- [ ] Que se note cuando lo hace bien (sonido, efecto, puntos)
+## Fase 5 — Las barras y el reloj
+- [ ] Hambre, Sueño y Estrés (suben cada hora)
+- [ ] Reloj de la noche: 00:00 → 06:00, y ganar al amanecer
+- [ ] Verlas en pantalla (StarterGui)
 
-## Fase 6 — Puntos e interfaz
-- [ ] `leaderstats` (la tabla de puntuación de la esquina)
-- [ ] Textos y botones en pantalla (StarterGui)
+## Fase 6 — El pasillo y la cocina
+- [ ] Construir pasillo oscuro + cocina con la nevera
+- [ ] Salir del cuarto, comer y volver
 
-## Fase 7 — NPCs y enemigos
-- [ ] NPC que habla
-- [ ] Enemigo que persigue y quita vida
+## Fase 7 — El monstruo
+- [ ] Personaje del monstruo (Rig Builder, alto y oscuro)
+- [ ] Que ronde el pasillo y te persiga si sales
+- [ ] Si te pilla → pierdes
 
-## Fase 8 — Guardar la partida
-- [ ] DataStores para que no se pierdan los puntos al salir
+## Fase 8 — Dormir y las pesadillas
+- [ ] Pantalla a negro al dormir
+- [ ] Trocito de pesadilla
+- [ ] Mientras duermes, el monstruo se acerca
 
-## Fase 9 — Publicar
+## Fase 9 — Sonido y miedo
+- [ ] Pasos en el pasillo, golpes en la puerta, latidos del corazón
+- [ ] La pantalla tiembla cuando el estrés es alto
+
+## Fase 10 — Publicar
 - [ ] Icono y descripción del juego
-- [ ] File → Publish to Roblox
-- [ ] Ponerlo en **Public** y probarlo desde la app de Roblox
+- [ ] File → Publish to Roblox y ponerlo en Public

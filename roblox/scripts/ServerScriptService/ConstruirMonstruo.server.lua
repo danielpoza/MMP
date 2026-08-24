@@ -244,77 +244,8 @@ monstruo.PrimaryPart = raiz
 raiz.Anchored = true                 -- se queda de pie y no se cae
 monstruo:PivotTo(CFrame.new(POSICION + Vector3.new(0, 9, 0)) * girar(0, MIRANDO, 0))
 
---==================================================================
--- 🚶 LA ANIMACIÓN: andar como si acabase de aprender
---==================================================================
-task.spawn(function()
-	-- Los brazos, siempre medio abiertos haciendo equilibrio
-	postura("HombroDerecho", girar(-15, 0, 32))
-	postura("HombroIzquierdo", girar(-15, 0, -32))
-	postura("CodoDerecho", girar(-55, 0, 0))
-	postura("CodoIzquierdo", girar(-55, 0, 0))
-
-	local izquierda = true
-
-	while monstruo.Parent do
-		local lado = izquierda and "Izquierda" or "Derecha"
-		local signo = izquierda and -1 or 1
-
-		-- 1️⃣ Duda. Se inclina hacia la otra pierna, porque pesa.
-		task.spawn(function() mover("RootJoint", girar(0, 0, signo * 4), 0.6) end)
-		task.wait(0.5)
-
-		-- 2️⃣ Levanta la pierna MUY despacio, doblando la rodilla escondida
-		task.spawn(function() mover("Cadera" .. lado, girar(-38, 0, 0), 0.9) end)
-		task.spawn(function() mover("Rodilla" .. lado, girar(62, 0, 0), 0.9) end)
-		task.spawn(function() mover("Tobillo" .. (izquierda and "Izquierdo" or "Derecho"), girar(-20, 0, 0), 0.9) end)
-		task.wait(1)
-
-		-- 3️⃣ Se queda quieto en el aire... ¿lo apoyo o no lo apoyo? 😬
-		for _ = 1, 3 do
-			mover("Cadera" .. lado, girar(-34, 0, 0), 0.12)
-			mover("Cadera" .. lado, girar(-40, 0, 0), 0.12)
-		end
-		task.wait(0.35)
-
-		-- 4️⃣ Baja el pie con muchísimo cuidado (esto es lo lento a propósito)
-		task.spawn(function() mover("Rodilla" .. lado, girar(8, 0, 0), 1.3) end)
-		mover("Cadera" .. lado, girar(14, 0, 0), 1.3)
-
-		-- 5️⃣ Apoya del todo y se endereza
-		task.spawn(function() mover("Tobillo" .. (izquierda and "Izquierdo" or "Derecho"), girar(0, 0, 0), 0.4) end)
-		task.spawn(function() mover("RootJoint", girar(0, 0, 0), 0.5) end)
-		mover("Cadera" .. lado, girar(0, 0, 0), 0.7)
-		mover("Rodilla" .. lado, girar(0, 0, 0), 0.3)
-
-		task.wait(0.4)                 -- respira antes del siguiente paso
-		izquierda = not izquierda
-	end
-end)
-
---==================================================================
--- 🧠 LA TELEQUINESIA: se arranca media cabeza y se la vuelve a poner
---==================================================================
-task.spawn(function()
-	while monstruo.Parent do
-		task.wait(math.random(40, 90) / 10)         -- cada 4 a 9 segundos
-
-		-- sube flotando, girando un poco, como si tirase de ella con la mente
-		local altura = 1.4 + math.random() * 1.6
-		mover("JuntaCraneo", CFrame.new(0, altura, 0) * girar(-8, 12, 0), 0.9)
-
-		-- se queda flotando y tiembla
-		for _ = 1, 4 do
-			mover("JuntaCraneo", CFrame.new(0.1, altura + 0.15, 0) * girar(-8, 16, 2), 0.1)
-			mover("JuntaCraneo", CFrame.new(-0.1, altura, 0) * girar(-6, 8, -2), 0.1)
-		end
-		task.wait(0.6)
-
-		-- y vuelve a su sitio de golpe. CLAC. 💀
-		mover("JuntaCraneo", CFrame.new(0, 0, 0), 0.08)
-		task.wait(0.4)
-	end
-end)
+-- 🚶 El andar y la persecución los hace el script MonstruoPersigue.
+-- Aquí solo se monta el cuerpo.
 
 print("👹 Monstruo montado en " .. tostring(POSICION))
 print("   Articulaciones: rodilla y codo escondidos en cada extremidad.")

@@ -1,26 +1,34 @@
 --[[
-	Opciones
-	--------
-	Todo lo que se puede HACER en el juego con la tecla [E]:
-	  🛏️ Dormir · 🪑 Vigilar · 🚪 Salir/Entrar (teletransporte)
-	  🪟 Abrir cortinas · 🔒 Puerta de papá y mamá · 🧊 Nevera
+	Opciones  ·  TODAS LAS OPCIONES EN UN SOLO SCRIPT
+	-------------------------------------------------
+	🛏️ Cama    -> Dormir
+	🪑 Silla   -> Vigilar
+	🚪 Puerta  -> Salir  (te teletransporta al pasillo)
+	🚪 fuera   -> Entrar (vuelves al cuarto)
+	🪟 Cortinas-> Abrir  (el monstruo se acerca 5 metros)
+	🔒 Puerta de papá y mamá -> texto blanco: está cerrada con llave
+	🧊 Nevera  -> Mirar nevera (se abre en tu pantalla y coges comida)
 
-	Esta versión AVISA en la Output si falta alguna pieza, en vez de
-	quedarse esperando en silencio (que es lo que despista siempre).
+	✅ Funciona con CUALQUIER versión de ConstruirCuarto y ConstruirCasa:
+	   no necesita banderas ni atributos, solo que existan las piezas
+	   Cama, Silla, Puerta / PuertaFuera, CortinaIzq, CortinaDer,
+	   PuertaPadres y Nevera.
 
 	Dónde va: ServerScriptService -> ➕ -> Script -> se llama Opciones
+	(Necesita también el LocalScript "Interfaz" en StarterPlayerScripts
+	 para los textos blancos y el panel de la nevera.)
 ]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
--- 👉 Con 0 se activa dando un TOQUE a la E. Ponlo en 1 si prefieres tener
---    que mantenerla pulsada un segundo (da más tensión, pero despista).
-local SEGUNDOS_PUERTA = 0
-
+-- ⚙️ AJUSTES QUE PUEDES TOCAR
+local SEGUNDOS_PUERTA = 0                       -- 0 = un toque de E; 1 = mantenerla
 local SITIO_PASILLO = CFrame.lookAt(Vector3.new(0, 4, 17), Vector3.new(0, 4, 30))
 local SITIO_CUARTO  = CFrame.lookAt(Vector3.new(0, 4, 7),  Vector3.new(0, 4, -5))
+local ESQUINA = Vector3.new(6, 1.8, -6)         -- dónde se amontona la comida
+local METROS_CORTINAS = 5                       -- lo que se acerca el monstruo
 
 local COMIDA = {
 	{ nombre = "Leche",   icono = "🥛", color = Color3.fromRGB(240, 240, 235) },
@@ -33,37 +41,36 @@ local COMIDA = {
 	{ nombre = "Zumo",    icono = "🧃", color = Color3.fromRGB(240, 140, 40) },
 }
 
-local ESQUINA = Vector3.new(6, 1.8, -6)
-
 --==================================================================
--- 🔎 BUSCADOR CON AVISO (no espera para siempre: avisa a los 10 segundos)
+-- ⏳ ESPERAR A LOS CONSTRUCTORES
+-- Los scripts de ServerScriptService arrancan en cualquier orden. Con
+-- esperar un segundito, los constructores ya han terminado del todo.
 --==================================================================
-local function buscar(padre, nombre)
-	if not padre then return nil end
+task.wait(1)
 
-	local cosa = padre:WaitForChild(nombre, 10)
-	if not cosa then
-		warn("❌ FALTA: no encuentro '" .. nombre .. "' dentro de " .. padre:GetFullName())
-	end
-	return cosa
-end
-
--- Espera a que el constructor termine del todo (bandera "Listo"). Sin esto,
--- si Opciones arranca antes, pone los carteles en un modelo que luego se
--- borra y se vuelve a construir... y la tecla E no hace nada. 🐛
 local function esperarModelo(nombre)
 	local esperado = 0
 	while esperado < 15 do
 		local modelo = workspace:FindFirstChild(nombre)
-		if modelo and modelo:GetAttribute("Listo") then
+		if modelo then
 			return modelo
 		end
-		task.wait(0.1)
-		esperado += 0.1
+		task.wait(0.2)
+		esperado += 0.2
 	end
 
-	warn("❌ FALTA: no aparece el modelo '" .. nombre .. "' terminado en Workspace.")
+	warn("❌ No aparece el modelo '" .. nombre .. "' en Workspace.")
 	return nil
+end
+
+local function buscar(padre, nombre)
+	if not padre then return nil end
+
+	local cosa = padre:WaitForChild(nombre, 8)
+	if not cosa then
+		warn("❌ FALTA la pieza '" .. nombre .. "' dentro de " .. padre:GetFullName())
+	end
+	return cosa
 end
 
 print("🔎 Comprobando las piezas del juego...")
@@ -77,12 +84,11 @@ if not cuarto then
 end
 
 if not casa then
-	warn("⛔ No hay CASA. ¿Está el script ConstruirCasa en ServerScriptService?")
-	warn("   Sin casa no puede haber teletransporte al pasillo.")
+	warn("⛔ No hay CASA. Sin ella no habrá teletransporte ni nevera.")
 end
 
 --==================================================================
--- 📡 Los Eventos: así hablan el servidor y tu pantalla
+-- 📡 EVENTOS (así hablan el servidor y tu pantalla)
 --==================================================================
 local eventos = ReplicatedStorage:FindFirstChild("Eventos")
 if not eventos then
@@ -110,19 +116,19 @@ local function avisar(jugador, texto)
 end
 
 --==================================================================
--- 🧠 El estado de cada jugador
+-- 🧠 EL ESTADO DE CADA JUGADOR
 --==================================================================
 local cogidas = {}
 
 local function prepararJugador(jugador)
+	cogidas[jugador] = cogidas[jugador] or {}
 	if jugador:FindFirstChild("Estado") then return end
-	cogidas[jugador] = {}
 
 	local estado = Instance.new("Folder")
 	estado.Name = "Estado"
 	estado.Parent = jugador
 
-	local distancia = Instance.new("IntValue")     -- 👹 a cuántos metros está
+	local distancia = Instance.new("IntValue")      -- 👹 a cuántos metros está
 	distancia.Name = "DistanciaMonstruo"
 	distancia.Value = 30
 	distancia.Parent = estado
@@ -143,7 +149,7 @@ local function acercarMonstruo(jugador, metros)
 end
 
 --==================================================================
--- 🚀 TELETRANSPORTE (contando en la Output todo lo que hace)
+-- 🚀 TELETRANSPORTE
 --==================================================================
 local function teletransportar(jugador, destino)
 	local personaje = jugador.Character
@@ -153,21 +159,14 @@ local function teletransportar(jugador, destino)
 	end
 
 	local humanoide = personaje:FindFirstChildOfClass("Humanoid")
-	if not humanoide then
-		warn("❌ El personaje de " .. jugador.Name .. " no tiene Humanoid.")
+	if not humanoide or humanoide.Health <= 0 then
+		warn("❌ " .. jugador.Name .. " no se puede teletransportar ahora.")
 		return false
 	end
 
-	if humanoide.Health <= 0 then
-		warn("❌ " .. jugador.Name .. " está muerto, no lo teletransporto.")
-		return false
-	end
-
-	-- Si está sentado o tumbado hay que levantarlo, o rebota al sitio de antes
-	humanoide.Sit = false
+	humanoide.Sit = false               -- si está sentado, rebotaría al sitio
 	humanoide.PlatformStand = false
 
-	-- Y le quitamos la velocidad que llevara, para que no salga disparado
 	local raiz = personaje:FindFirstChild("HumanoidRootPart")
 	if raiz then
 		raiz.AssemblyLinearVelocity = Vector3.zero
@@ -175,19 +174,20 @@ local function teletransportar(jugador, destino)
 	end
 
 	personaje:PivotTo(destino)
-
-	print("🚀 " .. jugador.Name .. " teletransportado a "
-		.. math.floor(destino.Position.X) .. ", "
-		.. math.floor(destino.Position.Y) .. ", "
-		.. math.floor(destino.Position.Z))
-
+	print("🚀 " .. jugador.Name .. " teletransportado.")
 	return true
 end
 
 --==================================================================
--- 🅴 Los carteles de [E]
+-- 🅴 LOS CARTELES DE [E]
 --==================================================================
 local function crearOpcion(pieza, textoAccion, textoObjeto, segundos, alElegir)
+	if not pieza then return nil end
+
+	-- si ya había un cartel de otra partida, fuera
+	local viejo = pieza:FindFirstChildOfClass("ProximityPrompt")
+	if viejo then viejo:Destroy() end
+
 	local cartel = Instance.new("ProximityPrompt")
 	cartel.Name = "Opcion" .. textoAccion
 	cartel.ActionText = textoAccion
@@ -202,33 +202,26 @@ local function crearOpcion(pieza, textoAccion, textoObjeto, segundos, alElegir)
 		alElegir(jugador)
 	end)
 
-	print("   ✔ Cartel [E] " .. textoAccion .. " puesto en " .. pieza:GetFullName())
+	print("   ✔ [E] " .. textoAccion .. "  →  " .. pieza:GetFullName())
 	return cartel
 end
 
 --==================================================================
--- 🛏️ DORMIR  y  🪑 VIGILAR
+-- 🛏️ DORMIR  ·  🪑 VIGILAR
 --==================================================================
-local cama = buscar(cuarto, "Cama")
-if cama then
-	crearOpcion(cama, "Dormir", "Cama", 0, function(jugador)
-		avisar(jugador, "Cierras los ojos. Solo un ratito...")
-	end)
-end
+crearOpcion(buscar(cuarto, "Cama"), "Dormir", "Cama", 0, function(jugador)
+	avisar(jugador, "Cierras los ojos. Solo un ratito...")
+end)
 
-local silla = buscar(cuarto, "Silla")
-if silla then
-	crearOpcion(silla, "Vigilar", "Silla", 0, function(jugador)
-		avisar(jugador, "Te sientas frente a la puerta. No parpadees.")
-	end)
-end
+crearOpcion(buscar(cuarto, "Silla"), "Vigilar", "Silla", 0, function(jugador)
+	avisar(jugador, "Te sientas frente a la puerta. No parpadees.")
+end)
 
 --==================================================================
--- 🚪 SALIR y ENTRAR (el teletransporte)
+-- 🚪 SALIR  ·  ENTRAR
 --==================================================================
 local puerta = buscar(cuarto, "Puerta")
 local puertaFuera = buscar(casa, "PuertaFuera")
-
 local cartelSalir, cartelEntrar
 
 if puerta and puertaFuera then
@@ -250,17 +243,33 @@ if puerta and puertaFuera then
 
 	cartelEntrar.Enabled = false
 else
-	warn("⛔ NO HAY TELETRANSPORTE: falta la Puerta del cuarto o PuertaFuera de la casa.")
+	warn("⛔ SIN TELETRANSPORTE: falta 'Puerta' en el cuarto o 'PuertaFuera' en la casa.")
 end
 
 --==================================================================
--- 🪟 ABRIR LAS CORTINAS (el monstruo se acerca 5 metros)
+-- 🪟 ABRIR LAS CORTINAS
+-- Se recogen solas hacia su lado, midiendo dónde están AHORA. Así vale
+-- para cualquier versión de la casa, sin tocar números a mano. 👌
 --==================================================================
 local cortinaIzq = buscar(casa, "CortinaIzq")
 local cortinaDer = buscar(casa, "CortinaDer")
-
 local cortinasAbiertas = false
 local cartelCortinas
+
+local function recoger(cortina, haciaAtras, suave)
+	local ancho = cortina.Size.Z
+	local recogido = math.max(0.8, ancho * 0.3)
+
+	-- el borde por el que se queda pegada a la pared
+	local borde = haciaAtras and (cortina.Position.Z - ancho / 2)
+		or (cortina.Position.Z + ancho / 2)
+	local nuevoZ = haciaAtras and (borde + recogido / 2) or (borde - recogido / 2)
+
+	TweenService:Create(cortina, suave, {
+		Size = Vector3.new(cortina.Size.X * 2.2, cortina.Size.Y, recogido),
+		Position = Vector3.new(cortina.Position.X, cortina.Position.Y, nuevoZ),
+	}):Play()
+end
 
 if cortinaIzq and cortinaDer then
 	cartelCortinas = crearOpcion(cortinaIzq, "Abrir cortinas", "Cortinas", 1.5, function(jugador)
@@ -269,19 +278,15 @@ if cortinaIzq and cortinaDer then
 
 		local suave = TweenInfo.new(1.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-		-- se recogen a los lados del hueco del comedor
-		TweenService:Create(cortinaIzq, suave, {
-			Size = Vector3.new(1.4, 9.4, 0.9),
-			Position = Vector3.new(5, 5.7, 22.45),
-		}):Play()
+		-- la que está más "atrás" se recoge hacia atrás, y la otra hacia delante
+		local primera = (cortinaIzq.Position.Z <= cortinaDer.Position.Z) and cortinaIzq or cortinaDer
+		local segunda = (primera == cortinaIzq) and cortinaDer or cortinaIzq
 
-		TweenService:Create(cortinaDer, suave, {
-			Size = Vector3.new(1.4, 9.4, 0.9),
-			Position = Vector3.new(5, 5.7, 27.55),
-		}):Play()
+		recoger(primera, true, suave)
+		recoger(segunda, false, suave)
 
 		avisar(jugador, "Descorres las cortinas... y algo, en alguna parte, se ha movido.")
-		acercarMonstruo(jugador, 5)
+		acercarMonstruo(jugador, METROS_CORTINAS)
 		cartelCortinas.Enabled = false
 	end)
 end
@@ -289,12 +294,9 @@ end
 --==================================================================
 -- 🔒 LA PUERTA DE PAPÁ Y MAMÁ
 --==================================================================
-local puertaPadres = buscar(casa, "PuertaPadres")
-if puertaPadres then
-	crearOpcion(puertaPadres, "Abrir", "Puerta", 0, function(jugador)
-		avisar(jugador, jugador.Name .. ": Es la habitación de papá y mamá, pero está cerrada con llave.")
-	end)
-end
+crearOpcion(buscar(casa, "PuertaPadres"), "Abrir", "Puerta", 0, function(jugador)
+	avisar(jugador, jugador.Name .. ": Es la habitación de papá y mamá, pero está cerrada con llave.")
+end)
 
 --==================================================================
 -- 🧊 LA NEVERA
@@ -309,15 +311,12 @@ local function enviarNevera(jugador)
 	AbrirNevera:FireClient(jugador, quedan)
 end
 
-local neveraPieza = buscar(casa, "Nevera")
-if neveraPieza then
-	crearOpcion(neveraPieza, "Mirar nevera", "Nevera", 0, function(jugador)
-		if not cogidas[jugador] then return end
-		enviarNevera(jugador)
-	end)
-end
+crearOpcion(buscar(casa, "Nevera"), "Mirar nevera", "Nevera", 0, function(jugador)
+	if not cogidas[jugador] then return end
+	enviarNevera(jugador)
+end)
 
--- 📦 Deja la comida amontonada en la esquina de tu cuarto
+-- 📦 La comida cogida se amontona en una esquina de tu cuarto
 local function dejarEnLaEsquina(jugador, alimento)
 	local estado = jugador:FindFirstChild("Estado")
 	local i = estado and estado.ComidaCogida.Value or 0
@@ -363,23 +362,25 @@ CogerComida.OnServerEvent:Connect(function(jugador, indice)
 end)
 
 --==================================================================
--- 👤 Jugadores
+-- 👤 JUGADORES
 --==================================================================
-for _, jugador in ipairs(Players:GetPlayers()) do
-	prepararJugador(jugador)
-end
-
-Players.PlayerAdded:Connect(function(jugador)
+local function seguirJugador(jugador)
 	prepararJugador(jugador)
 
 	jugador.CharacterAdded:Connect(function()
 		if cartelSalir then cartelSalir.Enabled = true end
 		if cartelEntrar then cartelEntrar.Enabled = false end
 	end)
-end)
+end
+
+for _, jugador in ipairs(Players:GetPlayers()) do
+	seguirJugador(jugador)
+end
+
+Players.PlayerAdded:Connect(seguirJugador)
 
 Players.PlayerRemoving:Connect(function(jugador)
 	cogidas[jugador] = nil
 end)
 
-print("✅ Opciones listas. Acércate a la puerta y pulsa E para salir.")
+print("✅ Opciones listas. Acércate a la cama, la silla o la puerta.")

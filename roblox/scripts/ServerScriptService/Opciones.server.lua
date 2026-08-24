@@ -75,6 +75,7 @@ end
 
 print("🔎 Comprobando las piezas del juego...")
 
+
 local cuarto = esperarModelo("Cuarto")
 local casa = esperarModelo("Casa")
 
@@ -194,7 +195,9 @@ local function crearOpcion(pieza, textoAccion, textoObjeto, segundos, alElegir)
 	cartel.ObjectText = textoObjeto
 	cartel.KeyboardKeyCode = Enum.KeyCode.E
 	cartel.HoldDuration = segundos
-	cartel.MaxActivationDistance = 10
+	-- En una casa gigante las piezas son enormes y el cartel sale del centro
+	-- de la pieza, así que la distancia se calcula sola según su tamaño.
+	cartel.MaxActivationDistance = math.max(12, pieza.Size.Magnitude * 0.7)
 	cartel.RequiresLineOfSight = false
 	cartel.Parent = pieza
 
@@ -222,6 +225,14 @@ end)
 --==================================================================
 local puerta = buscar(cuarto, "Puerta")
 local puertaFuera = buscar(casa, "PuertaFuera")
+
+-- Si la casa trae su propio punto de llegada, usamos ese (así, si cambias
+-- el tamaño de la casa, el teletransporte se ajusta solo 🪄)
+local llegada = casa and casa:FindFirstChild("LlegadaPasillo")
+if llegada then
+	SITIO_PASILLO = llegada.CFrame
+	print("   ✔ Punto de llegada del pasillo encontrado en la casa.")
+end
 local cartelSalir, cartelEntrar
 
 if puerta and puertaFuera then

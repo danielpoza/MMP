@@ -31,7 +31,11 @@ seguir. Marca ✅ lo que ya esté hecho.
 - [ ] Reloj de la noche: 00:00 → 06:00, y ganar al amanecer
 - [ ] Verlas en pantalla (StarterGui)
 
-## Fase 6 — La casa entera ✅
+## Fase 6 — La casa entera ✅ (rehecha en DOS PLANTAS)
+- [x] Salas de 20 x 20 studs ≈ **32 m²** cada una (el cuarto se queda igual)
+- [x] Planta baja: pasillo, salón, comedor (tras las cortinas), cocina, escalera
+- [x] Planta alta: despacho, habitación de papá y mamá 🔒, baño y rellano
+- [x] Escalera de 16 escalones con barandilla y hueco de doble altura
 - [x] Pasillo elegante con molduras doradas, cuadros y alfombra
 - [x] Salón: escritorio alto, sofá cama, sofá, tele y lámpara de araña
 - [x] Cortinas que se abren con [E] (el monstruo se acerca 5 metros)

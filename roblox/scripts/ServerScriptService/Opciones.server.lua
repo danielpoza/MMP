@@ -269,14 +269,15 @@ if cortinaIzq and cortinaDer then
 
 		local suave = TweenInfo.new(1.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
+		-- se recogen a los lados del hueco del comedor
 		TweenService:Create(cortinaIzq, suave, {
-			Size = Vector3.new(1.6, 15, 2.5),
-			Position = Vector3.new(8, 8.5, 49.2),
+			Size = Vector3.new(1.4, 9.4, 0.9),
+			Position = Vector3.new(5, 5.7, 22.45),
 		}):Play()
 
 		TweenService:Create(cortinaDer, suave, {
-			Size = Vector3.new(1.6, 15, 2.5),
-			Position = Vector3.new(8, 8.5, 70.8),
+			Size = Vector3.new(1.4, 9.4, 0.9),
+			Position = Vector3.new(5, 5.7, 27.55),
 		}):Play()
 
 		avisar(jugador, "Descorres las cortinas... y algo, en alguna parte, se ha movido.")

@@ -22,7 +22,10 @@ local PathfindingService = game:GetService("PathfindingService")
 -- ⚙️ AJUSTES (aquí es donde tienes que trastear hasta que te guste)
 --==================================================================
 local VELOCIDAD = 11                -- studs por segundo. Tú corres a 16.
-local PISADAS_POR_SEGUNDO = 2
+
+-- 🦵 EL RITMO DE LAS PIERNAS
+local DURACION_PISADA = 0.5         -- lo que tarda UNA pierna en dar su paso
+local PAUSA_ENTRE_PISADAS = 0.05    -- el respiro entre una pierna y la otra
 local DISTANCIA_VISION = 1000       -- enorme aposta: que te persiga siempre
 local DISTANCIA_PILLAR = 8          -- a esta distancia se para y te mira
 local ALTURA_RAIZ = 9               -- del suelo al centro del monstruo
@@ -98,34 +101,59 @@ local function postura(nombre, cframe)
 end
 
 --==================================================================
--- 🚶 EL ANDAR (2 pisadas por segundo)
---==================================================================
-local fase = 0
+-- 🚶 EL ANDAR
+--    Un reloj que da vueltas: primero le toca a la pierna izquierda durante
+--    DURACION_PISADA, luego una pausita, luego a la derecha, y otra pausita.
+--    Sólo se mueve UNA pierna cada vez. 🦵🕐
+local TURNO = DURACION_PISADA + PAUSA_ENTRE_PISADAS     -- lo que dura el turno de una pierna
+local CICLO = TURNO * 2                                 -- las dos piernas = una vuelta entera
+
+local reloj = 0
 local andando = false
 local tropiezo = 0
 local craneoFuera = 0
 
+-- La curva de una pisada: empieza en 0, sube a 1 por la mitad y vuelve a 0.
+-- Por eso la pierna se levanta y se vuelve a apoyar dentro de su medio segundo.
+local function curva(p)
+	if p <= 0 or p >= 1 then return 0 end
+	return math.sin(math.pi * p)
+end
+
 RunService.Heartbeat:Connect(function(dt)
 	if andando then
-		fase += dt * PISADAS_POR_SEGUNDO * math.pi     -- media vuelta = una pisada
+		reloj = (reloj + dt) % CICLO      -- el % hace que el reloj vuelva a empezar
 	end
 
-	local izq = math.sin(fase)
-	local der = math.sin(fase + math.pi)               -- la otra pierna, al revés
+	-- ¿A quién le toca ahora mismo, y por qué parte de su paso va?
+	local avanceIzq, avanceDer = 0, 0
 
-	postura("CaderaIzquierda", girar(-32 * izq, 0, 0))
-	postura("CaderaDerecha", girar(-32 * der, 0, 0))
-	postura("RodillaIzquierda", girar(42 * math.max(0, izq), 0, 0))
-	postura("RodillaDerecha", girar(42 * math.max(0, der), 0, 0))
-	postura("TobilloIzquierdo", girar(-14 * izq, 0, 0))
-	postura("TobilloDerecho", girar(-14 * der, 0, 0))
+	if reloj < DURACION_PISADA then
+		avanceIzq = reloj / DURACION_PISADA                       -- turno de la izquierda
+	elseif reloj >= TURNO and reloj < TURNO + DURACION_PISADA then
+		avanceDer = (reloj - TURNO) / DURACION_PISADA             -- turno de la derecha
+	end
+	-- (los huecos que quedan son las pausas de 0,05: no se mueve ninguna)
 
-	postura("HombroDerecho", girar(-12 + 22 * izq, 0, 30))
-	postura("HombroIzquierdo", girar(-12 + 22 * der, 0, -30))
-	postura("CodoDerecho", girar(-50 - 12 * der, 0, 0))
-	postura("CodoIzquierdo", girar(-50 - 12 * izq, 0, 0))
+	local izq = curva(avanceIzq)
+	local der = curva(avanceDer)
 
-	postura("RootJoint", girar(2 * math.abs(izq), 0, 7 * izq + tropiezo))
+	-- La pierna a la que le toca: levanta cadera, dobla rodilla y estira el pie
+	postura("CaderaIzquierda", girar(-34 * izq, 0, 0))
+	postura("CaderaDerecha", girar(-34 * der, 0, 0))
+	postura("RodillaIzquierda", girar(48 * izq, 0, 0))
+	postura("RodillaDerecha", girar(48 * der, 0, 0))
+	postura("TobilloIzquierdo", girar(-16 * izq, 0, 0))
+	postura("TobilloDerecho", girar(-16 * der, 0, 0))
+
+	-- Los brazos, al revés que las piernas (brazo derecho con pierna izquierda)
+	postura("HombroDerecho", girar(-12 + 26 * izq, 0, 30))
+	postura("HombroIzquierdo", girar(-12 + 26 * der, 0, -30))
+	postura("CodoDerecho", girar(-50 - 14 * der, 0, 0))
+	postura("CodoIzquierdo", girar(-50 - 14 * izq, 0, 0))
+
+	-- El cuerpo se echa hacia la pierna que SÍ está apoyada
+	postura("RootJoint", girar(2 * (izq + der), 0, 8 * (izq - der) + tropiezo))
 	postura("JuntaCraneo", CFrame.new(0, craneoFuera, 0) * girar(-6 * craneoFuera, 10 * craneoFuera, 0))
 end)
 
@@ -345,4 +373,4 @@ if CHIVATO then
 	end)
 end
 
-print("👹 Persecución activada. Velocidad " .. VELOCIDAD .. ", " .. PISADAS_POR_SEGUNDO .. " pisadas/segundo.")
+print(string.format("👹 Persecución activada. Velocidad %d. Una pisada cada %.2f s (ciclo de %.2f s).", VELOCIDAD, TURNO, CICLO))

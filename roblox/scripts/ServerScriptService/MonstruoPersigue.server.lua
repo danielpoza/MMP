@@ -26,6 +26,7 @@ local VELOCIDAD = 11                -- studs por segundo. Tú corres a 16.
 -- 🦵 EL RITMO DE LAS PIERNAS
 local DURACION_PISADA = 0.5         -- lo que tarda UNA pierna en dar su paso
 local PAUSA_ENTRE_PISADAS = 0.05    -- el respiro entre una pierna y la otra
+local ANIMAR_SIEMPRE = true         -- true = mueve las piernas aunque no avance
 local DISTANCIA_VISION = 1000       -- enorme aposta: que te persiga siempre
 local DISTANCIA_PILLAR = 8          -- a esta distancia se para y te mira
 local ALTURA_RAIZ = 9               -- del suelo al centro del monstruo
@@ -113,6 +114,11 @@ local andando = false
 local tropiezo = 0
 local craneoFuera = 0
 
+-- "intensidad" es cuánto se mueven las piernas: 0 = quieto, 1 = andando.
+-- Se acerca poco a poco a lo que toca, y por eso al pararse las piernas
+-- vuelven suaves a su sitio en vez de quedarse congeladas a medias. 🧊➡️🙂
+local intensidad = 0
+
 -- La curva de una pisada: empieza en 0, sube a 1 por la mitad y vuelve a 0.
 -- Por eso la pierna se levanta y se vuelve a apoyar dentro de su medio segundo.
 local function curva(p)
@@ -121,9 +127,12 @@ local function curva(p)
 end
 
 RunService.Heartbeat:Connect(function(dt)
-	if andando then
-		reloj = (reloj + dt) % CICLO      -- el % hace que el reloj vuelva a empezar
-	end
+	-- ⚠️ El reloj NO se para nunca. Si se parase, las piernas se quedarían
+	-- congeladas en el fotograma en el que estuvieran.
+	reloj = (reloj + dt) % CICLO          -- el % hace que vuelva a empezar
+
+	local quiero = (andando or ANIMAR_SIEMPRE) and 1 or 0
+	intensidad += (quiero - intensidad) * math.min(1, dt * 6)
 
 	-- ¿A quién le toca ahora mismo, y por qué parte de su paso va?
 	local avanceIzq, avanceDer = 0, 0
@@ -135,8 +144,8 @@ RunService.Heartbeat:Connect(function(dt)
 	end
 	-- (los huecos que quedan son las pausas de 0,05: no se mueve ninguna)
 
-	local izq = curva(avanceIzq)
-	local der = curva(avanceDer)
+	local izq = curva(avanceIzq) * intensidad
+	local der = curva(avanceDer) * intensidad
 
 	-- La pierna a la que le toca: levanta cadera, dobla rodilla y estira el pie
 	postura("CaderaIzquierda", girar(-34 * izq, 0, 0))
@@ -151,6 +160,7 @@ RunService.Heartbeat:Connect(function(dt)
 	postura("HombroIzquierdo", girar(-12 + 26 * der, 0, -30))
 	postura("CodoDerecho", girar(-50 - 14 * der, 0, 0))
 	postura("CodoIzquierdo", girar(-50 - 14 * izq, 0, 0))
+	-- (los brazos se quedan siempre medio abiertos: es su postura de bicho 🧟)
 
 	-- El cuerpo se echa hacia la pierna que SÍ está apoyada
 	postura("RootJoint", girar(2 * (izq + der), 0, 8 * (izq - der) + tropiezo))

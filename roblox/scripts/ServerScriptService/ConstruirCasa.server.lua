@@ -1,65 +1,49 @@
 --[[
-	ConstruirCasa  ·  DOS PLANTAS  ·  ESCALA x8
-	-------------------------------------------
-	🔧 EL NÚMERO MÁGICO está aquí abajo: ESCALA.
-	   Con 1 la casa es "normal". Con 8 todo mide 8 veces más:
-	   pasillos, habitaciones, escaleras, puertas y cortinas.
-	   Si te resulta demasiado, prueba con 4 o con 6. Cambias el número,
-	   le das a Play, y la casa entera se rehace sola. 🪄
+	ConstruirCasa  ·  LA MANSIÓN
+	----------------------------
+	🏰 CUATRO NIVELES, como las mansiones de Roblox:
 
-	📐 Con ESCALA = 8 cada sala mide 160 x 160 studs ≈ 45 x 45 metros.
+	   AZOTEA      ← terraza con vistas
+	   PISO 3      ← habitación de papá y mamá 🔒
+	   PISO 2      ← NUESTRA habitación (se coloca aquí sola)
+	   PISO 1      ← salón, comedor y cocina. Aquí están las CORTINAS 🪟
+	   PISO BAJO   ← recibidor y GARAJE con el coche 🚗
+	   JARDÍN      ← lo monta el script ConstruirJardin (piscina, muros...)
 
-	🏡 EL PLANO
-	   PLANTA BAJA                          PLANTA ALTA
-	   ┌─────────┬───┬─────────┐            ┌─────────┬───┬─────────┐
-	   │ SALÓN   │ P │ COMEDOR │            │DESPACHO │ P │ PADRES  │
-	   ├─────────┤ A ├─────────┤            ├─────────┤ A ├─────────┤
-	   │ COCINA  │ S │ESCALERA │            │  BAÑO   │ S │ hueco   │
-	   └─────────┴───┴─────────┘            └─────────┴───┴─────────┘
-	                ▲ tu CUARTO (ese no cambia)
+	Las escaleras suben por el mismo hueco en todos los pisos, y ese hueco
+	se ve desde arriba (doble altura). 🕳️
+
+	⚠️ Este script MUEVE tu cuarto al piso 2 él solo. No toques
+	   ConstruirCuarto: sigue igual que siempre.
 
 	Dónde va: ServerScriptService -> ➕ -> Script -> se llama ConstruirCasa
 ]]
 
 --==================================================================
--- 🔧 LOS DOS INTERRUPTORES
+-- 📐 MEDIDAS DE LA MANSIÓN
 --==================================================================
-local ESCALA = 8            -- pasillos, habitaciones, escaleras, puertas y cortinas
-local ESCALA_MUEBLES = 1    -- los muebles. Ponlo a 8 si los quieres gigantes también
+local ALTURA = 20                  -- alto de cada piso (unos 5,6 metros)
+local GROSOR = 1                   -- lo gordos que son suelos y paredes
 
---==================================================================
--- 📐 EL PLANO (estos números NO cambian: son el plano "en pequeño",
---    y el ESCALA de arriba los multiplica solo)
---==================================================================
-local ALTO = 10             -- altura de cada planta
-local Y0 = 1                -- suelo de la planta baja
-local Y1 = Y0 + ALTO + 1    -- suelo de la planta alta
-local Z0 = 11               -- donde empieza la casa, pegada a tu puerta
+local X1, X2 = -60, 60             -- la mansión, de lado a lado
+local Z1, Z2 = -45, 45             -- de la fachada al fondo
 
-local SALON    = { -25, -5, 15, 35 }
-local COMEDOR  = { 5, 25, 15, 35 }
-local COCINA   = { -25, -5, 35, 55 }
-local ESCALERA = { 5, 25, 35, 55 }
-local RELLANO  = { 5, 25, 48, 55 }
+local EX1, EX2 = 30, 58            -- el hueco de la escalera
+local EZ1, EZ2 = -40, -2
+local HUECO_Z2 = -8                -- hasta dónde llega el agujero del suelo
 
-local PAS_X1, PAS_X2 = -5, 5
-local PAS_Z1, PAS_Z2 = 11, 55
-
--- 🧮 Pasar del plano al mundo. La casa crece hacia los lados y hacia el
---    fondo, pero el principio (Z0) se queda pegado a tu puerta.
-local function px(x) return x * ESCALA end
-local function pz(z) return Z0 + (z - Z0) * ESCALA end
-local function py(y) return Y0 + (y - Y0) * ESCALA end
+-- La altura del suelo de cada piso. base(0) = planta baja, base(4) = azotea
+local function base(p) return 1 + p * (ALTURA + GROSOR) end
+local AZOTEA = base(4)
 
 local C = {
-	pared = Color3.fromRGB(200, 189, 168), techo = Color3.fromRGB(236, 232, 224),
-	oro = Color3.fromRGB(198, 162, 82), marmol = Color3.fromRGB(226, 223, 214),
-	parquet = Color3.fromRGB(96, 62, 38), madera = Color3.fromRGB(72, 46, 30),
-	tela = Color3.fromRGB(96, 104, 120), cortina = Color3.fromRGB(112, 26, 38),
-	alfombra = Color3.fromRGB(120, 30, 34), metal = Color3.fromRGB(198, 200, 206),
-	negro = Color3.fromRGB(18, 18, 20), planta = Color3.fromRGB(58, 120, 52),
-	bombilla = Color3.fromRGB(255, 236, 200), bano = Color3.fromRGB(222, 234, 238),
-	agua = Color3.fromRGB(120, 190, 220),
+	marmol = Color3.fromRGB(232, 228, 220), pared = Color3.fromRGB(214, 206, 192),
+	oro = Color3.fromRGB(200, 166, 92), madera = Color3.fromRGB(88, 56, 34),
+	parquet = Color3.fromRGB(112, 74, 44), techo = Color3.fromRGB(240, 238, 234),
+	cristal = Color3.fromRGB(150, 190, 210), oscuro = Color3.fromRGB(38, 36, 40),
+	tela = Color3.fromRGB(92, 100, 116), cortina = Color3.fromRGB(112, 26, 38),
+	metal = Color3.fromRGB(196, 198, 204), coche = Color3.fromRGB(24, 26, 32),
+	bombilla = Color3.fromRGB(255, 238, 205), planta = Color3.fromRGB(58, 120, 52),
 }
 
 local anterior = workspace:FindFirstChild("Casa")
@@ -85,87 +69,80 @@ local function bloque(nombre, tam, pos, color, material)
 	return p
 end
 
-local GROSOR = 1 * ESCALA        -- lo gordas que son paredes y suelos
-
-local function suelo(nombre, x1, x2, z1, z2, base, color, material)
-	return bloque(nombre, Vector3.new((x2 - x1) * ESCALA, GROSOR, (z2 - z1) * ESCALA),
-		Vector3.new(px((x1 + x2) / 2), py(base) - GROSOR / 2, pz((z1 + z2) / 2)),
-		color or C.parquet, material)
+-- Una losa (suelo o techo) con la cara de arriba justo en la altura "y"
+local function losa(nombre, x1, x2, z1, z2, y, color, material)
+	return bloque(nombre, Vector3.new(x2 - x1, GROSOR, z2 - z1),
+		Vector3.new((x1 + x2) / 2, y - GROSOR / 2, (z1 + z2) / 2), color or C.parquet, material)
 end
 
-local function sala(nombre, caja, base, color, material)
-	return suelo(nombre, caja[1], caja[2], caja[3], caja[4], base, color, material)
+-- Una losa con un AGUJERO (para que se vea la escalera). Se hace con
+-- cuatro trozos alrededor del agujero, como un marco de fotos. 🖼️
+local function losaConHueco(nombre, x1, x2, z1, z2, hx1, hx2, hz1, hz2, y, color, material)
+	if hz1 > z1 then losa(nombre .. "A", x1, x2, z1, hz1, y, color, material) end
+	if hz2 < z2 then losa(nombre .. "B", x1, x2, hz2, z2, y, color, material) end
+	if hx1 > x1 then losa(nombre .. "C", x1, hx1, hz1, hz2, y, color, material) end
+	if hx2 < x2 then losa(nombre .. "D", hx2, x2, hz1, hz2, y, color, material) end
 end
 
-local function techo(nombre, x1, x2, z1, z2, base)
-	return bloque(nombre, Vector3.new((x2 - x1) * ESCALA, GROSOR, (z2 - z1) * ESCALA),
-		Vector3.new(px((x1 + x2) / 2), py(base) + ALTO * ESCALA + GROSOR / 2, pz((z1 + z2) / 2)), C.techo)
+local function paredX(nombre, x, z1, z2, b, alto)
+	return bloque(nombre, Vector3.new(GROSOR, alto or ALTURA, z2 - z1),
+		Vector3.new(x, b + (alto or ALTURA) / 2, (z1 + z2) / 2), C.pared)
 end
 
-local function paredX(nombre, x, z1, z2, base)
-	return bloque(nombre, Vector3.new(GROSOR, ALTO * ESCALA, (z2 - z1) * ESCALA),
-		Vector3.new(px(x), py(base) + ALTO * ESCALA / 2, pz((z1 + z2) / 2)), C.pared)
+local function paredZ(nombre, z, x1, x2, b, alto)
+	return bloque(nombre, Vector3.new(x2 - x1, alto or ALTURA, GROSOR),
+		Vector3.new((x1 + x2) / 2, b + (alto or ALTURA) / 2, z), C.pared)
 end
 
-local function paredZ(nombre, z, x1, x2, base)
-	return bloque(nombre, Vector3.new((x2 - x1) * ESCALA, ALTO * ESCALA, GROSOR),
-		Vector3.new(px((x1 + x2) / 2), py(base) + ALTO * ESCALA / 2, pz(z)), C.pared)
-end
+-- 🪟 Fachada de mansión: murete abajo, ventanales grandes y pilares
+local function fachadaZ(nombre, z, x1, x2, b)
+	local largo = x2 - x1
 
--- Dintel: el trozo de pared que va encima del hueco de una puerta
-local function dintelX(nombre, x, za, zb, base)
-	local altoPuerta = 8 * ESCALA
-	local resto = ALTO * ESCALA - altoPuerta
-	return bloque(nombre, Vector3.new(GROSOR, resto, (zb - za) * ESCALA),
-		Vector3.new(px(x), py(base) + altoPuerta + resto / 2, pz((za + zb) / 2)), C.pared)
-end
+	bloque(nombre .. "Bajo", Vector3.new(largo, 4, GROSOR), Vector3.new((x1 + x2) / 2, b + 2, z), C.pared)
+	bloque(nombre .. "Alto", Vector3.new(largo, 6, GROSOR), Vector3.new((x1 + x2) / 2, b + 17, z), C.pared)
 
-local function marcoPuertaX(x, za, zb, base)
-	local h = 8 * ESCALA
-	local g = 0.5 * ESCALA
-	bloque("MarcoA", Vector3.new(g, h, g), Vector3.new(px(x), py(base) + h / 2, pz(za)), C.oro, Enum.Material.Metal)
-	bloque("MarcoB", Vector3.new(g, h, g), Vector3.new(px(x), py(base) + h / 2, pz(zb)), C.oro, Enum.Material.Metal)
-	bloque("MarcoC", Vector3.new(g, g, (zb - za) * ESCALA), Vector3.new(px(x), py(base) + h, pz((za + zb) / 2)), C.oro, Enum.Material.Metal)
-end
+	local cristal = bloque(nombre .. "Cristal", Vector3.new(largo, 10, 0.4),
+		Vector3.new((x1 + x2) / 2, b + 9, z), C.cristal, Enum.Material.Glass)
+	cristal.Transparency = 0.72
+	cristal.Reflectance = 0.2
 
--- ✨ Los trazos bonitos de las paredes
-local function decorarParedX(x, z1, z2, hacia, base)
-	local xd = px(x) + hacia * 0.6 * ESCALA
-	local largo = (z2 - z1) * ESCALA
-	local zc0 = pz((z1 + z2) / 2)
-	local e = ESCALA
-
-	bloque("Zocalo", Vector3.new(0.3 * e, 1.6 * e, largo), Vector3.new(xd, py(base) + 0.8 * e, zc0), C.oro, Enum.Material.Metal)
-	bloque("Moldura", Vector3.new(0.3 * e, 0.5 * e, largo), Vector3.new(xd, py(base) + (ALTO - 0.8) * e, zc0), C.oro, Enum.Material.Metal)
-
-	local cuantos = math.max(1, math.floor((z2 - z1) / 7))
-	for i = 1, cuantos do
-		local zc = pz(z1 + (i - 0.5) * ((z2 - z1) / cuantos))
-		bloque("Marco", Vector3.new(0.25 * e, 5 * e, 0.3 * e), Vector3.new(xd, py(base) + 5.5 * e, zc - 2 * e), C.oro, Enum.Material.Metal)
-		bloque("Marco", Vector3.new(0.25 * e, 5 * e, 0.3 * e), Vector3.new(xd, py(base) + 5.5 * e, zc + 2 * e), C.oro, Enum.Material.Metal)
-		bloque("Marco", Vector3.new(0.25 * e, 0.3 * e, 4 * e), Vector3.new(xd, py(base) + 3 * e, zc), C.oro, Enum.Material.Metal)
-		bloque("Marco", Vector3.new(0.25 * e, 0.3 * e, 4 * e), Vector3.new(xd, py(base) + 8 * e, zc), C.oro, Enum.Material.Metal)
+	local cuantos = math.max(1, math.floor(largo / 16))
+	for i = 0, cuantos do
+		bloque(nombre .. "Pilar", Vector3.new(2.4, 10, 1.6),
+			Vector3.new(x1 + i * (largo / cuantos), b + 9, z), C.pared)
 	end
 end
 
-local function cuadro(x, z, ancho, hacia, base)
-	local e = ESCALA
-	bloque("CuadroMarco", Vector3.new(0.4 * e, 5 * e, ancho * e), Vector3.new(px(x) + hacia * 0.8 * e, py(base) + 5.5 * e, pz(z)), C.oro, Enum.Material.Metal)
-	bloque("CuadroLienzo", Vector3.new(0.2 * e, 4.2 * e, (ancho - 0.8) * e), Vector3.new(px(x) + hacia * 1.1 * e, py(base) + 5.5 * e, pz(z)), Color3.fromRGB(40, 34, 44))
+local function fachadaX(nombre, x, z1, z2, b)
+	local largo = z2 - z1
+
+	bloque(nombre .. "Bajo", Vector3.new(GROSOR, 4, largo), Vector3.new(x, b + 2, (z1 + z2) / 2), C.pared)
+	bloque(nombre .. "Alto", Vector3.new(GROSOR, 6, largo), Vector3.new(x, b + 17, (z1 + z2) / 2), C.pared)
+
+	local cristal = bloque(nombre .. "Cristal", Vector3.new(0.4, 10, largo),
+		Vector3.new(x, b + 9, (z1 + z2) / 2), C.cristal, Enum.Material.Glass)
+	cristal.Transparency = 0.72
+	cristal.Reflectance = 0.2
+
+	local cuantos = math.max(1, math.floor(largo / 16))
+	for i = 0, cuantos do
+		bloque(nombre .. "Pilar", Vector3.new(1.6, 10, 2.4),
+			Vector3.new(x, b + 9, z1 + i * (largo / cuantos)), C.pared)
+	end
 end
 
--- 💡 Lámparas: crecen con la casa, y su luz también (si no, no llegaría)
-local function lampara(nombre, x, z, base, brillo, alcance, color)
-	local e = ESCALA
-	local techoY = py(base) + ALTO * e
+-- 💡 Lámpara de techo (se apunta a la lista del parpadeo)
+local function lampara(nombre, x, z, b, brillo, alcance, color)
+	local techoY = b + ALTURA
+	bloque(nombre .. "Cable", Vector3.new(0.3, 2, 0.3), Vector3.new(x, techoY - 1, z), C.oro, Enum.Material.Metal)
 
-	bloque(nombre .. "Cable", Vector3.new(0.2 * e, 1.4 * e, 0.2 * e), Vector3.new(px(x), techoY - 0.7 * e, pz(z)), C.oro, Enum.Material.Metal)
-	local bombilla = bloque(nombre, Vector3.new(2.2 * e, 1.2 * e, 2.2 * e), Vector3.new(px(x), techoY - 2 * e, pz(z)), C.bombilla, Enum.Material.Neon)
+	local bombilla = bloque(nombre, Vector3.new(3, 1.4, 3), Vector3.new(x, techoY - 2.7, z),
+		C.bombilla, Enum.Material.Neon)
 
 	local luz = Instance.new("PointLight")
-	luz.Brightness = brillo
-	luz.Range = math.min(60, alcance * e)          -- Roblox no deja pasar de 60
-	luz.Color = color or Color3.fromRGB(255, 224, 170)
+	luz.Brightness = brillo or 1.6
+	luz.Range = alcance or 45
+	luz.Color = color or Color3.fromRGB(255, 228, 180)
 	luz.Shadows = true
 	luz.Parent = bombilla
 
@@ -173,375 +150,327 @@ local function lampara(nombre, x, z, base, brillo, alcance, color)
 	return bombilla
 end
 
-local function lamparaArania(nombre, x, z, base)
-	local e = ESCALA
-	local techoY = py(base) + ALTO * e
+-- Reparte lámparas por una sala grande
+local function iluminar(nombre, x1, x2, z1, z2, b, brillo)
+	local filas = math.max(1, math.round((x2 - x1) / 45))
+	local columnas = math.max(1, math.round((z2 - z1) / 45))
 
-	bloque(nombre .. "Cadena", Vector3.new(0.3 * e, 2 * e, 0.3 * e), Vector3.new(px(x), techoY - 1 * e, pz(z)), C.oro, Enum.Material.Metal)
-	bloque(nombre .. "Centro", Vector3.new(1.8 * e, 1.4 * e, 1.8 * e), Vector3.new(px(x), techoY - 2.6 * e, pz(z)), C.oro, Enum.Material.Metal)
-
-	for i = 1, 6 do
-		local angulo = math.rad(i * 60)
-		local bx = px(x) + math.cos(angulo) * 3 * e
-		local bz = pz(z) + math.sin(angulo) * 3 * e
-
-		bloque(nombre .. "Brazo", Vector3.new(0.22 * e, 0.22 * e, 0.22 * e), Vector3.new(bx, techoY - 2.6 * e, bz), C.oro, Enum.Material.Metal)
-		local vela = bloque(nombre .. i, Vector3.new(0.8 * e, 1.4 * e, 0.8 * e), Vector3.new(bx, techoY - 3.3 * e, bz), C.bombilla, Enum.Material.Neon)
-
-		local luz = Instance.new("PointLight")
-		luz.Brightness = 1.6
-		luz.Range = math.min(60, 26 * e)
-		luz.Color = Color3.fromRGB(255, 220, 160)
-		luz.Shadows = true
-		luz.Parent = vela
-
-		table.insert(lamparas, { pieza = vela, luz = luz })
-	end
-end
-
--- 💡 Una sala gigante necesita VARIAS lámparas: la luz de Roblox no llega
---    a más de 60 studs, así que ponemos una rejilla según lo grande que sea.
-local function iluminarSala(nombre, caja, base, brillo)
-	local cuantas = math.max(1, math.floor(ESCALA / 3))
-	local anchoX = (caja[2] - caja[1]) / (cuantas + 1)
-	local anchoZ = (caja[4] - caja[3]) / (cuantas + 1)
-
-	for i = 1, cuantas do
-		for j = 1, cuantas do
-			lampara(nombre .. i .. j, caja[1] + i * anchoX, caja[3] + j * anchoZ, base, brillo or 1.5, 24)
+	for i = 1, filas do
+		for j = 1, columnas do
+			lampara(nombre .. i .. j,
+				x1 + (i - 0.5) * (x2 - x1) / filas,
+				z1 + (j - 0.5) * (z2 - z1) / columnas, b, brillo)
 		end
 	end
 end
 
--- 🪑 MUEBLES: van con su propia escala (ESCALA_MUEBLES), pero colocados
---    en el sitio que les toca de la casa grande.
-local M = ESCALA_MUEBLES
-
-local function mueble(nombre, x, z, tam, alturaCentro, base, color, material)
-	return bloque(nombre, tam * M, Vector3.new(px(x), py(base) + alturaCentro * M, pz(z)), color, material)
-end
-
-local function mesa(nombre, x, z, ancho, fondo, altura, color, base)
-	bloque(nombre, Vector3.new(ancho, 0.6, fondo) * M,
-		Vector3.new(px(x), py(base) + altura * M, pz(z)), color, Enum.Material.Wood)
-
-	local dx, dz = (ancho / 2 - 0.7) * M, (fondo / 2 - 0.7) * M
+local function mesa(nombre, x, z, ancho, fondo, altura, b, color)
+	bloque(nombre, Vector3.new(ancho, 0.8, fondo), Vector3.new(x, b + altura, z), color or C.madera, Enum.Material.Wood)
+	local dx, dz = ancho / 2 - 1, fondo / 2 - 1
 	for _, e in ipairs({ {dx, dz}, {-dx, dz}, {dx, -dz}, {-dx, -dz} }) do
-		bloque(nombre .. "Pata", Vector3.new(0.6, altura - 0.3, 0.6) * M,
-			Vector3.new(px(x) + e[1], py(base) + (altura - 0.3) / 2 * M, pz(z) + e[2]), color, Enum.Material.Wood)
+		bloque(nombre .. "Pata", Vector3.new(0.8, altura - 0.4, 0.8),
+			Vector3.new(x + e[1], b + (altura - 0.4) / 2, z + e[2]), color or C.madera, Enum.Material.Wood)
 	end
 end
 
-local function sofa(nombre, x, z, ancho, color, giro, base)
-	local modelo = Instance.new("Model")
-	modelo.Name = nombre ; modelo.Parent = casa
-
+local function sofa(nombre, x, z, ancho, b, giro)
+	local giroCF = CFrame.Angles(0, math.rad(giro or 0), 0)
 	local piezas = {
-		{ Vector3.new(ancho, 1.6, 5.5), Vector3.new(0, 1.3, 0) },
-		{ Vector3.new(ancho, 3.2, 1.2), Vector3.new(0, 3.2, -2.6) },
-		{ Vector3.new(1.2, 2.4, 5.5), Vector3.new(-ancho / 2 + 0.6, 2.3, 0) },
-		{ Vector3.new(1.2, 2.4, 5.5), Vector3.new(ancho / 2 - 0.6, 2.3, 0) },
+		{ Vector3.new(ancho, 2, 8), Vector3.new(0, 1.8, 0) },
+		{ Vector3.new(ancho, 4, 1.6), Vector3.new(0, 4, -3.8) },
+		{ Vector3.new(1.6, 3, 8), Vector3.new(-ancho / 2 + 0.8, 3.2, 0) },
+		{ Vector3.new(1.6, 3, 8), Vector3.new(ancho / 2 - 0.8, 3.2, 0) },
 	}
-
-	local giroCF = CFrame.Angles(0, math.rad(giro), 0)
 	for _, d in ipairs(piezas) do
-		local p = bloque(nombre .. "Parte", d[1] * M, Vector3.new(0, 0, 0), color, Enum.Material.Fabric)
-		p.CFrame = CFrame.new(px(x), py(base), pz(z)) * giroCF * CFrame.new(d[2] * M)
-		p.Parent = modelo
-	end
-	return modelo
-end
-
-local function armario(x, z, giro, base)
-	local giroCF = CFrame.Angles(0, math.rad(giro), 0)
-	local centro = CFrame.new(px(x), py(base), pz(z)) * giroCF
-
-	local cuerpo = bloque("Armario", Vector3.new(3, 4, 2.6) * M, Vector3.new(0, 0, 0), C.madera, Enum.Material.Wood)
-	cuerpo.CFrame = centro * CFrame.new(0, 2 * M, 0)
-
-	local encimera = bloque("Encimera", Vector3.new(3.2, 0.5, 3) * M, Vector3.new(0, 0, 0), C.marmol, Enum.Material.Marble)
-	encimera.CFrame = centro * CFrame.new(0, 4.2 * M, 0)
-
-	for i = 0, 1 do
-		local frente = bloque("Cajon", Vector3.new(2.6, 1.6, 0.2) * M, Vector3.new(0, 0, 0), Color3.fromRGB(92, 62, 42), Enum.Material.Wood)
-		frente.CFrame = centro * CFrame.new(0, (1.1 + i * 1.9) * M, -1.45 * M)
-
-		local tirador = bloque("Tirador", Vector3.new(1.4, 0.24, 0.24) * M, Vector3.new(0, 0, 0), C.oro, Enum.Material.Metal)
-		tirador.CFrame = centro * CFrame.new(0, (1.1 + i * 1.9) * M, -1.7 * M)
+		local p = bloque(nombre, d[1], Vector3.new(0, 0, 0), C.tela, Enum.Material.Fabric)
+		p.CFrame = CFrame.new(x, b, z) * giroCF * CFrame.new(d[2])
 	end
 end
 
 --==================================================================
--- 🧱 SUELOS Y FORJADOS
+-- 🧱 LOS SUELOS DE CADA PISO (con el agujero de la escalera)
 --==================================================================
-suelo("SueloPasillo", PAS_X1, PAS_X2, PAS_Z1, PAS_Z2, Y0, C.marmol, Enum.Material.Marble)
-sala("SueloSalon", SALON, Y0, C.parquet, Enum.Material.WoodPlanks)
-sala("SueloComedor", COMEDOR, Y0, C.marmol, Enum.Material.Marble)
-sala("SueloCocina", COCINA, Y0, C.marmol, Enum.Material.Marble)
-sala("SueloEscalera", ESCALERA, Y0, C.marmol, Enum.Material.Marble)
+losa("SueloBajo", X1, X2, Z1, Z2, base(0), C.marmol, Enum.Material.Marble)
 
--- El FORJADO es a la vez techo de abajo y suelo de arriba.
--- Encima de la escalera NO hay, para que se vea el hueco. 🕳️
-suelo("ForjadoPasillo", PAS_X1, PAS_X2, PAS_Z1, PAS_Z2, Y1, C.parquet, Enum.Material.WoodPlanks)
-sala("ForjadoDespacho", SALON, Y1, C.parquet, Enum.Material.WoodPlanks)
-sala("ForjadoPadres", COMEDOR, Y1, C.parquet, Enum.Material.WoodPlanks)
-sala("ForjadoBano", COCINA, Y1, C.bano, Enum.Material.Marble)
-sala("ForjadoRellano", RELLANO, Y1, C.parquet, Enum.Material.WoodPlanks)
-
-techo("Tejado", -25, 25, PAS_Z1, PAS_Z2, Y1)
-
---==================================================================
--- 🚪 PAREDES
---==================================================================
-for _, base in ipairs({ Y0, Y1 }) do
-	paredX("PasilloIzqA", PAS_X1, PAS_Z1, 22, base)
-	dintelX("PasilloIzqDintel1", PAS_X1, 22, 28, base)
-	paredX("PasilloIzqB", PAS_X1, 28, 42, base)
-	dintelX("PasilloIzqDintel2", PAS_X1, 42, 48, base)
-	paredX("PasilloIzqC", PAS_X1, 48, PAS_Z2, base)
-	marcoPuertaX(PAS_X1, 22, 28, base)
-	marcoPuertaX(PAS_X1, 42, 48, base)
-
-	paredZ("PasilloFondo", PAS_Z2, PAS_X1, PAS_X2, base)
-	decorarParedX(PAS_X1, 28, 42, 1, base)
-	decorarParedX(PAS_X2, 28, 42, -1, base)
-	cuadro(PAS_X1, 35, 4, 1, base)
-
-	paredX("ParedIzqCasaA", -25, 15, 35, base)
-	paredX("ParedIzqCasaB", -25, 35, 55, base)
-	paredX("ParedDerCasaA", 25, 15, 35, base)
-	paredX("ParedDerCasaB", 25, 35, 55, base)
-	paredZ("ParedFrenteIzq", 15, -25, PAS_X1, base)
-	paredZ("ParedFrenteDer", 15, PAS_X2, 25, base)
-	paredZ("ParedFondoIzq", 55, -25, PAS_X1, base)
-	paredZ("ParedFondoDer", 55, PAS_X2, 25, base)
-	paredZ("ParedMediaIzq", 35, -25, PAS_X1, base)
-	paredZ("ParedMediaDer", 35, PAS_X2, 25, base)
+for piso = 1, 3 do
+	local color = (piso == 1) and C.parquet or C.parquet
+	losaConHueco("Suelo" .. piso, X1, X2, Z1, Z2, EX1, EX2, EZ1, HUECO_Z2, base(piso), color, Enum.Material.WoodPlanks)
 end
 
--- Pared derecha ABAJO (el hueco del comedor va de suelo a techo: cortinas)
-paredX("PasilloDerA", PAS_X2, PAS_Z1, 22, Y0)
-paredX("PasilloDerB", PAS_X2, 28, 42, Y0)
-dintelX("PasilloDerDintel", PAS_X2, 42, 48, Y0)
-paredX("PasilloDerC", PAS_X2, 48, PAS_Z2, Y0)
-marcoPuertaX(PAS_X2, 42, 48, Y0)
-
--- Pared derecha ARRIBA (puerta de los padres + salida al rellano)
-paredX("PasilloDerAltoA", PAS_X2, PAS_Z1, 22, Y1)
-dintelX("PasilloDerAltoDintel1", PAS_X2, 22, 28, Y1)
-paredX("PasilloDerAltoB", PAS_X2, 28, 48, Y1)
-dintelX("PasilloDerAltoDintel2", PAS_X2, 48, 54, Y1)
-paredX("PasilloDerAltoC", PAS_X2, 54, PAS_Z2, Y1)
-marcoPuertaX(PAS_X2, 22, 28, Y1)
-marcoPuertaX(PAS_X2, 48, 54, Y1)
-
-paredZ("PasilloFrenteAlto", PAS_Z1, PAS_X1, PAS_X2, Y1)
+-- La azotea: aquí el hueco se tapa con una casetilla de salida
+losaConHueco("SueloAzotea", X1, X2, Z1, Z2, EX1, EX2, EZ1, HUECO_Z2, AZOTEA, C.marmol, Enum.Material.Marble)
 
 --==================================================================
--- 🚪 LA PARED DE LA ENTRADA, con el agujerito de TU puerta
---    (tu cuarto no crece, así que aquí la casa gigante se "estrecha"
---     hasta una puerta de tu tamaño)
+-- 🏛️ LAS FACHADAS (con ventanales de mansión)
 --==================================================================
-local ANCHO_PAS = (PAS_X2 - PAS_X1) * ESCALA
-local ALTO_PLANTA = ALTO * ESCALA
-local Z_ENTRADA = 13.5
+for piso = 0, 3 do
+	local b = base(piso)
 
-bloque("EntradaIzq", Vector3.new(ANCHO_PAS / 2 - 3, ALTO_PLANTA, 2),
-	Vector3.new(-(ANCHO_PAS / 2 - 3) / 2 - 3, Y0 + ALTO_PLANTA / 2, Z_ENTRADA), C.pared)
-bloque("EntradaDer", Vector3.new(ANCHO_PAS / 2 - 3, ALTO_PLANTA, 2),
-	Vector3.new((ANCHO_PAS / 2 - 3) / 2 + 3, Y0 + ALTO_PLANTA / 2, Z_ENTRADA), C.pared)
-bloque("EntradaArriba", Vector3.new(6, ALTO_PLANTA - 8, 2),
-	Vector3.new(0, Y0 + 8 + (ALTO_PLANTA - 8) / 2, Z_ENTRADA), C.pared)
-bloque("EntradaMarco", Vector3.new(7.5, 9.5, 1), Vector3.new(0, Y0 + 4.6, Z_ENTRADA - 1.2), C.oro, Enum.Material.Metal)
+	if piso == 0 then
+		-- Planta baja: puerta principal y puerta del garaje en la fachada
+		paredZ("FachadaBajoA", Z1, X1, -50, b)
+		paredZ("FachadaBajoB", Z1, -20, -10, b)
+		paredZ("FachadaBajoC", Z1, 10, X2, b)
+		bloque("DintelPuerta", Vector3.new(20, 6, GROSOR), Vector3.new(0, b + 17, Z1), C.pared)
+		bloque("DintelGaraje", Vector3.new(30, 4, GROSOR), Vector3.new(-35, b + 18, Z1), C.pared)
 
--- La cara de FUERA de tu puerta: aquí sale el cartel [E] Entrar
-local puertaFuera = bloque("PuertaFuera", Vector3.new(6, 8, 0.4), Vector3.new(0, Y0 + 4, 15.4), C.pared)
-puertaFuera.Transparency = 1
-puertaFuera.CanCollide = false
+		-- La puerta del garaje (subida, como si estuviera abierta)
+		bloque("PuertaGaraje", Vector3.new(30, 1.4, 1.2), Vector3.new(-35, b + 15.5, Z1 - 0.8), C.metal, Enum.Material.Metal)
+		for i = 0, 5 do
+			bloque("MarcoGaraje", Vector3.new(30, 0.5, 0.8), Vector3.new(-35, b + 14.6 - i * 0.9, Z1 - 0.8), C.metal, Enum.Material.Metal)
+		end
+	else
+		fachadaZ("FachadaFrente" .. piso, Z1, X1, X2, b)
+	end
 
--- 📍 Donde apareces al salir del cuarto (Opciones lo lee de aquí)
-local llegada = bloque("LlegadaPasillo", Vector3.new(4, 1, 4), Vector3.new(0, Y0 + 3, 24), C.pared)
-llegada.Transparency = 1
-llegada.CanCollide = false
-llegada.CFrame = CFrame.lookAt(Vector3.new(0, Y0 + 3, 24), Vector3.new(0, Y0 + 3, 60))
+	fachadaZ("FachadaFondo" .. piso, Z2, X1, X2, b)
+	fachadaX("FachadaIzq" .. piso, X1, Z1, Z2, b)
+	fachadaX("FachadaDer" .. piso, X2, Z1, Z2, b)
+end
 
-bloque("AlfombraPasillo", Vector3.new(6 * ESCALA, 0.4, 40 * ESCALA), Vector3.new(0, Y0 + 0.2, pz(33)), C.alfombra, Enum.Material.Fabric)
-
-for i = 0, 3 do
-	lampara("LamparaPasillo" .. i, 0, 18 + i * 11, Y0, 1.4, 24)
-	lampara("LamparaPasilloAlto" .. i, 0, 18 + i * 11, Y1, 1.4, 24)
+-- La barandilla de la azotea
+for _, lado in ipairs({ {Z1, "frente"}, {Z2, "fondo"} }) do
+	bloque("PretilAzotea" .. lado[2], Vector3.new(X2 - X1, 6, 1.4), Vector3.new(0, AZOTEA + 3, lado[1]), C.marmol, Enum.Material.Marble)
+end
+for _, lado in ipairs({ {X1, "izq"}, {X2, "der"} }) do
+	bloque("PretilAzotea" .. lado[2], Vector3.new(1.4, 6, Z2 - Z1), Vector3.new(lado[1], AZOTEA + 3, 0), C.marmol, Enum.Material.Marble)
 end
 
 --==================================================================
--- 🪟 LAS CORTINAS (tapan la entrada del comedor)
+-- 🪜 LA ESCALERA (sube por el mismo hueco en todos los pisos)
 --==================================================================
-local e = ESCALA
-bloque("BarraCortinas", Vector3.new(0.7 * e, 0.4 * e, 7 * e), Vector3.new(px(PAS_X2), py(Y0) + (ALTO - 0.4) * e, pz(25)), C.oro, Enum.Material.Metal)
-bloque("CortinaIzq", Vector3.new(0.6 * e, (ALTO - 0.6) * e, 3 * e), Vector3.new(px(PAS_X2), py(Y0) + (ALTO - 0.6) / 2 * e, pz(23.5)), C.cortina, Enum.Material.Fabric)
-bloque("CortinaDer", Vector3.new(0.6 * e, (ALTO - 0.6) * e, 3 * e), Vector3.new(px(PAS_X2), py(Y0) + (ALTO - 0.6) / 2 * e, pz(26.5)), C.cortina, Enum.Material.Fabric)
+local ANCHO_ESC = EX2 - EX1 - 4
+local X_ESC = (EX1 + EX2) / 2
+local LARGO_ESC = 30
+
+for piso = 0, 3 do
+	local b = base(piso)
+	local subida = base(piso + 1) - b
+	local escalones = math.ceil(subida / 1.5)          -- que ninguno pase de 1,5
+	local alturaPaso = subida / escalones
+	local fondoPaso = LARGO_ESC / escalones
+
+	for i = 1, escalones do
+		local h = alturaPaso * i
+		bloque("Escalon", Vector3.new(ANCHO_ESC, h, fondoPaso),
+			Vector3.new(X_ESC, b + h / 2, EZ1 + 2 + (i - 0.5) * fondoPaso), C.marmol, Enum.Material.Marble)
+	end
+
+	-- barandilla dorada del lado abierto
+	for i = 0, 6 do
+		bloque("Barrote", Vector3.new(0.4, 5, 0.4),
+			Vector3.new(EX1 + 1, base(piso + 1) + 2.5, HUECO_Z2 + i * 1.5), C.oro, Enum.Material.Metal)
+	end
+	bloque("Pasamanos", Vector3.new(0.6, 0.6, 9),
+		Vector3.new(EX1 + 1, base(piso + 1) + 5, HUECO_Z2 + 4.5), C.oro, Enum.Material.Metal)
+
+	iluminar("LuzEscalera" .. piso, EX1, EX2, EZ1, EZ2, b, 1.4)
+end
 
 --==================================================================
--- 🪜 LA ESCALERA
---    Los escalones NO pueden crecer x8 (¡nadie podría subirlos!), así
---    que se calculan solos: cuantos más haga falta, más pone. 🧠
+-- 🚗 PLANTA BAJA: recibidor y GARAJE
 --==================================================================
-local SUBIDA_TOTAL = (Y1 - Y0) * ESCALA
-local LARGO_ESCALERA = 12.5 * ESCALA
-local ESCALONES = math.ceil(SUBIDA_TOTAL / 1.6)      -- máximo 1,6 de alto por escalón
-local SUBIDA = SUBIDA_TOTAL / ESCALONES
-local FONDO = LARGO_ESCALERA / ESCALONES
-local ANCHO_ESC = 10 * ESCALA
-local X_ESC = px(20)
-local Z_ESC = pz(35.5)
+local b0 = base(0)
+iluminar("LuzBajo", X1, 20, Z1, Z2, b0, 1.5)
 
-for i = 1, ESCALONES do
-	local altura = SUBIDA * i
-	local z = Z_ESC + (i - 0.5) * FONDO
+paredX("MuroGaraje", -5, Z1, 5, b0)      -- separa el garaje del recibidor
 
-	bloque("Escalon" .. i, Vector3.new(ANCHO_ESC, altura, FONDO),
-		Vector3.new(X_ESC, Y0 + altura / 2, z), C.marmol, Enum.Material.Marble)
+-- El coche 🚗
+local COCHE_X, COCHE_Z = -33, -22
 
-	if i % 6 == 0 then
-		bloque("BarrotEscalera", Vector3.new(0.6, 6, 0.6), Vector3.new(X_ESC - ANCHO_ESC / 2 + 0.5, Y0 + altura + 3, z), C.oro, Enum.Material.Metal)
+bloque("CocheCuerpo", Vector3.new(14, 4.5, 30), Vector3.new(COCHE_X, b0 + 4, COCHE_Z), C.coche, Enum.Material.Metal)
+bloque("CocheCabina", Vector3.new(12, 4, 13), Vector3.new(COCHE_X, b0 + 8, COCHE_Z + 1), C.coche, Enum.Material.Metal)
+
+local lunas = bloque("CocheLunas", Vector3.new(12.2, 3, 12.4), Vector3.new(COCHE_X, b0 + 8.2, COCHE_Z + 1), C.cristal, Enum.Material.Glass)
+lunas.Transparency = 0.6
+
+for _, lado in ipairs({ -1, 1 }) do
+	for _, largo in ipairs({ -1, 1 }) do
+		local rueda = bloque("Rueda", Vector3.new(3, 6, 6),
+			Vector3.new(COCHE_X + lado * 7, b0 + 3, COCHE_Z + largo * 9.5), C.oscuro, Enum.Material.SmoothPlastic)
+		rueda.Shape = Enum.PartType.Cylinder
+		rueda.CFrame = CFrame.new(rueda.Position) * CFrame.Angles(0, 0, math.rad(90))
 	end
 end
 
-local largoPasamanos = math.sqrt(SUBIDA_TOTAL ^ 2 + LARGO_ESCALERA ^ 2)
-local pasamanos = bloque("PasamanosEscalera", Vector3.new(0.7, 0.7, largoPasamanos),
-	Vector3.new(X_ESC - ANCHO_ESC / 2 + 0.5, Y0 + SUBIDA_TOTAL / 2 + 5, Z_ESC + LARGO_ESCALERA / 2), C.oro, Enum.Material.Metal)
-pasamanos.CFrame = CFrame.new(pasamanos.Position) * CFrame.Angles(-math.atan2(SUBIDA_TOTAL, LARGO_ESCALERA), 0, 0)
+for _, lado in ipairs({ -1, 1 }) do
+	local faro = bloque("Faro", Vector3.new(3.5, 1.6, 0.6),
+		Vector3.new(COCHE_X + lado * 4.5, b0 + 4.5, COCHE_Z - 15), Color3.fromRGB(255, 250, 220), Enum.Material.Neon)
 
--- Barandilla del rellano, para no caerse por el hueco 🕳️
-local zBarandilla = pz(48)
-for i = 0, 12 do
-	bloque("BarrotRellano", Vector3.new(0.6, 6, 0.6), Vector3.new(px(5) + 2 + i * (ANCHO_ESC - 4) / 12, py(Y1) + 3, zBarandilla), C.oro, Enum.Material.Metal)
+	local luzFaro = Instance.new("PointLight")
+	luzFaro.Brightness = 1.2 ; luzFaro.Range = 22
+	luzFaro.Color = Color3.fromRGB(255, 245, 210)
+	luzFaro.Parent = faro
+
+	bloque("Piloto", Vector3.new(3, 1.4, 0.6),
+		Vector3.new(COCHE_X + lado * 4.5, b0 + 4.5, COCHE_Z + 15), Color3.fromRGB(200, 30, 30), Enum.Material.Neon)
 end
-bloque("PasamanosRellano", Vector3.new(ANCHO_ESC, 0.7, 0.7), Vector3.new(px(5) + ANCHO_ESC / 2, py(Y1) + 6, zBarandilla), C.oro, Enum.Material.Metal)
 
-iluminarSala("LuzEscalera", ESCALERA, Y0, 1.3)
+-- 🔢 LA MATRÍCULA
+local matricula = bloque("Matricula", Vector3.new(9, 2.6, 0.4),
+	Vector3.new(COCHE_X, b0 + 2.6, COCHE_Z + 15.2), Color3.fromRGB(245, 245, 235), Enum.Material.SmoothPlastic)
 
---==================================================================
--- 🛋️ EL SALÓN
---==================================================================
-lamparaArania("AraniaSalon", -15, 25, Y0)
-iluminarSala("LuzSalon", SALON, Y0, 1.2)
-bloque("AlfombraSalon", Vector3.new(12 * e, 0.4, 10 * e), Vector3.new(px(-15), Y0 + 0.2, pz(24)), Color3.fromRGB(78, 66, 62), Enum.Material.Fabric)
+local cartel = Instance.new("SurfaceGui")
+cartel.Face = Enum.NormalId.Back          -- la parte de atrás del coche
+cartel.CanvasSize = Vector2.new(450, 130)
+cartel.Parent = matricula
 
-mueble("MuebleTele", -15, 16.8, Vector3.new(10, 2.2, 2.6), 1.1, Y0, C.madera, Enum.Material.Wood)
-local pantalla = mueble("Tele", -15, 16.6, Vector3.new(9, 5, 0.5), 5, Y0, C.negro, Enum.Material.Glass)
-pantalla.Reflectance = 0.25
-
-local luzTele = Instance.new("PointLight")
-luzTele.Brightness = 1.4 ; luzTele.Range = 40
-luzTele.Color = Color3.fromRGB(120, 160, 255)
-luzTele.Parent = pantalla
-table.insert(lamparas, { pieza = pantalla, luz = luzTele, noBrillar = true })
-
-sofa("SofaSalon", -15, 30, 9, C.tela, 180, Y0)
-mesa("MesaCentro", -15, 24, 5, 3, 2.4, C.madera, Y0)
-mesa("Estanteria", -23, 25, 2, 8, 6, C.madera, Y0)
+local texto = Instance.new("TextLabel")
+texto.Size = UDim2.fromScale(1, 1)
+texto.BackgroundTransparency = 1
+texto.Font = Enum.Font.GothamBold
+texto.TextScaled = true
+texto.TextColor3 = Color3.fromRGB(20, 20, 25)
+texto.Text = "Y 75689 HM3"
+texto.Parent = cartel
 
 --==================================================================
--- 🍽️ EL COMEDOR
+-- 🛋️ PISO 1: salón, comedor, cocina... y LAS CORTINAS
 --==================================================================
-lamparaArania("AraniaComedor", 15, 25, Y0)
-iluminarSala("LuzComedor", COMEDOR, Y0, 1.2)
-mesa("MesaComedor", 15, 25, 12, 6, 5, C.madera, Y0)
+local b1 = base(1)
+iluminar("LuzPiso1", X1, 25, Z1, Z2, b1, 1.4)
 
-mueble("Maceta", 15, 25, Vector3.new(2.2, 2, 2.2), 6.2, Y0, Color3.fromRGB(150, 92, 60), Enum.Material.Slate)
-for _, sitio in ipairs({ {0, 2, 0}, {0.9, 1.5, 0.5}, {-0.9, 1.6, -0.4} }) do
-	local hoja = bloque("Hojas", Vector3.new(2.2, 2.2, 2.2) * M,
-		Vector3.new(px(15) + sitio[1] * M, py(Y0) + (6.2 + sitio[2]) * M, pz(25) + sitio[3] * M), C.planta, Enum.Material.Grass)
+-- Un muro parte el piso en dos, con el hueco que tapan las cortinas
+paredX("MuroSalonA", 0, Z1, 4, b1)
+paredX("MuroSalonB", 0, 22, Z2, b1)
+
+bloque("BarraCortinas", Vector3.new(1.2, 0.8, 20), Vector3.new(0, b1 + ALTURA - 1, 13), C.oro, Enum.Material.Metal)
+bloque("CortinaIzq", Vector3.new(1.2, ALTURA - 1.4, 9), Vector3.new(0, b1 + (ALTURA - 1.4) / 2, 8.5), C.cortina, Enum.Material.Fabric)
+bloque("CortinaDer", Vector3.new(1.2, ALTURA - 1.4, 9), Vector3.new(0, b1 + (ALTURA - 1.4) / 2, 17.5), C.cortina, Enum.Material.Fabric)
+
+-- Salón (delante de las cortinas)
+sofa("SofaSalon", -30, -20, 20, b1, 0)
+sofa("SofaSalon2", -30, -5, 20, b1, 180)
+mesa("MesaCentro", -30, -12, 12, 7, 3.5, b1)
+bloque("AlfombraSalon", Vector3.new(34, 0.3, 26), Vector3.new(-30, b1 + 0.15, -12), Color3.fromRGB(84, 70, 66), Enum.Material.Fabric)
+
+bloque("MuebleTele", Vector3.new(24, 4, 4), Vector3.new(-30, b1 + 2, -36), C.madera, Enum.Material.Wood)
+local tele = bloque("Tele", Vector3.new(22, 11, 0.8), Vector3.new(-30, b1 + 10, -36), C.oscuro, Enum.Material.Glass)
+tele.Reflectance = 0.3
+
+-- Comedor (detrás de las cortinas)
+mesa("MesaComedor", 15, 13, 22, 10, 6, b1)
+bloque("Maceta", Vector3.new(4, 3.5, 4), Vector3.new(15, b1 + 8, 13), Color3.fromRGB(150, 92, 60), Enum.Material.Slate)
+for _, sitio in ipairs({ Vector3.new(0, 3.4, 0), Vector3.new(1.8, 2.6, 1), Vector3.new(-1.6, 2.8, -0.8) }) do
+	local hoja = bloque("Hojas", Vector3.new(4.4, 4.4, 4.4), Vector3.new(15, b1 + 8, 13) + sitio, C.planta, Enum.Material.Grass)
 	hoja.Shape = Enum.PartType.Ball
 end
 
 for i = 1, 6 do
 	local lado = (i <= 3) and -1 or 1
-	local zs = 21 + ((i - 1) % 3) * 4
-	local xs = 15 + lado * 4.6 * M / e     -- las sillas se pegan a la mesa
-	mueble("SillaComedor", xs, zs, Vector3.new(2.4, 0.5, 2.4), 2.6, Y0, C.madera, Enum.Material.Wood)
-	mueble("SillaRespaldo", xs, zs + lado * 1.1 * M / e, Vector3.new(2.4, 3.6, 0.4), 4.4, Y0, C.madera, Enum.Material.Wood)
+	local z = 5 + ((i - 1) % 3) * 8
+	bloque("Silla", Vector3.new(5, 1, 5), Vector3.new(15 + lado * 9, b1 + 4.5, z), C.madera, Enum.Material.Wood)
+	bloque("SillaRespaldo", Vector3.new(5, 7, 0.8), Vector3.new(15 + lado * 9, b1 + 8, z + lado * 2.2), C.madera, Enum.Material.Wood)
 end
 
-mesa("Aparador", 15, 17.5, 10, 2.6, 4, C.madera, Y0)
-cuadro(25, 25, 5, -1, Y0)
-
---==================================================================
--- 🍳 LA COCINA
---==================================================================
-iluminarSala("LuzCocina", COCINA, Y0, 1.6)
-
-for i = 0, 4 do armario(-22 + i * 3.2 * M / e, 53.4, 0, Y0) end
-for i = 0, 4 do armario(-23.4, 38 + i * 3.2 * M / e, 90, Y0) end
-for i = 0, 4 do
-	mueble("ArmarioAlto", -22 + i * 3.2 * M / e, 53.6, Vector3.new(3, 3.4, 2), 7.2, Y0, C.madera, Enum.Material.Wood)
-	mueble("TiradorAlto", -22 + i * 3.2 * M / e, 52.6, Vector3.new(1.4, 0.24, 0.24), 5.8, Y0, C.oro, Enum.Material.Metal)
+-- Cocina, al fondo del piso 1
+bloque("Encimera", Vector3.new(40, 1, 8), Vector3.new(-25, b1 + 6, 38), C.marmol, Enum.Material.Marble)
+for i = 0, 6 do
+	bloque("Armario", Vector3.new(5.4, 6, 8), Vector3.new(-43 + i * 6, b1 + 3, 38), C.madera, Enum.Material.Wood)
+	bloque("Tirador", Vector3.new(3, 0.5, 0.5), Vector3.new(-43 + i * 6, b1 + 3, 33.8), C.oro, Enum.Material.Metal)
+	bloque("ArmarioAlto", Vector3.new(5.4, 6, 5), Vector3.new(-43 + i * 6, b1 + 14, 40), C.madera, Enum.Material.Wood)
 end
+mesa("IslaCocina", -25, 26, 22, 9, 6, b1)
 
-mesa("Isla", -15, 45, 9, 4.5, 4.2, C.madera, Y0)
-mueble("EncimeraIsla", -15, 45, Vector3.new(10, 0.5, 5.5), 4.5, Y0, C.marmol, Enum.Material.Marble)
-for i = 0, 2 do lampara("LamparaIsla" .. i, -18 + i * 3, 45, Y0, 0.8, 14) end
-
--- 🧊 LA NEVERA
-local nevera = mueble("Nevera", -8, 42, Vector3.new(4.5, 9, 6), 4.5, Y0, C.metal, Enum.Material.Metal)
+local nevera = bloque("Nevera", Vector3.new(8, 15, 9), Vector3.new(-3, b1 + 7.5, 38), C.metal, Enum.Material.Metal)
 nevera.Reflectance = 0.15
-mueble("NeveraPuertaAlta", -8 - 2.3 * M / e, 42, Vector3.new(0.4, 5.2, 5.6), 6.2, Y0, Color3.fromRGB(176, 180, 188), Enum.Material.Metal)
-mueble("NeveraPuertaBaja", -8 - 2.3 * M / e, 42, Vector3.new(0.4, 3.4, 5.6), 1.9, Y0, Color3.fromRGB(176, 180, 188), Enum.Material.Metal)
-mueble("NeveraTirador1", -8 - 2.6 * M / e, 42 + 2.3 * M / e, Vector3.new(0.3, 3.6, 0.3), 6.2, Y0, C.oro, Enum.Material.Metal)
+bloque("NeveraPuerta", Vector3.new(0.6, 14, 8.4), Vector3.new(-7.2, b1 + 7.5, 38), Color3.fromRGB(178, 182, 190), Enum.Material.Metal)
+bloque("NeveraTirador", Vector3.new(0.5, 8, 0.5), Vector3.new(-7.8, b1 + 9, 41), C.oro, Enum.Material.Metal)
 
 --==================================================================
--- 🖊️ EL DESPACHO (arriba)
+-- 🛏️ PISO 2: NUESTRA HABITACIÓN
+--    El cuarto se construye en su script y aquí lo COLOCAMOS.
 --==================================================================
-iluminarSala("LuzDespacho", SALON, Y1, 1.4)
-mesa("Escritorio", -19, 20, 8, 4, 6, C.madera, Y1)
-mueble("Flexo", -16.5, 20, Vector3.new(0.7, 1.8, 0.7), 7, Y1, C.oro, Enum.Material.Metal)
-mesa("TabureteAlto", -19, 24.5, 2.2, 2.2, 4.2, C.madera, Y1)
+local b2 = base(2)
+iluminar("LuzPiso2", X1, 25, Z1, Z2, b2, 1.2)
 
-sofa("SofaCama", -15, 31, 10, C.tela, 180, Y1)
-mueble("MantaSofaCama", -15, 30, Vector3.new(5, 0.3, 3.5), 2.2, Y1, Color3.fromRGB(150, 150, 160), Enum.Material.Fabric)
-mesa("EstanteriaDespacho", -23.5, 30, 2, 9, 7, C.madera, Y1)
-cuadro(-25, 20, 5, 1, Y1)
+local CUARTO_X, CUARTO_Z = -30, -20        -- dónde va nuestro cuarto
 
---==================================================================
--- 🛁 EL BAÑO (arriba)
---==================================================================
-iluminarSala("LuzBano", COCINA, Y1, 1.5)
+local cuarto = workspace:WaitForChild("Cuarto", 20)
+if cuarto then
+	-- Lo subimos entero al piso 2. El 0.05 es para que su suelo no se pelee
+	-- con el suelo de la mansión (si no, parpadean los dos).
+	local desplazamiento = Vector3.new(CUARTO_X, b2 - 1 + 0.05, CUARTO_Z)
+	cuarto:PivotTo(CFrame.new(desplazamiento) * cuarto:GetPivot())
+	print("🛏️ Cuarto colocado en el piso 2.")
+else
+	warn("⚠️ No encuentro el Cuarto. ¿Está ConstruirCuarto en ServerScriptService?")
+end
 
-mueble("Banera", -20, 50, Vector3.new(9, 3, 5), 1.5, Y1, C.bano)
-mueble("AguaBanera", -20, 50, Vector3.new(8.2, 0.4, 4.2), 2.9, Y1, C.agua, Enum.Material.Glass)
-mueble("Lavabo", -20, 38, Vector3.new(4, 1.2, 3), 4, Y1, C.bano)
-mueble("PieLavabo", -20, 38, Vector3.new(1.4, 3.4, 1.4), 1.7, Y1, C.bano)
-local espejo = mueble("Espejo", -20, 36.4, Vector3.new(3.6, 4, 0.3), 6.6, Y1, Color3.fromRGB(190, 210, 220), Enum.Material.Glass)
-espejo.Reflectance = 0.6
-mueble("Vater", -9, 50, Vector3.new(2.6, 2.4, 3), 1.2, Y1, C.bano)
-mueble("VaterTapa", -9, 51.6, Vector3.new(2.6, 2.6, 0.6), 2.5, Y1, C.bano)
+-- La cara de FUERA de la puerta del cuarto (aquí sale el cartel [E] Entrar)
+local puertaFuera = bloque("PuertaFuera", Vector3.new(6, 8, 0.4),
+	Vector3.new(CUARTO_X, b2 + 4, CUARTO_Z + 13.2), C.pared)
+puertaFuera.Transparency = 1
+puertaFuera.CanCollide = false
 
---==================================================================
--- 🔒 LA HABITACIÓN DE PAPÁ Y MAMÁ (arriba, CERRADA)
---    La puerta SÍ crece: es una puerta de la casa.
---==================================================================
-bloque("PuertaPadres", Vector3.new(0.6 * e, 8 * e, 6 * e), Vector3.new(px(PAS_X2), py(Y1) + 4 * e, pz(25)), C.madera, Enum.Material.Wood)
-bloque("PomoPadres", Vector3.new(0.7 * e, 0.7 * e, 0.7 * e), Vector3.new(px(PAS_X2) - 0.6 * e, py(Y1) + 4 * e, pz(22.8)), C.oro, Enum.Material.Metal)
-bloque("CerraduraPadres", Vector3.new(0.5 * e, 1 * e, 0.5 * e), Vector3.new(px(PAS_X2) - 0.6 * e, py(Y1) + 3 * e, pz(22.8)), C.metal, Enum.Material.Metal)
+-- Donde apareces al salir del cuarto
+local llegada = bloque("LlegadaPasillo", Vector3.new(4, 1, 4),
+	Vector3.new(CUARTO_X, b2 + 3, CUARTO_Z + 22), C.pared)
+llegada.Transparency = 1
+llegada.CanCollide = false
+llegada.CFrame = CFrame.lookAt(llegada.Position, llegada.Position + Vector3.new(0, 0, 1))
 
-mueble("CamaPadres", 18, 25, Vector3.new(10, 1.6, 8), 0.8, Y1, C.madera, Enum.Material.Wood)
-mueble("ColchonPadres", 18, 25, Vector3.new(9.4, 1, 7.4), 2.1, Y1, Color3.fromRGB(180, 175, 165), Enum.Material.Fabric)
-mesa("ArmarioPadres", 10, 18, 3, 6, 8, C.madera, Y1)
-iluminarSala("LuzPadres", COMEDOR, Y1, 1)
+-- Una salita en el piso 2, para que no esté vacío
+sofa("SofaPiso2", 5, 25, 18, b2, 180)
+mesa("EscritorioAlto", 5, 5, 16, 8, 7, b2)
+bloque("AlfombraPiso2", Vector3.new(28, 0.3, 22), Vector3.new(5, b2 + 0.15, 18), Color3.fromRGB(70, 66, 78), Enum.Material.Fabric)
 
 --==================================================================
--- 💡 QUE TODAS LAS LUCES PARPADEEN
+-- 🔒 PISO 3: LA HABITACIÓN DE PAPÁ Y MAMÁ
+--==================================================================
+local b3 = base(3)
+iluminar("LuzPiso3", X1, 25, Z1, Z2, b3, 1.1)
+
+-- Su cuarto ocupa media planta, con la puerta cerrada con llave
+paredX("MuroPadres", -10, Z1, -6, b3)
+paredX("MuroPadres2", -10, 2, Z2, b3)
+
+local puertaPadres = bloque("PuertaPadres", Vector3.new(1.2, 12, 8),
+	Vector3.new(-10, b3 + 6, -2), C.madera, Enum.Material.Wood)
+bloque("PomoPadres", Vector3.new(1, 1, 1), Vector3.new(-11, b3 + 6, -5), C.oro, Enum.Material.Metal)
+bloque("CerraduraPadres", Vector3.new(0.8, 1.6, 0.8), Vector3.new(-11, b3 + 4.4, -5), C.metal, Enum.Material.Metal)
+
+bloque("CamaPadres", Vector3.new(22, 3, 18), Vector3.new(-35, b3 + 1.5, -10), C.madera, Enum.Material.Wood)
+bloque("ColchonPadres", Vector3.new(21, 2, 17), Vector3.new(-35, b3 + 4, -10), Color3.fromRGB(190, 186, 176), Enum.Material.Fabric)
+mesa("ArmarioPadres", -52, 10, 6, 16, 14, b3)
+
+-- Baño del piso 3
+bloque("Banera", Vector3.new(16, 5, 9), Vector3.new(10, b3 + 2.5, 34), Color3.fromRGB(240, 244, 248))
+local agua = bloque("AguaBanera", Vector3.new(15, 0.6, 8), Vector3.new(10, b3 + 4.8, 34), Color3.fromRGB(120, 190, 220), Enum.Material.Glass)
+agua.Transparency = 0.35
+
+--==================================================================
+-- ☀️ LA AZOTEA
+--==================================================================
+bloque("CasetaAzotea", Vector3.new(EX2 - EX1 + 4, 12, 12), Vector3.new(X_ESC, AZOTEA + 6, -4), C.marmol, Enum.Material.Marble)
+
+for i = -1, 1 do
+	local farol = bloque("FarolAzotea", Vector3.new(2, 8, 2), Vector3.new(i * 30, AZOTEA + 4, 20), C.oro, Enum.Material.Metal)
+	local bombilla = bloque("BombillaAzotea", Vector3.new(3, 2, 3), Vector3.new(i * 30, AZOTEA + 9, 20), C.bombilla, Enum.Material.Neon)
+
+	local luz = Instance.new("PointLight")
+	luz.Brightness = 1.4 ; luz.Range = 40
+	luz.Color = Color3.fromRGB(255, 232, 190)
+	luz.Parent = bombilla
+
+	table.insert(lamparas, { pieza = bombilla, luz = luz })
+
+	bloque("Tumbona", Vector3.new(8, 1.4, 18), Vector3.new(i * 22, AZOTEA + 2, -25), Color3.fromRGB(232, 228, 218), Enum.Material.Fabric)
+end
+
+--==================================================================
+-- 💡 QUE PARPADEEN LAS LUCES
 --==================================================================
 for _, lamp in ipairs(lamparas) do
 	task.spawn(function()
 		while lamp.pieza.Parent do
-			task.wait(math.random(30, 160) / 10)
-			for _ = 1, math.random(2, 7) do
+			task.wait(math.random(40, 180) / 10)
+			for _ = 1, math.random(2, 6) do
 				lamp.luz.Enabled = false
-				if not lamp.noBrillar then lamp.pieza.Material = Enum.Material.SmoothPlastic end
+				lamp.pieza.Material = Enum.Material.SmoothPlastic
 				task.wait(math.random(3, 14) / 100)
 				lamp.luz.Enabled = true
-				if not lamp.noBrillar then lamp.pieza.Material = Enum.Material.Neon end
+				lamp.pieza.Material = Enum.Material.Neon
 				task.wait(math.random(4, 22) / 100)
 			end
 		end
@@ -550,7 +479,5 @@ end
 
 casa:SetAttribute("Listo", true)
 
-print("🏠 Casa construida con ESCALA = " .. ESCALA)
-print("   Cada sala mide " .. (20 * ESCALA) .. " x " .. (20 * ESCALA) .. " studs (≈ "
-	.. math.floor(20 * ESCALA * 0.28) .. " x " .. math.floor(20 * ESCALA * 0.28) .. " metros)")
-print("   Escalera de " .. ESCALONES .. " escalones. Lámparas: " .. #lamparas)
+print("🏰 Mansión construida: garaje, piso 1, tu cuarto en el 2, padres en el 3 y azotea.")
+print("   Altura total: " .. math.floor(AZOTEA + 6) .. " studs. Lámparas: " .. #lamparas)

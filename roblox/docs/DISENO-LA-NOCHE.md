@@ -53,24 +53,24 @@ Tiene un número escondido: **cómo de cerca está** (0 = lejos, 100 = en la pue
 10. Finales y publicar
 
 
-## 🏠 El plano de la casa (dos plantas)
 
-Medida: 1 stud ≈ 0,28 m. Una sala de **20 x 20 studs ≈ 32 m²**.
-Cada planta mide 10 studs de alto ≈ 2,8 m.
+## 🏰 La mansión (planos)
 
 ```
-PLANTA BAJA                          PLANTA ALTA
-┌─────────┬───┬─────────┐            ┌─────────┬───┬─────────┐
-│ SALÓN   │ P │ COMEDOR │            │DESPACHO │ P │ PADRES  │
-│ sofá,   │ A │ mesa    │            │escritor.│ A │  🔒     │
-│ tele    │ S │ +planta │            │+sofá cama S │ cerrada │
-├─────────┤ I ├─────────┤            ├─────────┤ I ├─────────┤
-│ COCINA  │ L │ESCALERA │            │  BAÑO   │ L │ hueco   │
-│ nevera  │ L │  🪜     │            │         │ L │ +rellano│
-└─────────┴───┴─────────┘            └─────────┴───┴─────────┘
-        ▲
-   tu CUARTO (24 x 24, no cambia)
+        AZOTEA        terraza, farolas y tumbonas
+   ┌──────────────┐
+   │   PISO 3     │  habitación de papá y mamá 🔒 + baño
+   ├──────────────┤
+   │   PISO 2     │  NUESTRA HABITACIÓN 🛏️ + salita
+   ├──────────────┤
+   │   PISO 1     │  salón · CORTINAS 🪟 · comedor · cocina (nevera)
+   ├──────────────┤
+   │  PISO BAJO   │  recibidor + GARAJE 🚗 (matrícula Y 75689 HM3)
+   └──────────────┘
+        JARDÍN       piscina con luces acuáticas 🏊, farolas, setos
+                     y muros invisibles en los 4 bordes 🚧
 ```
 
-Las **cortinas** tapan la entrada del comedor, en el pasillo de abajo.
-La **puerta de papá y mamá** está arriba, a la derecha del pasillo.
+La escalera sube por el mismo hueco en todos los pisos, y ese hueco se ve
+desde arriba. Tu cuarto lo construye `ConstruirCuarto` y `ConstruirCasa` lo
+sube solo al piso 2.

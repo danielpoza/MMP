@@ -233,12 +233,25 @@ end
 --==================================================================
 local humanoide = Instance.new("Humanoid")
 humanoide.DisplayName = "???"
-humanoide.MaxHealth = 500
-humanoide.Health = 500
+humanoide.MaxHealth = math.huge
+humanoide.Health = math.huge
 humanoide.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-humanoide.WalkSpeed = 4
-humanoide.AutoRotate = false        -- que no gire solo: lo movemos nosotros
+humanoide.WalkSpeed = 0
+humanoide.AutoRotate = false          -- que no gire solo: lo movemos nosotros
+
+-- ⚠️ ESTO ES IMPORTANTÍSIMO ⚠️
+-- Cuando un Humanoid "se muere", Roblox ROMPE TODAS LAS ARTICULACIONES del
+-- personaje (por eso los muñecos se desmontan al morir). Si eso le pasa al
+-- monstruo, el cuerpo se queda atrás mientras la raíz invisible se va sola,
+-- y parece que no se mueve nada. Con esto no puede pasar nunca:
+humanoide.RequiresNeck = false        -- que no se muera si el cuello es raro
+humanoide.BreakJointsOnDeath = false  -- que NO rompa las articulaciones
 humanoide.Parent = monstruo
+
+humanoide:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+humanoide:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+humanoide:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+pcall(function() humanoide.EvaluateStateMachine = false end)
 
 monstruo.PrimaryPart = raiz
 raiz.Anchored = true                 -- se queda de pie y no se cae
@@ -247,5 +260,21 @@ monstruo:PivotTo(CFrame.new(POSICION + Vector3.new(0, 9, 0)) * girar(0, MIRANDO,
 -- 🚶 El andar y la persecución los hace el script MonstruoPersigue.
 -- Aquí solo se monta el cuerpo.
 
+--==================================================================
+-- ✅ COMPROBACIÓN: ¿está todo bien enganchado?
+--    Si una pieza no comparte "assembly" con la raíz, es que su
+--    articulación no funciona y se quedaría atrás al moverse.
+--==================================================================
+task.wait(0.2)
+
+local sueltas = 0
+for _, cosa in ipairs(monstruo:GetChildren()) do
+	if cosa:IsA("BasePart") and cosa ~= raiz and cosa.AssemblyRootPart ~= raiz then
+		sueltas += 1
+		warn("⚠️ Pieza suelta (no engancha con la raíz): " .. cosa.Name)
+	end
+end
+
 print("👹 Monstruo montado en " .. tostring(POSICION))
+print("   Piezas sueltas: " .. sueltas .. " (tiene que poner 0)")
 print("   Articulaciones: rodilla y codo escondidos en cada extremidad.")

@@ -47,7 +47,30 @@ end
 -- Que el Humanoid no intente andar por su cuenta y nos estorbe
 local humanoide = monstruo:FindFirstChildOfClass("Humanoid")
 if humanoide then
+	-- Si el Humanoid se muere, Roblox rompe TODAS las articulaciones y el
+	-- cuerpo se queda atrás mientras la raíz invisible se mueve sola.
+	pcall(function() humanoide.BreakJointsOnDeath = false end)
+	pcall(function() humanoide.RequiresNeck = false end)
+	pcall(function() humanoide.MaxHealth = math.huge end)
+	pcall(function() humanoide.Health = math.huge end)
 	pcall(function() humanoide.EvaluateStateMachine = false end)
+	pcall(function() humanoide:SetStateEnabled(Enum.HumanoidStateType.Dead, false) end)
+end
+
+-- ✅ ¿Está el cuerpo bien enganchado a la raíz?
+task.wait(0.2)
+local sueltas = 0
+for _, cosa in ipairs(monstruo:GetChildren()) do
+	if cosa:IsA("BasePart") and cosa ~= raiz and cosa.AssemblyRootPart ~= raiz then
+		sueltas += 1
+	end
+end
+
+if sueltas > 0 then
+	warn("⚠️ ¡" .. sueltas .. " piezas sueltas! El cuerpo NO seguirá a la raíz al moverse.")
+	warn("   Vuelve a pegar ConstruirMonstruo entero y dale a Play otra vez.")
+else
+	print("✅ Cuerpo bien enganchado: se moverá entero.")
 end
 
 --==================================================================
@@ -187,7 +210,7 @@ local estadoMapa = "sin empezar"
 
 local camino = PathfindingService:CreatePath({
 	AgentRadius = 2,          -- ⬅️ antes 4: no cabía por la puerta de tu cuarto
-	AgentHeight = 12,
+	AgentHeight = 6,          -- ⬅️ antes 12: la puerta mide 8 de alto, no cabía
 	AgentCanJump = false,
 	WaypointSpacing = 6,
 })
@@ -258,7 +281,12 @@ RunService.Heartbeat:Connect(function(dt)
 		return
 	end
 
+	-- ¿No hay camino, o se han acabado los puntos? Pues a por ti en recto.
 	local destino = puntos[siguiente]
+	if not destino and objetivo then
+		destino = objetivo.Position - Vector3.new(0, 2.5, 0)
+	end
+
 	if not destino then
 		andando = false
 		return
@@ -302,14 +330,16 @@ if CHIVATO then
 
 			local objetivo, distancia = jugadorMasCerca()
 
+			local p = raiz.Position
+
 			print(string.format(
-				"👹 %s | distancia: %s | mapa: %s | punto %d de %d | andando: %s | altura: %.1f",
+				"👹 %s | dist: %s | mapa: %s | punto %d/%d | andando: %s | está en %.0f, %.0f, %.0f",
 				objetivo and "te veo" or "NO HAY JUGADOR",
 				distancia and string.format("%.0f", distancia) or "-",
 				estadoMapa,
 				siguiente, #puntos,
 				tostring(andando),
-				raiz.Position.Y
+				p.X, p.Y, p.Z
 			))
 		end
 	end)

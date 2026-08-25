@@ -231,7 +231,15 @@ local puertaFuera = buscar(casa, "PuertaFuera")
 local llegada = casa and casa:FindFirstChild("LlegadaPasillo")
 if llegada then
 	SITIO_PASILLO = llegada.CFrame
-	print("   ✔ Punto de llegada del pasillo encontrado en la casa.")
+	print("   ✔ Punto de llegada de la casa encontrado.")
+end
+
+-- Y el de volver al cuarto. Como el cuarto va colgado fuera de la mansión,
+-- la casa deja una marca dentro de él y nosotros la usamos. 🎯
+local llegadaCuarto = casa and casa:FindFirstChild("LlegadaCuarto")
+if llegadaCuarto then
+	SITIO_CUARTO = llegadaCuarto.CFrame
+	print("   ✔ Punto de llegada del cuarto encontrado.")
 end
 local cartelSalir, cartelEntrar
 

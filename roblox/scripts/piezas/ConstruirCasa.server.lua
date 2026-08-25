@@ -38,6 +38,11 @@ local EX1, EX2 = 30, 58            -- el hueco entero, de lado a lado
 local HZ1, HZ2 = -36, -12          -- el agujero del suelo (deja rellanos)
 local Z_ABAJO, Z_ARRIBA = -38, -10 -- dónde empieza y acaba cada tramo
 
+-- 🚪 El hueco de la fachada por el que se entra a NUESTRO cuarto (piso 2).
+--    El cuarto va colgado FUERA, y su puerta se mete justo en este hueco,
+--    así que la puerta se ve desde dentro de la mansión y desde el cuarto.
+local PUERTA_Z1, PUERTA_Z2 = -23, -17
+
 local COL_A = 37                   -- centro de la columna IZQUIERDA
 local COL_B = 51                   -- centro de la columna DERECHA
 local ANCHO_TRAMO = 12
@@ -233,8 +238,25 @@ for piso = 0, 3 do
 	end
 
 	fachadaZ("FachadaFondo" .. piso, Z2, X1, X2, b)
-	fachadaX("FachadaIzq" .. piso, X1, Z1, Z2, b)
 	fachadaX("FachadaDer" .. piso, X2, Z1, Z2, b)
+
+	if piso == 2 then
+		-- La fachada de la izquierda se parte en dos para dejar el hueco
+		-- de la puerta de nuestro cuarto 🚪
+		fachadaX("FachadaIzq2A", X1, Z1, PUERTA_Z1, b)
+		fachadaX("FachadaIzq2B", X1, PUERTA_Z2, Z2, b)
+
+		-- el trozo de pared que va ENCIMA de la puerta
+		bloque("DintelCuarto", Vector3.new(GROSOR, ALTURA - 8, PUERTA_Z2 - PUERTA_Z1),
+			Vector3.new(X1, b + 8 + (ALTURA - 8) / 2, (PUERTA_Z1 + PUERTA_Z2) / 2), C.pared)
+
+		-- y un marco dorado para que se vea bien dónde está
+		bloque("MarcoCuartoA", Vector3.new(GROSOR + 0.6, 9, 0.8), Vector3.new(X1, b + 4.5, PUERTA_Z1), C.oro, Enum.Material.Metal)
+		bloque("MarcoCuartoB", Vector3.new(GROSOR + 0.6, 9, 0.8), Vector3.new(X1, b + 4.5, PUERTA_Z2), C.oro, Enum.Material.Metal)
+		bloque("MarcoCuartoC", Vector3.new(GROSOR + 0.6, 0.8, PUERTA_Z2 - PUERTA_Z1), Vector3.new(X1, b + 8.8, (PUERTA_Z1 + PUERTA_Z2) / 2), C.oro, Enum.Material.Metal)
+	else
+		fachadaX("FachadaIzq" .. piso, X1, Z1, Z2, b)
+	end
 end
 
 -- La barandilla de la azotea
@@ -415,31 +437,44 @@ bloque("NeveraTirador", Vector3.new(0.5, 8, 0.5), Vector3.new(-7.8, b1 + 9, 41),
 local b2 = base(2)
 iluminar("LuzPiso2", X1, 25, Z1, Z2, b2, 1.2)
 
-local CUARTO_X, CUARTO_Z = -30, -20        -- dónde va nuestro cuarto
+-- 🛏️ NUESTRO CUARTO va COLGADO FUERA de la mansión, flotando, y su puerta
+--    se mete en el hueco de la fachada. Así la puerta se ve por los dos
+--    lados: desde el piso 2 de la mansión y desde dentro del cuarto. 🚪
+local Z_PUERTA = (PUERTA_Z1 + PUERTA_Z2) / 2
 
 local cuarto = workspace:WaitForChild("Cuarto", 20)
 if cuarto then
-	-- Lo subimos entero al piso 2. El 0.05 es para que su suelo no se pelee
-	-- con el suelo de la mansión (si no, parpadean los dos).
-	local desplazamiento = Vector3.new(CUARTO_X, b2 - 1 + 0.05, CUARTO_Z)
-	cuarto:PivotTo(CFrame.new(desplazamiento) * cuarto:GetPivot())
-	print("🛏️ Cuarto colocado en el piso 2.")
+	-- El "pivote" del cuarto es su propia puerta (lo pusimos en
+	-- ConstruirCuarto), así que colocando el pivote colocamos la puerta
+	-- exactamente donde queremos. 🎯
+	-- Y lo giramos 90 grados para que la puerta mire a la mansión: el
+	-- cuarto se queda hacia fuera, flotando en el aire. 👻
+	cuarto:PivotTo(CFrame.new(X1, b2 + 4, Z_PUERTA) * CFrame.Angles(0, math.rad(90), 0))
+	print("🛏️ Cuarto colgado fuera de la mansión, a la altura del piso 2.")
 else
-	warn("⚠️ No encuentro el Cuarto. ¿Está ConstruirCuarto en ServerScriptService?")
+	warn("⚠️ No encuentro el Cuarto. ¿Se ha construido antes que la mansión?")
 end
 
--- La cara de FUERA de la puerta del cuarto (aquí sale el cartel [E] Entrar)
-local puertaFuera = bloque("PuertaFuera", Vector3.new(6, 8, 0.4),
-	Vector3.new(CUARTO_X, b2 + 4, CUARTO_Z + 13.2), C.pared)
+-- El cartel [E] Entrar va en la cara de DENTRO de la mansión
+local puertaFuera = bloque("PuertaFuera", Vector3.new(0.4, 8, 6),
+	Vector3.new(X1 + 1.6, b2 + 4, Z_PUERTA), C.pared)
 puertaFuera.Transparency = 1
 puertaFuera.CanCollide = false
 
--- Donde apareces al salir del cuarto
+-- Donde apareces al salir del cuarto: dentro de la mansión, mirando adentro
 local llegada = bloque("LlegadaPasillo", Vector3.new(4, 1, 4),
-	Vector3.new(CUARTO_X, b2 + 3, CUARTO_Z + 22), C.pared)
+	Vector3.new(X1 + 10, b2 + 3, Z_PUERTA), C.pared)
 llegada.Transparency = 1
 llegada.CanCollide = false
-llegada.CFrame = CFrame.lookAt(llegada.Position, llegada.Position + Vector3.new(0, 0, 1))
+llegada.CFrame = CFrame.lookAt(llegada.Position, llegada.Position + Vector3.new(1, 0, 0))
+
+-- Y donde apareces al ENTRAR: dentro del cuarto, mirando hacia dentro.
+-- Como el cuarto se ha movido, esta marca es la que manda (Opciones la lee).
+local llegadaCuarto = bloque("LlegadaCuarto", Vector3.new(4, 1, 4),
+	Vector3.new(X1 - 6, b2 + 3, Z_PUERTA), C.pared)
+llegadaCuarto.Transparency = 1
+llegadaCuarto.CanCollide = false
+llegadaCuarto.CFrame = CFrame.lookAt(llegadaCuarto.Position, llegadaCuarto.Position + Vector3.new(-1, 0, 0))
 
 -- Una salita en el piso 2, para que no esté vacío
 sofa("SofaPiso2", 5, 25, 18, b2, 180)

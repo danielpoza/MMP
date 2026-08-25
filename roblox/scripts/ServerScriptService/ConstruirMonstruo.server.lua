@@ -275,6 +275,9 @@ for _, cosa in ipairs(monstruo:GetChildren()) do
 	end
 end
 
+-- 🚩 Bandera: le dice al LocalScript de la animación que ya puede empezar
+monstruo:SetAttribute("Listo", true)
+
 print("👹 Monstruo montado en " .. tostring(POSICION))
 print("   Piezas sueltas: " .. sueltas .. " (tiene que poner 0)")
 print("   Articulaciones: rodilla y codo escondidos en cada extremidad.")

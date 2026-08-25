@@ -1,15 +1,13 @@
 --[[
-	MonstruoPersigue
+	MonstruoPersigue        (script de SERVIDOR)
 	----------------
-	El monstruo anda a 2 pisadas por segundo y te persigue.
+	Este script SOLO decide DÓNDE está el monstruo y si te ha pillado.
+	La animación de brazos y piernas la hace el LocalScript
+	"MonstruoAnimacion", en StarterPlayerScripts.
 
-	🔧 SI ALGO NO VA: pon CHIVATO = true (viene así) y mira la Output.
-	   Te va diciendo cada segundo si te ve, a qué distancia estás y si se
-	   está moviendo. Con eso sabemos exactamente qué falla.
-
-	⚠️ En ConstruirMonstruo tienen que estar BORRADOS los dos bloques del
-	   final (el de la animación y el de la telequinesia). Si no, los dos
-	   scripts se pelean por mover las mismas articulaciones.
+	🎬 ¿Por qué separados? El servidor le manda los cambios a tu pantalla
+	   unas 20 veces por segundo, pero tu pantalla dibuja 60. Si la animación
+	   la hiciera el servidor verías tirones. Así va suave. 🧈
 
 	Dónde va: ServerScriptService -> ➕ -> Script -> se llama MonstruoPersigue
 ]]
@@ -19,18 +17,13 @@ local RunService = game:GetService("RunService")
 local PathfindingService = game:GetService("PathfindingService")
 
 --==================================================================
--- ⚙️ AJUSTES (aquí es donde tienes que trastear hasta que te guste)
+-- ⚙️ AJUSTES
 --==================================================================
 local VELOCIDAD = 11                -- studs por segundo. Tú corres a 16.
-
--- 🦵 EL RITMO DE LAS PIERNAS
-local DURACION_PISADA = 0.5         -- lo que tarda UNA pierna en dar su paso
-local PAUSA_ENTRE_PISADAS = 0.05    -- el respiro entre una pierna y la otra
-local ANIMAR_SIEMPRE = true         -- true = mueve las piernas aunque no avance
 local DISTANCIA_VISION = 1000       -- enorme aposta: que te persiga siempre
 local DISTANCIA_PILLAR = 8          -- a esta distancia se para y te mira
 local ALTURA_RAIZ = 9               -- del suelo al centro del monstruo
-local USAR_MAPA = true              -- false = va en línea recta, atravesando paredes
+local USAR_MAPA = true              -- false = línea recta atravesando paredes
 local CHIVATO = true                -- que cuente en la Output lo que hace
 
 task.wait(1.5)
@@ -48,11 +41,10 @@ if not raiz.Anchored then
 	raiz.Anchored = true
 end
 
--- Que el Humanoid no intente andar por su cuenta y nos estorbe
+-- Si el Humanoid se muere, Roblox rompe TODAS las articulaciones y el cuerpo
+-- se queda atrás mientras la raíz invisible se mueve sola.
 local humanoide = monstruo:FindFirstChildOfClass("Humanoid")
 if humanoide then
-	-- Si el Humanoid se muere, Roblox rompe TODAS las articulaciones y el
-	-- cuerpo se queda atrás mientras la raíz invisible se mueve sola.
 	pcall(function() humanoide.BreakJointsOnDeath = false end)
 	pcall(function() humanoide.RequiresNeck = false end)
 	pcall(function() humanoide.MaxHealth = math.huge end)
@@ -72,126 +64,9 @@ end
 
 if sueltas > 0 then
 	warn("⚠️ ¡" .. sueltas .. " piezas sueltas! El cuerpo NO seguirá a la raíz al moverse.")
-	warn("   Vuelve a pegar ConstruirMonstruo entero y dale a Play otra vez.")
 else
 	print("✅ Cuerpo bien enganchado: se moverá entero.")
 end
-
---==================================================================
--- 🔗 La postura de reposo de cada articulación
---==================================================================
-local juntas = {}
-local cuantasJuntas = 0
-
-for _, cosa in ipairs(monstruo:GetDescendants()) do
-	if cosa:IsA("Motor6D") then
-		juntas[cosa.Name] = { junta = cosa, reposo = cosa.C0 }
-		cuantasJuntas += 1
-	end
-end
-
-print("🦴 Articulaciones encontradas: " .. cuantasJuntas)
-
-local function girar(x, y, z)
-	return CFrame.Angles(math.rad(x), math.rad(y), math.rad(z))
-end
-
-local function postura(nombre, cframe)
-	local j = juntas[nombre]
-	if j then j.junta.C0 = j.reposo * cframe end
-end
-
---==================================================================
--- 🚶 EL ANDAR
---    Un reloj que da vueltas: primero le toca a la pierna izquierda durante
---    DURACION_PISADA, luego una pausita, luego a la derecha, y otra pausita.
---    Sólo se mueve UNA pierna cada vez. 🦵🕐
-local TURNO = DURACION_PISADA + PAUSA_ENTRE_PISADAS     -- lo que dura el turno de una pierna
-local CICLO = TURNO * 2                                 -- las dos piernas = una vuelta entera
-
-local reloj = 0
-local andando = false
-local tropiezo = 0
-local craneoFuera = 0
-
--- "intensidad" es cuánto se mueven las piernas: 0 = quieto, 1 = andando.
--- Se acerca poco a poco a lo que toca, y por eso al pararse las piernas
--- vuelven suaves a su sitio en vez de quedarse congeladas a medias. 🧊➡️🙂
-local intensidad = 0
-
--- La curva de una pisada: empieza en 0, sube a 1 por la mitad y vuelve a 0.
--- Por eso la pierna se levanta y se vuelve a apoyar dentro de su medio segundo.
-local function curva(p)
-	if p <= 0 or p >= 1 then return 0 end
-	return math.sin(math.pi * p)
-end
-
-RunService.Heartbeat:Connect(function(dt)
-	-- ⚠️ El reloj NO se para nunca. Si se parase, las piernas se quedarían
-	-- congeladas en el fotograma en el que estuvieran.
-	reloj = (reloj + dt) % CICLO          -- el % hace que vuelva a empezar
-
-	local quiero = (andando or ANIMAR_SIEMPRE) and 1 or 0
-	intensidad += (quiero - intensidad) * math.min(1, dt * 6)
-
-	-- ¿A quién le toca ahora mismo, y por qué parte de su paso va?
-	local avanceIzq, avanceDer = 0, 0
-
-	if reloj < DURACION_PISADA then
-		avanceIzq = reloj / DURACION_PISADA                       -- turno de la izquierda
-	elseif reloj >= TURNO and reloj < TURNO + DURACION_PISADA then
-		avanceDer = (reloj - TURNO) / DURACION_PISADA             -- turno de la derecha
-	end
-	-- (los huecos que quedan son las pausas de 0,05: no se mueve ninguna)
-
-	local izq = curva(avanceIzq) * intensidad
-	local der = curva(avanceDer) * intensidad
-
-	-- La pierna a la que le toca: levanta cadera, dobla rodilla y estira el pie
-	postura("CaderaIzquierda", girar(-34 * izq, 0, 0))
-	postura("CaderaDerecha", girar(-34 * der, 0, 0))
-	postura("RodillaIzquierda", girar(48 * izq, 0, 0))
-	postura("RodillaDerecha", girar(48 * der, 0, 0))
-	postura("TobilloIzquierdo", girar(-16 * izq, 0, 0))
-	postura("TobilloDerecho", girar(-16 * der, 0, 0))
-
-	-- Los brazos, al revés que las piernas (brazo derecho con pierna izquierda)
-	postura("HombroDerecho", girar(-12 + 26 * izq, 0, 30))
-	postura("HombroIzquierdo", girar(-12 + 26 * der, 0, -30))
-	postura("CodoDerecho", girar(-50 - 14 * der, 0, 0))
-	postura("CodoIzquierdo", girar(-50 - 14 * izq, 0, 0))
-	-- (los brazos se quedan siempre medio abiertos: es su postura de bicho 🧟)
-
-	-- El cuerpo se echa hacia la pierna que SÍ está apoyada
-	postura("RootJoint", girar(2 * (izq + der), 0, 8 * (izq - der) + tropiezo))
-	postura("JuntaCraneo", CFrame.new(0, craneoFuera, 0) * girar(-6 * craneoFuera, 10 * craneoFuera, 0))
-end)
-
-task.spawn(function()
-	while monstruo.Parent do
-		task.wait(math.random(35, 90) / 10)
-		if andando then
-			tropiezo = math.random(-9, 9)
-			task.wait(0.3)
-			tropiezo = 0
-		end
-	end
-end)
-
-task.spawn(function()
-	while monstruo.Parent do
-		task.wait(math.random(40, 90) / 10)
-
-		local altura = 1.4 + math.random() * 1.6
-		for i = 1, 22 do
-			craneoFuera = altura * (i / 22)
-			task.wait(0.03)
-		end
-
-		task.wait(0.7)
-		craneoFuera = 0            -- CLAC 💀
-	end
-end)
 
 --==================================================================
 -- 🎯 A quién persigue
@@ -216,9 +91,7 @@ local function jugadorMasCerca()
 end
 
 --==================================================================
--- 🦶 QUE PISE EL SUELO SIEMPRE
---    Tiramos un rayo hacia abajo para saber dónde está el suelo justo
---    debajo de él. Así sube escaleras y no se hunde ni flota. 📏
+-- 🦶 Que pise el suelo siempre (rayo hacia abajo)
 --==================================================================
 local rayo = RaycastParams.new()
 rayo.FilterType = Enum.RaycastFilterType.Exclude
@@ -240,15 +113,15 @@ local function alturaDelSuelo(x, z, yAhora)
 end
 
 --==================================================================
--- 🗺️ EL CAMINO
+-- 🗺️ El camino
 --==================================================================
 local puntos = {}
 local siguiente = 1
 local estadoMapa = "sin empezar"
 
 local camino = PathfindingService:CreatePath({
-	AgentRadius = 2,          -- ⬅️ antes 4: no cabía por la puerta de tu cuarto
-	AgentHeight = 6,          -- ⬅️ antes 12: la puerta mide 8 de alto, no cabía
+	AgentRadius = 2,
+	AgentHeight = 6,
 	AgentCanJump = false,
 	WaypointSpacing = 6,
 })
@@ -285,7 +158,6 @@ task.spawn(function()
 				siguiente = 2
 				estadoMapa = "camino de " .. #puntos .. " puntos"
 			else
-				-- Sin ruta (puertas estrechas, escaleras raras): a por ti en recto
 				puntos = { hasta }
 				siguiente = 1
 				estadoMapa = "SIN RUTA -> linea recta"
@@ -297,14 +169,25 @@ end)
 --==================================================================
 -- 🏃 MOVERSE
 --==================================================================
+local andando = false
 local ultimoAviso = 0
+
+-- El "cartelito" que lee tu pantalla para saber si mover las piernas
+local function avisarSiAnda(valor)
+	if andando ~= valor then
+		andando = valor
+		monstruo:SetAttribute("Andando", valor)
+	end
+end
+
+monstruo:SetAttribute("Andando", false)
 
 RunService.Heartbeat:Connect(function(dt)
 	local objetivo, distancia = jugadorMasCerca()
 
 	-- ¿Te ha pillado?
 	if objetivo and distancia and distancia < DISTANCIA_PILLAR then
-		andando = false
+		avisarSiAnda(false)
 
 		local haciaTi = (objetivo.Position - raiz.Position) * Vector3.new(1, 0, 1)
 		if haciaTi.Magnitude > 0.1 then
@@ -319,14 +202,14 @@ RunService.Heartbeat:Connect(function(dt)
 		return
 	end
 
-	-- ¿No hay camino, o se han acabado los puntos? Pues a por ti en recto.
+	-- ¿No hay camino o se han acabado los puntos? Pues a por ti en recto.
 	local destino = puntos[siguiente]
 	if not destino and objetivo then
 		destino = objetivo.Position - Vector3.new(0, 2.5, 0)
 	end
 
 	if not destino then
-		andando = false
+		avisarSiAnda(false)
 		return
 	end
 
@@ -338,20 +221,20 @@ RunService.Heartbeat:Connect(function(dt)
 		return
 	end
 
-	andando = true
+	avisarSiAnda(true)
 
 	local direccion = plano.Unit
 	local avance = math.min(VELOCIDAD * dt, plano.Magnitude)
 	local x = desde.X + direccion.X * avance
 	local z = desde.Z + direccion.Z * avance
 
-	-- La altura la decide el SUELO que haya debajo, no el camino
+	-- La altura la decide el SUELO que haya debajo
 	local suelo = alturaDelSuelo(x, z, desde.Y)
 	local y = desde.Y
 
 	if suelo then
 		local quiero = suelo + ALTURA_RAIZ
-		y = desde.Y + (quiero - desde.Y) * math.min(1, dt * 6)   -- sube suave
+		y = desde.Y + (quiero - desde.Y) * math.min(1, dt * 6)
 	end
 
 	local sitio = Vector3.new(x, y, z)
@@ -367,7 +250,6 @@ if CHIVATO then
 			task.wait(1)
 
 			local objetivo, distancia = jugadorMasCerca()
-
 			local p = raiz.Position
 
 			print(string.format(
@@ -383,4 +265,4 @@ if CHIVATO then
 	end)
 end
 
-print(string.format("👹 Persecución activada. Velocidad %d. Una pisada cada %.2f s (ciclo de %.2f s).", VELOCIDAD, TURNO, CICLO))
+print("👹 Persecución activada (la animación la hace MonstruoAnimacion).")

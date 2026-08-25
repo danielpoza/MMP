@@ -15,6 +15,8 @@
 	abajo y vuelve a darle a Play. ¡Es tuyo!
 ]]
 
+print("▶️ ConstruirCuarto arrancando...")
+
 -- ⚙️ MEDIDAS QUE PUEDES CAMBIAR (en "studs", 1 stud ≈ 30 cm)
 local ANCHO = 24       -- de pared a pared (eje X)
 local LARGO = 24       -- de la ventana a la puerta (eje Z)

@@ -19,6 +19,8 @@
 	Dónde va: ServerScriptService -> ➕ -> Script -> se llama ConstruirCasa
 ]]
 
+print("▶️ ConstruirCasa — MANSIÓN v3 arrancando...")
+
 --==================================================================
 -- 📐 MEDIDAS DE LA MANSIÓN
 --==================================================================

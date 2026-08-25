@@ -19,6 +19,8 @@
 	Nómbralo: ConstruirMonstruo
 ]]
 
+print("▶️ ConstruirMonstruo arrancando...")
+
 -- ⚙️ AJUSTES
 local POSICION = Vector3.new(0, 1, 60)     -- dónde aparece (en el pasillo)
 local MIRANDO = 180                        -- hacia dónde mira, en grados

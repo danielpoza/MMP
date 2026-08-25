@@ -28,9 +28,17 @@ local GROSOR = 1                   -- lo gordos que son suelos y paredes
 local X1, X2 = -60, 60             -- la mansión, de lado a lado
 local Z1, Z2 = -45, 45             -- de la fachada al fondo
 
-local EX1, EX2 = 30, 58            -- el hueco de la escalera
-local EZ1, EZ2 = -40, -2
-local HUECO_Z2 = -8                -- hasta dónde llega el agujero del suelo
+-- 🪜 EL HUECO DE LA ESCALERA
+--    Los tramos van en DOS COLUMNAS, una al lado de otra, y suben en
+--    zigzag: subes por la izquierda, cruzas el rellano, y sigues por la
+--    derecha. Como en las escaleras de verdad. 🔁
+local EX1, EX2 = 30, 58            -- el hueco entero, de lado a lado
+local HZ1, HZ2 = -36, -12          -- el agujero del suelo (deja rellanos)
+local Z_ABAJO, Z_ARRIBA = -38, -10 -- dónde empieza y acaba cada tramo
+
+local COL_A = 37                   -- centro de la columna IZQUIERDA
+local COL_B = 51                   -- centro de la columna DERECHA
+local ANCHO_TRAMO = 12
 
 -- La altura del suelo de cada piso. base(0) = planta baja, base(4) = azotea
 local function base(p) return 1 + p * (ALTURA + GROSOR) end
@@ -193,12 +201,11 @@ end
 losa("SueloBajo", X1, X2, Z1, Z2, base(0), C.marmol, Enum.Material.Marble)
 
 for piso = 1, 3 do
-	local color = (piso == 1) and C.parquet or C.parquet
-	losaConHueco("Suelo" .. piso, X1, X2, Z1, Z2, EX1, EX2, EZ1, HUECO_Z2, base(piso), color, Enum.Material.WoodPlanks)
+	losaConHueco("Suelo" .. piso, X1, X2, Z1, Z2, EX1, EX2, HZ1, HZ2, base(piso), C.parquet, Enum.Material.WoodPlanks)
 end
 
 -- La azotea: aquí el hueco se tapa con una casetilla de salida
-losaConHueco("SueloAzotea", X1, X2, Z1, Z2, EX1, EX2, EZ1, HUECO_Z2, AZOTEA, C.marmol, Enum.Material.Marble)
+losaConHueco("SueloAzotea", X1, X2, Z1, Z2, EX1, EX2, HZ1, HZ2, AZOTEA, C.marmol, Enum.Material.Marble)
 
 --==================================================================
 -- 🏛️ LAS FACHADAS (con ventanales de mansión)
@@ -237,11 +244,13 @@ for _, lado in ipairs({ {X1, "izq"}, {X2, "der"} }) do
 end
 
 --==================================================================
--- 🪜 LA ESCALERA (sube por el mismo hueco en todos los pisos)
+-- 🪜 LA ESCALERA EN ZIGZAG
+--    Pisos pares (0 y 2) -> columna IZQUIERDA, subiendo hacia el fondo.
+--    Pisos impares (1 y 3) -> columna DERECHA, subiendo hacia la fachada.
+--    Así ningún tramo queda encima de otro: quedan al lado. 🔁
 --==================================================================
-local ANCHO_ESC = EX2 - EX1 - 4
-local X_ESC = (EX1 + EX2) / 2
-local LARGO_ESC = 30
+local X_ESC = (COL_A + COL_B) / 2
+local LARGO_ESC = Z_ARRIBA - Z_ABAJO
 
 for piso = 0, 3 do
 	local b = base(piso)
@@ -250,21 +259,41 @@ for piso = 0, 3 do
 	local alturaPaso = subida / escalones
 	local fondoPaso = LARGO_ESC / escalones
 
+	-- ¿Le toca la columna de la izquierda o la de la derecha?
+	local par = (piso % 2 == 0)
+	local x = par and COL_A or COL_B
+	local ladoBarandilla = par and 1 or -1
+
 	for i = 1, escalones do
 		local h = alturaPaso * i
-		bloque("Escalon", Vector3.new(ANCHO_ESC, h, fondoPaso),
-			Vector3.new(X_ESC, b + h / 2, EZ1 + 2 + (i - 0.5) * fondoPaso), C.marmol, Enum.Material.Marble)
+		local avance = (i - 0.5) * fondoPaso
+
+		-- los pares suben hacia el fondo, los impares hacia la fachada
+		local z = par and (Z_ABAJO + avance) or (Z_ARRIBA - avance)
+
+		bloque("Escalon", Vector3.new(ANCHO_TRAMO, h, fondoPaso),
+			Vector3.new(x, b + h / 2, z), C.marmol, Enum.Material.Marble)
+
+		-- barandilla por el lado abierto del tramo, cada tres escalones
+		if i % 3 == 0 then
+			bloque("Barrote", Vector3.new(0.4, 5, 0.4),
+				Vector3.new(x + ladoBarandilla * (ANCHO_TRAMO / 2 - 0.4), b + h + 2.5, z),
+				C.oro, Enum.Material.Metal)
+		end
 	end
 
-	-- barandilla dorada del lado abierto
-	for i = 0, 6 do
-		bloque("Barrote", Vector3.new(0.4, 5, 0.4),
-			Vector3.new(EX1 + 1, base(piso + 1) + 2.5, HUECO_Z2 + i * 1.5), C.oro, Enum.Material.Metal)
+	-- Barandilla alrededor del agujero, para no caerse al vacío 🕳️
+	if piso > 0 then
+		for i = 0, 7 do
+			local z = HZ1 + (i + 0.5) * (HZ2 - HZ1) / 8
+			bloque("BarroteHueco", Vector3.new(0.4, 5, 0.4), Vector3.new(EX1, b + 2.5, z), C.oro, Enum.Material.Metal)
+			bloque("BarroteHueco", Vector3.new(0.4, 5, 0.4), Vector3.new(EX2, b + 2.5, z), C.oro, Enum.Material.Metal)
+		end
+		bloque("PasamanosHueco", Vector3.new(0.6, 0.6, HZ2 - HZ1), Vector3.new(EX1, b + 5, (HZ1 + HZ2) / 2), C.oro, Enum.Material.Metal)
+		bloque("PasamanosHueco", Vector3.new(0.6, 0.6, HZ2 - HZ1), Vector3.new(EX2, b + 5, (HZ1 + HZ2) / 2), C.oro, Enum.Material.Metal)
 	end
-	bloque("Pasamanos", Vector3.new(0.6, 0.6, 9),
-		Vector3.new(EX1 + 1, base(piso + 1) + 5, HUECO_Z2 + 4.5), C.oro, Enum.Material.Metal)
 
-	iluminar("LuzEscalera" .. piso, EX1, EX2, EZ1, EZ2, b, 1.4)
+	iluminar("LuzEscalera" .. piso, EX1, EX2, Z_ABAJO, Z_ARRIBA, b, 1.4)
 end
 
 --==================================================================
@@ -442,7 +471,7 @@ agua.Transparency = 0.35
 --==================================================================
 -- ☀️ LA AZOTEA
 --==================================================================
-bloque("CasetaAzotea", Vector3.new(EX2 - EX1 + 4, 12, 12), Vector3.new(X_ESC, AZOTEA + 6, -4), C.marmol, Enum.Material.Marble)
+bloque("CasetaAzotea", Vector3.new(EX2 - EX1 + 4, 12, 10), Vector3.new(X_ESC, AZOTEA + 6, HZ2 + 4), C.marmol, Enum.Material.Marble)
 
 for i = -1, 1 do
 	local farol = bloque("FarolAzotea", Vector3.new(2, 8, 2), Vector3.new(i * 30, AZOTEA + 4, 20), C.oro, Enum.Material.Metal)

@@ -47,9 +47,10 @@ local function pz(z) return CZ + z end
 -- 🌙 LA NOCHE
 --==================================================================
 Lighting.ClockTime = 0
-Lighting.Brightness = 0.5
-Lighting.Ambient = Color3.fromRGB(22, 22, 34)
-Lighting.OutdoorAmbient = Color3.fromRGB(18, 18, 30)
+Lighting.Brightness = 0.35
+Lighting.Ambient = Color3.fromRGB(28, 28, 40)          -- luz de fondo suave
+Lighting.OutdoorAmbient = Color3.fromRGB(20, 20, 32)
+Lighting.ExposureCompensation = -0.4                   -- baja el "brillo" general
 Lighting.GlobalShadows = true
 Lighting.FogColor = Color3.fromRGB(8, 8, 12)
 Lighting.FogStart = 20
@@ -115,12 +116,17 @@ local function mueble(nombre, x, z, tam, altura, b, color, material)
 	return bloque(nombre, tam, x, b + altura, z, color or C.madera, material or Enum.Material.Wood)
 end
 
+-- 💡 OJO CON LA LUZ: en Roblox, si juntas muchas luces fuertes la imagen se
+--    "quema" y se ve todo blanco. Por eso van flojitas y con poco alcance.
+--    Y el material Neon SIEMPRE brilla a tope, así que su color va oscuro.
 local function lampara(nombre, x, z, b, alcance)
-	local bombilla = bloque(nombre, Vector3.new(3, 1.2, 3), x, b + ALTO - 2, z, C.luz, Enum.Material.Neon)
+	local bombilla = bloque(nombre, Vector3.new(3, 1.2, 3), x, b + ALTO - 2, z,
+		Color3.fromRGB(190, 160, 105), Enum.Material.Neon)
+
 	local luz = Instance.new("PointLight")
-	luz.Brightness = 2
-	luz.Range = alcance or 55
-	luz.Color = Color3.fromRGB(255, 226, 180)
+	luz.Brightness = 0.8              -- antes 2: cegaba
+	luz.Range = alcance or 30         -- antes 55
+	luz.Color = Color3.fromRGB(255, 220, 170)
 	luz.Parent = bombilla
 	return bombilla
 end
@@ -209,7 +215,7 @@ for _, lx in ipairs({ -1, 1 }) do
 		rueda.Shape = Enum.PartType.Cylinder
 		rueda.CFrame = CFrame.new(rueda.Position) * CFrame.Angles(0, 0, math.rad(90))
 	end
-	mueble("Faro", CX_COCHE + lx * 4.5, CZ_COCHE - 15, Vector3.new(3.5, 1.6, 0.6), 4.5, b0, Color3.fromRGB(255, 250, 220), Enum.Material.Neon)
+	mueble("Faro", CX_COCHE + lx * 4.5, CZ_COCHE - 15, Vector3.new(3.5, 1.6, 0.6), 4.5, b0, Color3.fromRGB(180, 175, 140), Enum.Material.Neon)
 end
 
 -- 🔢 LA MATRÍCULA
@@ -280,10 +286,10 @@ mueble("Silla", 7, 6, Vector3.new(3.4, 0.8, 3.4), 3, b2)
 mueble("SillaRespaldo", 7, 7.6, Vector3.new(3.4, 4, 0.6), 5, b2)
 mueble("Mesita", -1, -9, Vector3.new(3, 4, 3), 2, b2)
 
-local lamparita = mueble("Lamparita", -1, -9, Vector3.new(1.6, 1.6, 1.6), 5, b2, C.luz, Enum.Material.Neon)
+local lamparita = mueble("Lamparita", -1, -9, Vector3.new(1.6, 1.6, 1.6), 5, b2, Color3.fromRGB(190, 150, 95), Enum.Material.Neon)
 local luzMesita = Instance.new("PointLight")
-luzMesita.Brightness = 2.5
-luzMesita.Range = 30
+luzMesita.Brightness = 1
+luzMesita.Range = 20
 luzMesita.Color = Color3.fromRGB(255, 200, 140)
 luzMesita.Parent = lamparita
 
@@ -322,11 +328,11 @@ mueble("Tumbona", 0, 20, Vector3.new(8, 1.4, 18), 1, AZOTEA, Color3.fromRGB(232,
 
 for _, lado in ipairs({ -25, 25 }) do
 	bloque("Farola", Vector3.new(1.5, 14, 1.5), lado, AZOTEA + 7, 0, C.metal, Enum.Material.Metal)
-	local foco = bloque("FocoAzotea", Vector3.new(3, 2, 3), lado, AZOTEA + 14, 0, C.luz, Enum.Material.Neon)
+	local foco = bloque("FocoAzotea", Vector3.new(3, 2, 3), lado, AZOTEA + 14, 0, Color3.fromRGB(190, 160, 105), Enum.Material.Neon)
 	local luz = Instance.new("PointLight")
-	luz.Brightness = 2
-	luz.Range = 50
-	luz.Color = Color3.fromRGB(255, 226, 180)
+	luz.Brightness = 0.8
+	luz.Range = 28
+	luz.Color = Color3.fromRGB(255, 220, 170)
 	luz.Parent = foco
 end
 
@@ -339,25 +345,28 @@ for _, pieza in ipairs(casa:GetChildren()) do
 		local tam = pieza.Size
 		local arriba = pieza.Position.Y + tam.Y / 2
 
-		for i = 1, math.max(1, math.floor(tam.X / 30)) do
-			for j = 1, math.max(1, math.floor(tam.Z / 30)) do
+		local filas = math.max(1, math.floor(tam.X / 45))       -- antes 30: sobraban
+		local columnas = math.max(1, math.floor(tam.Z / 45))
+
+		for i = 1, filas do
+			for j = 1, columnas do
 				local baliza = Instance.new("Part")
 				baliza.Name = "Baliza"
-				baliza.Size = Vector3.new(6, 0.3, 6)
+				baliza.Size = Vector3.new(5, 0.3, 5)
 				baliza.Position = Vector3.new(
-					pieza.Position.X - tam.X / 2 + (i - 0.5) * tam.X / math.max(1, math.floor(tam.X / 30)),
+					pieza.Position.X - tam.X / 2 + (i - 0.5) * tam.X / filas,
 					arriba + 0.2,
-					pieza.Position.Z - tam.Z / 2 + (j - 0.5) * tam.Z / math.max(1, math.floor(tam.Z / 30)))
-				baliza.Color = Color3.fromRGB(190, 215, 255)
+					pieza.Position.Z - tam.Z / 2 + (j - 0.5) * tam.Z / columnas)
+				baliza.Color = Color3.fromRGB(80, 115, 175)     -- azul oscuro: brilla poco
 				baliza.Material = Enum.Material.Neon
 				baliza.Anchored = true
 				baliza.CanCollide = false
 				baliza.Parent = casa
 
 				local luz = Instance.new("PointLight")
-				luz.Brightness = 2
-				luz.Range = 45
-				luz.Color = Color3.fromRGB(150, 200, 255)
+				luz.Brightness = 0.5              -- antes 2
+				luz.Range = 22                    -- antes 45
+				luz.Color = Color3.fromRGB(130, 180, 240)
 				luz.Shadows = false
 				luz.Parent = baliza
 

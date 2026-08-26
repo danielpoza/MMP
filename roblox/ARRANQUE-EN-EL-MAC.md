@@ -38,8 +38,10 @@ claude
 ## 📋 TEXTO DE ARRANQUE (copiar y pegar en el Claude del Mac)
 
 ```text
-Vas a continuar "LA NOCHE", un juego de terror de Roblox que hace Daniel con
-su hijo Miguel (12 años). Es un proyecto educativo y en familia.
+Vas a continuar "LA NOCHE", un juego de terror de Roblox que está haciendo
+MIGUEL (12 años). El juego es idea suya y lo está montando él solo: el diseño,
+las decisiones y las pruebas en Roblox Studio son cosa suya. Háblale a él
+directamente, y explícale las cosas para que las entienda y pueda cambiarlas.
 
 CÓMO TRABAJAR
 - Tienes el MCP "Roblox_Studio" conectado: crea y edita los scripts

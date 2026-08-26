@@ -1,4 +1,7 @@
-# 💡 La idea del juego (contada por Miguel)
+# 💡 La idea del juego
+
+> Juego creado por **Miguel** (12 años). La idea, el diseño y el montaje en
+> Roblox Studio son suyos.
 
 ## Nombre del juego
 **La Noche** _(nombre provisional, se puede cambiar)_

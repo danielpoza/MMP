@@ -1,4 +1,4 @@
-# 🟩 Juego de Roblox de Miguel
+# 🟩 LA NOCHE — un juego de Roblox de Miguel
 
 Proyecto **nuevo e independiente** del juego web "Crónicas de Miguel".
 Aquí guardamos todo lo del juego hecho con **Roblox Studio** (lenguaje **Luau**).
@@ -35,7 +35,7 @@ Studio, en `ServerScriptService`. Así nunca hay dudas de dónde pegar cada cosa
 
 ## 🎮 Cómo trabajamos
 
-1. **Miguel cuenta** qué quiere que pase en el juego.
+1. **Miguel decide** qué quiere que pase en el juego (el juego es suyo).
 2. **Claude explica** con palabras normales qué va a hacer el script.
 3. **Claude escribe el script** aquí en el repo y lo enseña para copiar.
 4. **Miguel lo pega** en Roblox Studio (mira `docs/02-como-copiar-scripts.md`).
